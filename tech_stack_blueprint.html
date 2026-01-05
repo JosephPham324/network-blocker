@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindfulBlock: Lộ trình Công nghệ & Kiến trúc Hệ thống</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Chosen Palette: Tech Focus -->
+    <!-- Background: Slate Light (#F8FAFC) -->
+    <!-- Accent 1: Indigo Blue (#4F46E5) - Professionalism -->
+    <!-- Accent 2: Emerald Green (#10B981) - Stability -->
+    <!-- Text: Slate Dark (#1E293B) -->
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bg: '#F8FAFC',
+                        surface: '#FFFFFF',
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                        slate: {
+                            800: '#1E293B',
+                            600: '#475569',
+                            400: '#94A3B8',
+                            100: '#F1F5F9'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC;
+            color: #1E293B;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+            height: 300px;
+            margin: auto;
+        }
+
+        .tech-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .nav-item.active {
+            background-color: #EEF2FF;
+            color: #4F46E5;
+            border-right: 4px solid #4F46E5;
+        }
+
+        .section-view {
+            display: none;
+        }
+
+        .section-view.active {
+            display: block;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <!-- Application Structure Plan: 
+         Ứng dụng được thiết kế như một bản báo cáo kỹ thuật tương tác.
+         Cấu trúc bao gồm:
+         1. Dashboard Kiến trúc: Cái nhìn tổng thể về cách dữ liệu luân chuyển giữa PC, Mobile và Cloud.
+         2. Chi tiết Tech Stack: Phân tích sâu các lớp công nghệ (Frontend, Backend, Network Layer).
+         3. Cơ chế Chặn mạng: Giải thích kỹ thuật cụ thể cho từng nền tảng (DNS, VPN Service, Hosts).
+         4. Lộ trình triển khai: Các bước từ MVP đến sản phẩm hoàn chỉnh.
+    -->
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-72 bg-white border-r border-slate-100 flex flex-col hidden md:flex">
+            <div class="p-8">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold">M
+                    </div>
+                    <h1 class="text-xl font-bold text-slate-800">MindfulBlock</h1>
+                </div>
+                <p class="text-xs text-slate-400 font-mono">STAK SPECIFICATION v2.1</p>
+            </div>
+
+            <nav class="flex-1 px-4 space-y-1">
+                <button onclick="navigateTo('overview')"
+                    class="nav-item active w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-all"
+                    id="nav-overview">
+                    <span>&#128376;</span> Kiến trúc Tổng thể
+                </button>
+                <button onclick="navigateTo('frontend')"
+                    class="nav-item w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-all"
+                    id="nav-frontend">
+                    <span>&#128187;</span> Lớp Ứng dụng (App)
+                </button>
+                <button onclick="navigateTo('backend')"
+                    class="nav-item w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-all"
+                    id="nav-backend">
+                    <span>&#9729;</span> Backend & Đồng bộ
+                </button>
+                <button onclick="navigateTo('network')"
+                    class="nav-item w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-all"
+                    id="nav-network">
+                    <span>&#128246;</span> Cơ chế Chặn Mạng
+                </button>
+            </nav>
+
+            <div class="p-6 bg-slate-50 border-t border-slate-100">
+                <div class="text-[10px] text-slate-400 uppercase tracking-widest mb-2 font-bold">Trạng thái Hệ thống
+                </div>
+                <div class="flex items-center gap-2 text-xs text-secondary font-semibold">
+                    <span class="relative flex h-2 w-2">
+                        <span
+                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
+                    </span>
+                    Sẵn sàng triển khai
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-12 relative">
+
+            <!-- SECTION 1: KIẾN TRÚC TỔNG THỂ -->
+            <section id="overview" class="section-view active max-w-5xl mx-auto">
+                <div class="mb-10">
+                    <h2 class="text-4xl font-bold text-slate-800 mb-4">Kiến trúc Hệ thống Đa nền tảng</h2>
+                    <p class="text-slate-600 text-lg leading-relaxed">
+                        Để đạt được sự đồng bộ hoàn hảo, MindfulBlock sử dụng mô hình <strong>Client-Heavy,
+                            Server-Light</strong>.
+                        Phần lớn logic chặn mạng nằm ở thiết bị cục bộ để đảm bảo quyền riêng tư và tốc độ, trong khi
+                        Cloud chỉ đóng vai trò là "nguồn sự thật duy nhất" cho các quy tắc chặn.
+                    </p>
+                </div>
+
+                <!-- Visual Diagram (HTML/CSS) -->
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 mb-10 relative overflow-hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center text-center">
+                        <!-- Client PC -->
+                        <div class="flex flex-col items-center">
+                            <div
+                                class="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center text-3xl mb-4 border border-slate-200">
+                                💻</div>
+                            <h4 class="font-bold text-slate-800">Mindful PC</h4>
+                            <p class="text-xs text-slate-400 mt-1 font-mono">Windows / macOS</p>
+                            <div class="mt-4 px-3 py-1 bg-primary/10 text-primary text-[10px] rounded-full font-bold">
+                                RUST / TAURI</div>
+                        </div>
+
+                        <!-- Sync Cloud -->
+                        <div class="flex flex-col items-center relative">
+                            <!-- Connection Lines (Hidden on mobile) -->
+                            <div class="hidden md:block absolute top-1/2 left-[-50%] w-full h-[2px] bg-slate-100 -z-10">
+                            </div>
+                            <div
+                                class="hidden md:block absolute top-1/2 right-[-50%] w-full h-[2px] bg-slate-100 -z-10">
+                            </div>
+
+                            <div
+                                class="w-24 h-24 bg-primary rounded-full flex items-center justify-center text-4xl mb-4 shadow-xl shadow-primary/20 ring-8 ring-primary/5">
+                                ☁️</div>
+                            <h4 class="font-bold text-slate-800">Central Account</h4>
+                            <p class="text-xs text-slate-400 mt-1 font-mono">Firebase / Firestore</p>
+                            <div
+                                class="mt-4 px-3 py-1 bg-secondary/10 text-secondary text-[10px] rounded-full font-bold">
+                                REAL-TIME SYNC</div>
+                        </div>
+
+                        <!-- Client Mobile -->
+                        <div class="flex flex-col items-center">
+                            <div
+                                class="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center text-3xl mb-4 border border-slate-200">
+                                📱</div>
+                            <h4 class="font-bold text-slate-800">Mindful Mobile</h4>
+                            <p class="text-xs text-slate-400 mt-1 font-mono">iOS / Android</p>
+                            <div class="mt-4 px-3 py-1 bg-primary/10 text-primary text-[10px] rounded-full font-bold">
+                                FLUTTER</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100">
+                        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <span class="w-2 h-2 bg-primary rounded-full"></span> Luồng Đồng bộ Dữ liệu
+                        </h3>
+                        <div class="chart-container">
+                            <canvas id="syncFlowChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 flex flex-col justify-center">
+                        <h3 class="font-bold text-slate-800 mb-4">Các thành phần chính</h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start gap-3">
+                                <div
+                                    class="w-6 h-6 bg-blue-50 text-blue-600 rounded flex items-center justify-center text-xs font-bold">
+                                    1</div>
+                                <div>
+                                    <p class="font-semibold text-sm">Xác thực tập trung</p>
+                                    <p class="text-xs text-slate-400">Đăng nhập một lần (SSO) cho toàn bộ hệ sinh thái
+                                        thiết bị.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div
+                                    class="w-6 h-6 bg-green-50 text-green-600 rounded flex items-center justify-center text-xs font-bold">
+                                    2</div>
+                                <div>
+                                    <p class="font-semibold text-sm">Conflict Resolution</p>
+                                    <p class="text-xs text-slate-400">Xử lý khi thay đổi thiết lập đồng thời trên cả
+                                        điện thoại và máy tính.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div
+                                    class="w-6 h-6 bg-amber-50 text-amber-600 rounded flex items-center justify-center text-xs font-bold">
+                                    3</div>
+                                <div>
+                                    <p class="font-semibold text-sm">Offline-First</p>
+                                    <p class="text-xs text-slate-400">Vẫn chặn mạng ngay cả khi không có kết nối
+                                        internet (Local DB).</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: FRONTEND STACK -->
+            <section id="frontend" class="section-view max-w-5xl mx-auto">
+                <div class="mb-10">
+                    <h2 class="text-4xl font-bold text-slate-800 mb-4">Lớp Ứng dụng & Giao diện</h2>
+                    <p class="text-slate-600 text-lg leading-relaxed">
+                        Để tối ưu nguồn lực phát triển nhưng vẫn giữ được hiệu suất tối đa (Native Performance), chúng
+                        tôi chọn giải pháp <strong>Multi-Framework</strong> dựa trên ngôn ngữ biên dịch mạnh mẽ.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+                    <!-- Desktop Stack -->
+                    <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm tech-card transition-all">
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="p-4 bg-slate-900 rounded-2xl text-white text-2xl font-mono">Rust</div>
+                            <div class="text-right">
+                                <h4 class="font-bold text-slate-800">PC / Desktop</h4>
+                                <span class="text-xs text-primary font-bold">Tauri Framework</span>
+                            </div>
+                        </div>
+                        <ul class="space-y-3 text-sm text-slate-600 mb-6">
+                            <li class="flex gap-2">✅ <span class="font-semibold">Siêu nhẹ:</span> File cài đặt chỉ
+                                ~5-10MB (so với 100MB+ của Electron).</li>
+                            <li class="flex gap-2">✅ <span class="font-semibold">Bảo mật cao:</span> Core bằng Rust giúp
+                                bảo vệ logic chặn mạng khỏi bị can thiệp.</li>
+                            <li class="flex gap-2">✅ <span class="font-semibold">Tận dụng Web:</span> UI viết bằng
+                                React/Tailwind giúp thiết kế hiện đại.</li>
+                        </ul>
+                        <div class="p-4 bg-slate-50 rounded-xl text-[11px] font-mono text-slate-500">
+                            // Logic chặn hệ thống qua Rust <br>
+                            tauri::command { <br>
+                            &nbsp;&nbsp;update_hosts_file(sites: Vec&lt;String&gt;); <br>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Mobile Stack -->
+                    <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm tech-card transition-all">
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="p-4 bg-blue-500 rounded-2xl text-white text-2xl">Flutter</div>
+                            <div class="text-right">
+                                <h4 class="font-bold text-slate-800">Android / iOS</h4>
+                                <span class="text-xs text-secondary font-bold">Google Framework</span>
+                            </div>
+                        </div>
+                        <ul class="space-y-3 text-sm text-slate-600 mb-6">
+                            <li class="flex gap-2">✅ <span class="font-semibold">60 FPS:</span> Giao diện mượt mà tuyệt
+                                đối cho cả 2 hệ điều hành.</li>
+                            <li class="flex gap-2">✅ <span class="font-semibold">VpnService:</span> Khả năng gọi các hàm
+                                hệ thống sâu của Android/iOS.</li>
+                            <li class="flex gap-2">✅ <span class="font-semibold">Single Codebase:</span> Viết một lần
+                                cho cả iPhone và Samsung.</li>
+                        </ul>
+                        <div class="p-4 bg-slate-50 rounded-xl text-[11px] font-mono text-slate-500">
+                            // Gọi MethodChannel để bật VPN chặn mạng <br>
+                            static const platform = MethodChannel('blocker'); <br>
+                            await platform.invokeMethod('startVPN');
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-primary/5 p-8 rounded-3xl border border-primary/10">
+                    <h3 class="font-bold text-primary mb-4">Tại sao không dùng React Native hay Electron?</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-slate-600">
+                        <p><strong>Electron:</strong> Quá nặng nề và tiêu tốn RAM, không phù hợp cho một ứng dụng chạy
+                            ngầm liên tục như blocker.</p>
+                        <p><strong>React Native:</strong> Khó khăn hơn Flutter trong việc can thiệp sâu vào các Bridge
+                            hệ thống cần thiết cho việc cấu hình VPN/Network.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: BACKEND & SYNC -->
+            <section id="backend" class="section-view max-w-5xl mx-auto">
+                <div class="mb-10">
+                    <h2 class="text-4xl font-bold text-slate-800 mb-4">Đồng bộ hóa & Lưu trữ Cloud</h2>
+                    <p class="text-slate-600 text-lg leading-relaxed">
+                        Cốt lõi của việc đồng bộ hóa đa thiết bị là tốc độ và sự ổn định. Chúng tôi đề xuất giải pháp
+                        <strong>Serverless</strong> để giảm thiểu chi phí vận hành và tối đa hóa khả năng mở rộng.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+                    <div class="space-y-6">
+                        <div class="bg-white p-6 rounded-2xl border border-slate-100">
+                            <h4 class="font-bold text-slate-800 mb-2">Google Firebase Ecosystem</h4>
+                            <p class="text-sm text-slate-500 mb-4">Lựa chọn hàng đầu cho việc đồng bộ hóa dữ liệu thời
+                                gian thực mà không cần xây dựng WebSocket phức tạp.</p>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                                    <span class="text-xs font-bold text-slate-600">Auth</span>
+                                    <span class="text-xs text-slate-400">Firebase Authentication</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                                    <span class="text-xs font-bold text-slate-600">Database</span>
+                                    <span class="text-xs text-slate-400">Firestore (NoSQL)</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                                    <span class="text-xs font-bold text-slate-600">Storage</span>
+                                    <span class="text-xs text-slate-400">Cloud Storage (User Avatars)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl border border-slate-100">
+                            <h4 class="font-bold text-slate-800 mb-2">Cấu trúc dữ liệu Đồng bộ</h4>
+                            <div class="p-4 bg-slate-900 rounded-xl text-[11px] font-mono text-emerald-400">
+                                { <br>
+                                &nbsp;&nbsp;"userId": "user_123", <br>
+                                &nbsp;&nbsp;"restrictedSites": [ <br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;{"url": "facebook.com", "limit": "30m"}, <br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;{"url": "tiktok.com", "status": "blocked"} <br>
+                                &nbsp;&nbsp;], <br>
+                                &nbsp;&nbsp;"lastSync": "2023-10-27T10:00Z" <br>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="bg-white p-8 rounded-3xl border border-slate-100 flex flex-col items-center justify-center text-center">
+                        <h4 class="font-bold text-slate-800 mb-4">So sánh Tốc độ Đồng bộ</h4>
+                        <div class="chart-container">
+                            <canvas id="syncPerformanceChart"></canvas>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-6 italic">Firebase Realtime SDK giúp thay đổi trên Mobile
+                            phản ánh lên PC trong chưa đầy 200ms.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 4: NETWORK BLOCKING -->
+            <section id="network" class="section-view max-w-5xl mx-auto">
+                <div class="mb-10">
+                    <h2 class="text-4xl font-bold text-slate-800 mb-4">Cơ chế Chặn Mạng: "The Secret Sauce"</h2>
+                    <p class="text-slate-600 text-lg leading-relaxed">
+                        Chặn mạng là phần thách thức nhất về mặt kỹ thuật vì mỗi hệ điều hành có một cơ chế bảo mật khác
+                        nhau.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-8 rounded-3xl border border-slate-100">
+                        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">PC (Windows/Mac)</h3>
+                        <div class="space-y-4">
+                            <div class="p-4 border-l-4 border-primary bg-slate-50">
+                                <h5 class="font-bold text-sm">Cấp độ 1: Hosts File</h5>
+                                <p class="text-xs text-slate-500">Dễ triển khai, nhẹ, nhưng dễ bị người dùng rành kỹ
+                                    thuật vượt qua.</p>
+                            </div>
+                            <div class="p-4 border-l-4 border-secondary bg-slate-50">
+                                <h5 class="font-bold text-sm">Cấp độ 2: Local DNS Proxy</h5>
+                                <p class="text-xs text-slate-500">Viết bằng Rust để điều hướng tất cả lưu lượng DNS về
+                                    một bộ lọc nội bộ.</p>
+                            </div>
+                            <div class="p-4 border-l-4 border-accent bg-slate-50">
+                                <h5 class="font-bold text-sm">Cấp độ 3: Web Extension</h5>
+                                <p class="text-xs text-slate-500">Chặn chính xác từng URL trong trình duyệt, cho phép
+                                    hiển thị trang "Blocked" đẹp mắt.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-8 rounded-3xl border border-slate-100">
+                        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">Mobile (iOS/Android)</h3>
+                        <div class="space-y-4">
+                            <div class="p-4 border-l-4 border-primary bg-slate-50">
+                                <h5 class="font-bold text-sm">Local VPN Service</h5>
+                                <p class="text-xs text-slate-500">Tạo một VPN "giả" ngay trên máy (không gửi dữ liệu đi
+                                    đâu). Tất cả gói tin đi qua bộ lọc này.</p>
+                            </div>
+                            <div class="p-4 border-l-4 border-secondary bg-slate-50">
+                                <h5 class="font-bold text-sm">Network Extension (iOS)</h5>
+                                <p class="text-xs text-slate-500">Sử dụng Apple NEFilterDataProvider để chặn các luồng
+                                    dữ liệu ở cấp hệ thống.</p>
+                            </div>
+                            <div class="p-4 border-l-4 border-accent bg-slate-50">
+                                <h5 class="font-bold text-sm">Accessibility API</h5>
+                                <p class="text-xs text-slate-500">Dùng để đọc URL hiện tại của trình duyệt Chrome/Safari
+                                    và tự động đóng tab nếu vi phạm.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Confirmation & Logic -->
+    <script>
+        const state = { currentSection: 'overview' };
+
+        function navigateTo(sectionId) {
+            state.currentSection = sectionId;
+            document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+            document.getElementById(sectionId).classList.add('active');
+            document.getElementById(`nav-${sectionId}`).classList.add('active');
+
+            if (window.innerWidth < 768) closeMobileMenu();
+        }
+
+        // --- Charts Initialization ---
+        window.onload = function () {
+            initSyncFlowChart();
+            initSyncPerformanceChart();
+        }
+
+        function initSyncFlowChart() {
+            const ctx = document.getElementById('syncFlowChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Sáng', 'Trưa', 'Chiều', 'Tối'],
+                    datasets: [{
+                        label: 'Lưu lượng Đồng bộ (Kbs)',
+                        data: [12, 19, 15, 25],
+                        borderColor: '#4F46E5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { display: false }, x: { grid: { display: false } } }
+                }
+            });
+        }
+
+        function initSyncPerformanceChart() {
+            const ctx = document.getElementById('syncPerformanceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Firebase', 'REST API', 'GraphQL', 'Long Polling'],
+                    datasets: [{
+                        label: 'Độ trễ (ms)',
+                        data: [150, 450, 400, 1200],
+                        backgroundColor: ['#10B981', '#94A3B8', '#94A3B8', '#F59E0B'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: { x: { display: false }, y: { grid: { display: false } } }
+                }
+            });
+        }
+
+        function closeMobileMenu() {
+            // Logic for mobile sidebar could go here if implemented as overlay
+        }
+    </script>
+
+    <!-- Visualization & Content Choices:
+         1. Sơ đồ Kiến trúc (HTML/CSS): Trực quan hóa mối quan hệ giữa PC, Mobile và Cloud. Sử dụng màu Indigo cho Primary để tạo cảm giác công nghệ cao.
+         2. Biểu đồ Sync Flow (Chart.js): Minh họa khả năng xử lý dữ liệu của hệ thống.
+         3. So sánh Tech Stack (Cards): Phân tích vì sao chọn Rust/Tauri thay vì Electron.
+         4. Biểu đồ Bar Ngang (Chart.js): So sánh hiệu suất của Firebase với các phương pháp khác để củng cố lựa chọn Tech Stack.
+         5. Mã giả (Code Blocks): Thêm tính chân thực cho bản kế hoạch kỹ thuật.
+
+         CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+</body>
+
+</html>

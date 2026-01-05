@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindfulBlock: Detailed SRS & SDD Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f4f7f5',
+                            100: '#e1e9e3',
+                            500: '#52796f',
+                            600: '#354f52',
+                            900: '#2f3e46',
+                        },
+                        accent: '#e29578',
+                        cloud: '#4f46e5'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .use-case-step:before {
+            content: '';
+            position: absolute;
+            left: -1.25rem;
+            top: 0.5rem;
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background-color: #52796f;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 280px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .active-tab-btn {
+            border-bottom: 3px solid #52796f;
+            color: #354f52;
+            font-weight: 700;
+        }
+
+        /* Sequence Diagram Styling */
+        .sequence-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: repeating-linear-gradient(to bottom, #cbd5e1 0, #cbd5e1 10px, transparent 10px, transparent 20px);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 0;
+        }
+
+        .message-arrow {
+            position: relative;
+            height: 48px;
+            margin: 24px 0;
+            display: flex;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .arrow-line {
+            height: 2px;
+            background-color: #64748b;
+            flex-grow: 1;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .arrow-head-right::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -4px;
+            border-left: 10px solid #64748b;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+        }
+
+        .data-package {
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            background: #fff;
+            padding: 2px 10px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .step-active {
+            animation: pulse-border 2s infinite;
+        }
+
+        @keyframes pulse-border {
+
+            0%,
+            100% {
+                border-color: #cbd5e1;
+            }
+
+            50% {
+                border-color: #4f46e5;
+                box-shadow: 0 0 15px rgba(79, 70, 229, 0.3);
+            }
+        }
+
+        .tech-tag {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body class="bg-brand-50 text-brand-900 font-sans leading-relaxed">
+
+    <!-- 
+        Application Structure Plan:
+        - Hệ thống tài liệu chia làm 3 trục chính: Đặc tả Yêu cầu (SRS), Thiết kế Chi tiết (SDD) và Kịch bản Sử dụng (Use Cases).
+        - SRS: Tập trung vào "Cái gì" (What) - Các ràng buộc về tính năng và hiệu năng.
+        - SDD: Tập trung vào "Làm thế nào" (How) - Cấu trúc dữ liệu, thuật toán đồng bộ, kiến trúc đa nền tảng.
+        - Use Cases: Mô phỏng quy trình nghiệp vụ chi tiết, đặc biệt là luồng Đồng bộ và Luồng Lực cản.
+    -->
+
+    <div class="max-w-6xl mx-auto px-4 py-10">
+        <header class="mb-12 border-b border-brand-100 pb-10 flex flex-col md:flex-row justify-between items-end gap-6">
+            <div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span
+                        class="bg-brand-600 text-white p-2 rounded-lg text-xs font-bold uppercase tracking-tighter">Blueprint
+                        v3</span>
+                    <h1 class="text-4xl font-extrabold text-brand-600 font-serif">MindfulBlock Technical Docs</h1>
+                </div>
+                <p class="text-brand-500 text-lg">Hệ thống quản lý sự tập trung đa nền tảng & Đồng bộ thời gian thực</p>
+            </div>
+            <div class="flex gap-2 bg-white p-1.5 rounded-xl border border-brand-100 shadow-sm overflow-hidden">
+                <button onclick="switchTab('srs')" id="btn-srs"
+                    class="tab-btn px-5 py-2.5 rounded-lg active-tab-btn transition-all text-sm">1. Đặc tả SRS</button>
+                <button onclick="switchTab('sdd')" id="btn-sdd"
+                    class="tab-btn px-5 py-2.5 rounded-lg transition-all text-sm">2. Thiết kế SDD</button>
+                <button onclick="switchTab('use-cases')" id="btn-use-cases"
+                    class="tab-btn px-5 py-2.5 rounded-lg transition-all text-sm">3. Chi tiết Use Cases</button>
+            </div>
+        </header>
+
+        <!-- TAB: SRS (Yêu cầu) -->
+        <div id="srs" class="tab-content active space-y-12">
+            <section class="bg-white p-8 rounded-3xl shadow-sm border border-brand-100">
+                <h2 class="text-2xl font-bold text-brand-600 mb-8 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded bg-brand-50 flex items-center justify-center text-sm">01</span>
+                    Yêu cầu Chức năng Hệ thống
+                </h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="font-bold text-lg mb-3 text-brand-900 border-l-4 border-accent pl-4">FR-01:
+                                Engine Lực cản (Friction)</h3>
+                            <p class="text-sm text-brand-500 mb-4 leading-relaxed">Hệ thống phải triển khai "Soft Block"
+                                thay vì chỉ chặn cứng, buộc người dùng phải tương tác có ý thức trước khi truy cập.</p>
+                            <ul class="space-y-3 text-sm">
+                                <li class="flex gap-3">
+                                    <span class="text-brand-600 font-bold">REQ-01:</span>
+                                    <span>Tự động nhận diện DNS query/HTTP request đến danh sách đen trong <
+                                            100ms.</span>
+                                </li>
+                                <li class="flex gap-3">
+                                    <span class="text-brand-600 font-bold">REQ-02:</span>
+                                    <span>Cung cấp 3 loại thử thách: Chờ đợi (5-30s), Giải toán, hoặc Gõ văn bản cam
+                                        kết.</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg mb-3 text-brand-900 border-l-4 border-brand-500 pl-4">FR-02:
+                                Quản lý Tập trung</h3>
+                            <ul class="space-y-3 text-sm">
+                                <li class="flex gap-3">
+                                    <span class="text-brand-600 font-bold">REQ-03:</span>
+                                    <span>Một tài khoản quản lý tối đa 5 thiết bị đồng thời.</span>
+                                </li>
+                                <li class="flex gap-3">
+                                    <span class="text-brand-600 font-bold">REQ-04:</span>
+                                    <span>Đồng bộ 2 chiều (Bidirectional) tất cả quy tắc chặn ngay lập tức.</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="bg-brand-50 p-8 rounded-2xl flex flex-col justify-center">
+                        <h4 class="font-bold text-sm mb-6 text-center text-brand-600 uppercase tracking-widest">Ma trận
+                            Ưu tiên Yêu cầu</h4>
+                        <div class="chart-container">
+                            <canvas id="priorityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-white p-8 rounded-3xl shadow-sm border border-brand-100">
+                <h2 class="text-2xl font-bold text-brand-600 mb-8 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded bg-brand-50 flex items-center justify-center text-sm">02</span>
+                    Yêu cầu Phi chức năng (NFR)
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="p-6 bg-brand-50 rounded-2xl border border-brand-100">
+                        <h4 class="font-bold text-brand-900 mb-3">Hiệu năng (Performance)</h4>
+                        <p class="text-xs text-brand-500">Mức chiếm dụng CPU không quá 1.5% khi chạy ngầm trên Desktop.
+                            Pin mobile không hao tổn quá 1% mỗi 12h.</p>
+                    </div>
+                    <div class="p-6 bg-brand-50 rounded-2xl border border-brand-100">
+                        <h4 class="font-bold text-brand-900 mb-3">Tính sẵn sàng (Availability)</h4>
+                        <p class="text-xs text-brand-500">Hệ thống chặn phải hoạt động 100% thời gian ngay cả khi mất
+                            kết nối mạng (Local Cache Engine).</p>
+                    </div>
+                    <div class="p-6 bg-brand-50 rounded-2xl border border-brand-100">
+                        <h4 class="font-bold text-brand-900 mb-3">Bảo mật (Security)</h4>
+                        <p class="text-xs text-brand-500">Toàn bộ logs vi phạm phải được mã hóa AES-256 trước khi lưu
+                            trữ hoặc truyền tải.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- TAB: SDD (Thiết kế) -->
+        <div id="sdd" class="tab-content space-y-12">
+            <section class="bg-white p-8 rounded-3xl shadow-sm border border-brand-100">
+                <h2 class="text-2xl font-bold text-brand-600 mb-8 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded bg-brand-50 flex items-center justify-center text-sm">03</span>
+                    Kiến trúc Hệ thống & Cơ sở dữ liệu
+                </h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <div class="space-y-6">
+                        <h3 class="font-bold text-lg text-brand-900">Thiết kế Xử lý Xung đột (Conflict Resolution)</h3>
+                        <div
+                            class="p-5 bg-brand-900 rounded-2xl font-mono text-[11px] text-emerald-400 leading-relaxed shadow-xl">
+                            <span class="text-slate-500">// Chiến lược Versioning đa thiết bị</span><br>
+                            const syncEngine = (localDoc, cloudDoc) => {<br>
+                            &nbsp;&nbsp;if (cloudDoc.v > localDoc.v) {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;return applyRemoteUpdate(cloudDoc); <span class="text-slate-500">//
+                                Update cục bộ</span><br>
+                            &nbsp;&nbsp;} else if (localDoc.v > cloudDoc.v) {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;return pushLocalChanges(localDoc); <span class="text-slate-500">//
+                                Ghi đè Cloud</span><br>
+                            &nbsp;&nbsp;} else {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;return 'UP_TO_DATE';<br>
+                            &nbsp;&nbsp;}<br>
+                            }
+                        </div>
+                        <p class="text-sm text-brand-500 italic">Hệ thống sử dụng Version Tag kết hợp Server Timestamp
+                            để đảm bảo tính nhất quán của dữ liệu (Consistency).</p>
+                    </div>
+                    <div class="space-y-6">
+                        <h3 class="font-bold text-lg text-brand-900">Mô hình thực thể (Database Schema)</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white border border-brand-100 p-4 rounded-xl shadow-sm">
+                                <h4 class="text-xs font-bold text-brand-600 mb-2 font-mono">Collection: Rules</h4>
+                                <ul class="text-[10px] space-y-1 text-slate-500 font-mono">
+                                    <li>- rule_id: PK</li>
+                                    <li>- pattern: string</li>
+                                    <li>- type: ENUM</li>
+                                    <li>- v: integer</li>
+                                    <li>- t: timestamp</li>
+                                </ul>
+                            </div>
+                            <div class="bg-white border border-brand-100 p-4 rounded-xl shadow-sm">
+                                <h4 class="text-xs font-bold text-brand-600 mb-2 font-mono">Collection: Analytics</h4>
+                                <ul class="text-[10px] space-y-1 text-slate-500 font-mono">
+                                    <li>- log_id: PK</li>
+                                    <li>- u_id: FK</li>
+                                    <li>- event: ENUM</li>
+                                    <li>- duration: int</li>
+                                    <li>- reason: text</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-white p-8 rounded-3xl shadow-sm border border-brand-100">
+                <h2 class="text-2xl font-bold text-brand-600 mb-6">Thiết kế Chặn theo nền tảng</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="p-6 bg-brand-50 rounded-2xl">
+                        <h4 class="font-bold text-brand-900 mb-3 flex items-center gap-2">PC (Rust Core) <span
+                                class="tech-tag">TAURI</span></h4>
+                        <p class="text-sm text-brand-500 mb-4">Sử dụng <strong>DNS Sinkholing</strong> nội bộ kết hợp
+                            với việc sửa đổi file `/etc/hosts` có đặc quyền System. Đối với DNS-over-HTTPS (DoH), app
+                            cài đặt một Local CA để phân tích gói tin.</p>
+                    </div>
+                    <div class="p-6 bg-brand-50 rounded-2xl">
+                        <h4 class="font-bold text-brand-900 mb-3 flex items-center gap-2">Mobile (Dart/Kotlin) <span
+                                class="tech-tag">FLUTTER</span></h4>
+                        <p class="text-sm text-brand-500 mb-4">Triển khai <strong>VpnService (Android)</strong> và
+                            <strong>Network Extension (iOS)</strong>. Tạo một hầm VPN cục bộ (loopback) để lọc toàn bộ
+                            DNS query mà không gửi dữ liệu ra ngoài.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- TAB: USE CASES -->
+        <div id="use-cases" class="tab-content space-y-12">
+            <!-- USE CASE 01 -->
+            <section class="bg-white p-10 rounded-3xl shadow-sm border border-brand-100">
+                <div class="flex items-center gap-4 mb-10">
+                    <span
+                        class="bg-accent text-white w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg shadow-accent/30">01</span>
+                    <div>
+                        <h2 class="text-2xl font-extrabold text-brand-600">Luồng Thực thi Lực cản (Friction Flow)</h2>
+                        <p class="text-sm text-brand-500">Mô tả cách hệ thống đánh chặn và tương tác với ý chí người
+                            dùng.</p>
+                    </div>
+                </div>
+
+                <div class="relative ml-6 border-l-2 border-brand-100 pl-10 space-y-12 py-4">
+                    <div class="use-case-step relative">
+                        <h4 class="font-bold text-brand-900 text-lg">B1: Đánh chặn DNS/HTTP</h4>
+                        <p class="text-sm text-brand-500">Hệ thống bắt gói tin yêu cầu đến domain bị chặn. Thay vì drop
+                            gói tin, nó trả về IP Local `127.0.0.1` (trên Desktop) hoặc mở WebView nội bộ (trên Mobile).
+                        </p>
+                    </div>
+                    <div class="use-case-step relative">
+                        <h4 class="font-bold text-brand-900 text-lg">B2: Kích hoạt Giao diện Thử thách</h4>
+                        <p class="text-sm text-brand-500">Trình duyệt hiển thị trang `friction.html`. Người dùng không
+                            thể tắt trang này nếu chưa hoàn thành hoặc đóng trình duyệt.</p>
+                    </div>
+                    <div class="use-case-step relative">
+                        <h4 class="font-bold text-brand-900 text-lg">B3: Xử lý Thử thách & Ý định</h4>
+                        <p class="text-sm text-brand-500">Người dùng giải 1 bài toán hoặc đợi 15 giây. Sau đó, họ phải
+                            nhập lý do: <i>"Tôi đang thực sự mệt mỏi và cần nghỉ 5 phút"</i>.</p>
+                    </div>
+                    <div class="use-case-step relative bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100">
+                        <h4 class="font-bold text-emerald-800 text-lg">B4: Cấp quyền Tạm thời (Grace Period)</h4>
+                        <p class="text-sm text-emerald-700">App cập nhật bảng định tuyến tạm thời trong bộ nhớ RAM, cho
+                            phép domain đó hoạt động trong 10-15 phút. Hết thời gian, luồng quay lại B1.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- USE CASE 02 -->
+            <section class="bg-white p-10 rounded-3xl shadow-sm border border-brand-100 overflow-hidden">
+                <div class="flex items-center gap-4 mb-10">
+                    <span
+                        class="bg-cloud text-white w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg shadow-cloud/30">02</span>
+                    <div>
+                        <h2 class="text-2xl font-extrabold text-brand-600">Đồng bộ Đa thiết bị (Real-time Sync)</h2>
+                        <p class="text-sm text-brand-500">Phân tích luồng dữ liệu trình tự giữa hai thiết bị và đám mây.
+                        </p>
+                    </div>
+                </div>
+
+                <div
+                    class="relative min-h-[500px] mt-16 bg-slate-50/50 p-8 rounded-3xl border border-slate-100 shadow-inner">
+                    <!-- Actors Header -->
+                    <div class="grid grid-cols-3 gap-4 mb-12 text-center relative z-10">
+                        <div class="flex flex-col items-center">
+                            <div
+                                class="w-20 h-20 bg-brand-900 text-white rounded-3xl flex items-center justify-center text-3xl mb-3 shadow-xl">
+                                📱</div>
+                            <span class="font-bold text-slate-700">Device A (Mobile)</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div
+                                class="w-20 h-20 bg-cloud text-white rounded-full flex items-center justify-center text-3xl mb-3 shadow-xl shadow-cloud/20">
+                                ☁️</div>
+                            <span class="font-bold text-slate-700">Firebase Cloud</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div
+                                class="w-20 h-20 bg-brand-900 text-white rounded-3xl flex items-center justify-center text-3xl mb-3 shadow-xl">
+                                💻</div>
+                            <span class="font-bold text-slate-700">Device B (PC)</span>
+                        </div>
+                    </div>
+
+                    <!-- Vertical Lines -->
+                    <div class="absolute top-28 bottom-0 left-[16.66%] sequence-line"></div>
+                    <div class="absolute top-28 bottom-0 left-[50%] sequence-line"></div>
+                    <div class="absolute top-28 bottom-0 left-[83.33%] sequence-line"></div>
+
+                    <!-- Sequence Messages -->
+                    <div class="space-y-16 py-6 relative z-10">
+                        <div class="grid grid-cols-6 items-center">
+                            <div class="col-start-2 col-span-2 message-arrow">
+                                <div class="data-package">1. Add Block: "facebook.com" (v=1)</div>
+                                <div class="arrow-line arrow-head-right"></div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-6 items-center">
+                            <div class="col-start-3 col-span-2 flex justify-center">
+                                <div
+                                    class="bg-white border-2 border-cloud p-4 rounded-xl text-[11px] font-mono shadow-md step-active text-center">
+                                    SERVER:<br>Verify Auth &<br>Update Firestore
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-6 items-center">
+                            <div class="col-start-4 col-span-2 message-arrow">
+                                <div class="data-package">2. Sync Event: {site: "fb", v:1}</div>
+                                <div class="arrow-line arrow-head-right"></div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-6 items-center">
+                            <div class="col-start-5 col-span-1 flex flex-col items-center gap-2">
+                                <div class="bg-emerald-100 text-emerald-800 p-2 rounded text-[10px] font-bold">
+                                    RE-FILTERING</div>
+                                <div class="text-[9px] text-slate-400 font-mono">Hosts updated!</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm">
+                    <div class="bg-brand-50 p-6 rounded-2xl border border-brand-100">
+                        <h4 class="font-bold mb-3">Xử lý Ngoại lệ (Edge Case: Offline)</h4>
+                        <p class="text-brand-500 leading-relaxed">Nếu Device B ngoại tuyến, Firebase sẽ lưu sự kiện vào
+                            <i>Offline Queue</i>. Ngay khi có mạng, SDK thực hiện 'Resync' bằng cách so sánh version tag
+                            và áp dụng thay đổi muộn.</p>
+                    </div>
+                    <div class="bg-brand-50 p-6 rounded-2xl border border-brand-100">
+                        <h4 class="font-bold mb-3">Tối ưu hóa Băng thông</h4>
+                        <p class="text-brand-500 leading-relaxed">Sử dụng <strong>FieldMasks</strong> để chỉ gửi những
+                            thay đổi nhỏ (ví dụ: chỉ gửi URL mới thay vì toàn bộ danh sách 100 web), giúp tiết kiệm dữ
+                            liệu di động.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab-btn'));
+
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById(`btn-${tabId}`).classList.add('active-tab-btn');
+        }
+
+        window.onload = function () {
+            const ctx = document.getElementById('priorityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Bảo mật', 'Hiệu năng', 'Đồng bộ', 'Giao diện', 'Sự ổn định'],
+                    datasets: [{
+                        label: 'Trọng số thiết kế',
+                        data: [90, 82, 98, 70, 95],
+                        backgroundColor: 'rgba(82, 121, 111, 0.2)',
+                        borderColor: '#52796f',
+                        pointBackgroundColor: '#354f52',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { display: false },
+                            grid: { color: '#e2e8f0' }
+                        }
+                    },
+                    plugins: { legend: { display: false } },
+                    maintainAspectRatio: false
+                }
+            });
+        };
+    </script>
+
+    <!-- 
+        Visualization & Content Choices:
+        - Radar Chart: Minh họa sự đánh đổi (trade-off) giữa các yếu tố kỹ thuật, trong đó Đồng bộ (Sync) và Ổn định (Stability) được ưu tiên cao nhất.
+        - Sequence Diagram (HTML/CSS): Thay vì dùng ảnh tĩnh hay Mermaid, việc tự xây dựng sơ đồ giúp thể hiện rõ luồng dữ liệu 4 bước giữa Mobile, Cloud và PC với các hiệu ứng thị giác chuyên nghiệp.
+        - Code Snippet: Mô phỏng logic Rust/JS cho việc xử lý xung đột dữ liệu (Versioning), đây là phần quan trọng nhất của SDD cho hệ thống đồng bộ.
+        - Step-by-step Use Case: Phân tích kỹ thuật sâu về cơ chế Đánh chặn (Hijacking) và Grace Period.
+        
+        CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+</body>
+
+</html>

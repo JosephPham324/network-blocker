@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindfulBlock: Hệ sinh thái Cai nghiện Kỹ thuật số</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Lora:ital,wght@0,400;0,600;1,400&display=swap"
+        rel="stylesheet">
+
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Nền: Trung tính ấm (#FDFCF8) -->
+    <!-- Văn bản chính: Đá phiến đậm (#334155) -->
+    <!-- Nhấn: Xanh Sage (#84A98C), San hô nhạt (#E29578), Xanh rêu nhẹ (#A5A58D) -->
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bg: '#FDFCF8',
+                        surface: '#F4F1EA',
+                        surfaceHighlight: '#EBE7DE',
+                        primary: '#354F52',
+                        secondary: '#52796F',
+                        accent: '#E29578',
+                        textMain: '#2F3E46',
+                        textLight: '#5C6B73'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Lora', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFCF8;
+            color: #2F3E46;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Lora', serif;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+            height: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        .nav-item.active {
+            background-color: #EBE7DE;
+            border-left: 4px solid #52796F;
+            font-weight: 600;
+        }
+
+        .section-view {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .section-view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .friction-btn:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+
+<body class="flex flex-col h-screen overflow-hidden text-textMain">
+
+    <!-- Application Structure Plan: 
+         Bố cục: Sidebar điều hướng bên trái và vùng nội dung chính bên phải.
+         Lý do: Cấu trúc Dashboard giúp người dùng khám phá các "mô-đun" ý tưởng một cách logic: từ hiểu vấn đề (Dữ liệu) đến cách giải quyết (Cơ chế chặn) và duy trì động lực (Game hóa).
+         Dòng chảy: 
+         1. Tổng quan: Phân tích thực trạng nghiện kỹ thuật số.
+         2. Phòng thí nghiệm can thiệp: Trải nghiệm thực tế các loại "lực cản".
+         3. Thống kê chuyên sâu: Các loại dữ liệu cần thu thập để hiểu hành vi.
+         4. Hệ sinh thái thói quen: Phần thưởng và sự tiến bộ.
+    -->
+
+    <!-- Header Mobile -->
+    <header class="md:hidden flex items-center justify-between p-4 bg-surface border-b border-surfaceHighlight">
+        <div class="text-xl font-bold font-serif text-primary">MindfulBlock</div>
+        <button id="mobile-menu-btn" class="text-primary focus:outline-none text-2xl">&#9776;</button>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden relative">
+
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar"
+            class="absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 w-72 bg-surface border-r border-surfaceHighlight flex flex-col transition-transform duration-300 z-20 shadow-lg md:shadow-none">
+            <div class="p-6 hidden md:block">
+                <h1 class="text-2xl font-bold font-serif text-primary">MindfulBlock</h1>
+                <p class="text-xs text-textLight mt-1 uppercase tracking-widest">Ý tưởng Sản phẩm v1.0</p>
+            </div>
+
+            <nav class="flex-1 px-4 py-4 space-y-2">
+                <button onclick="navigateTo('dashboard')"
+                    class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-surfaceHighlight transition-colors flex items-center gap-3 active"
+                    id="nav-dashboard">
+                    <span>&#128202;</span> Tổng quan & Mục tiêu
+                </button>
+                <button onclick="navigateTo('mechanics')"
+                    class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-surfaceHighlight transition-colors flex items-center gap-3"
+                    id="nav-mechanics">
+                    <span>&#128683;</span> Cơ chế Can thiệp
+                </button>
+                <button onclick="navigateTo('analytics')"
+                    class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-surfaceHighlight transition-colors flex items-center gap-3"
+                    id="nav-analytics">
+                    <span>&#129488;</span> Thống kê chuyên sâu
+                </button>
+                <button onclick="navigateTo('gamification')"
+                    class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-surfaceHighlight transition-colors flex items-center gap-3"
+                    id="nav-gamification">
+                    <span>&#127793;</span> Thói quen & Phần thưởng
+                </button>
+            </nav>
+
+            <div class="p-6 border-t border-surfaceHighlight">
+                <div class="bg-white/50 p-3 rounded text-sm text-textLight italic">
+                    "Mục tiêu không chỉ là chặn, mà là hiểu chính mình."
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto bg-bg p-4 md:p-10" onclick="closeMobileMenu()">
+
+            <!-- SECTION 1: TỔNG QUAN -->
+            <section id="dashboard" class="section-view active max-w-6xl mx-auto">
+                <header class="mb-10">
+                    <h2 class="text-3xl font-serif font-bold text-primary mb-3">Cuộc khủng hoảng Tập trung Kỹ thuật số
+                    </h2>
+                    <p class="text-textLight max-w-3xl leading-relaxed text-lg">
+                        Phần này xác định vấn đề cốt lõi: việc chặn hoàn toàn thường thất bại vì nó chỉ giải quyết triệu
+                        chứng, không giải quyết cơn thèm.
+                        Dưới đây là mô phỏng "chế độ ăn uống kỹ thuật số" để trực quan hóa lý do tại sao chúng ta cần
+                        các tính năng nâng cao.
+                    </p>
+                </header>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-surfaceHighlight">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-semibold text-lg text-primary">Phân bổ thời gian hiện tại</h3>
+                            <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full font-medium">Dữ liệu mô
+                                phỏng</span>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="timeDistChart"></canvas>
+                        </div>
+                        <p class="mt-4 text-sm text-textLight italic border-t border-surfaceHighlight pt-4">
+                            <strong>Nhận định:</strong> "Doomscrolling" (Video ngắn) tàn phá khả năng tập trung sâu nặng
+                            nề hơn các loại hình giải trí truyền thống.
+                        </p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-surfaceHighlight">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-semibold text-lg text-primary">Tỉ lệ tái nghiện: Chặn cứng vs. Lực cản</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="effectivenessChart"></canvas>
+                        </div>
+                        <p class="mt-4 text-sm text-textLight italic border-t border-surfaceHighlight pt-4">
+                            <strong>Giả thuyết:</strong> Chặn cứng (Đường Đỏ) thường dẫn đến việc người dùng gỡ bỏ ứng
+                            dụng trong ức chế. Chặn có "Lực cản" (Đường Xanh) giúp xây dựng kỷ luật bền vững.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-surface p-6 rounded-xl border border-surfaceHighlight">
+                        <div class="text-3xl mb-3">&#128679;</div>
+                        <h4 class="font-bold text-primary mb-2">Lực cản thay vì Cưỡng chế</h4>
+                        <p class="text-sm text-textLight leading-relaxed">Thay vì "Truy cập bị từ chối", hãy yêu cầu 15
+                            giây thở sâu hoặc một thử thách giải đố.</p>
+                    </div>
+                    <div class="bg-surface p-6 rounded-xl border border-surfaceHighlight">
+                        <div class="text-3xl mb-3">&#129302;</div>
+                        <h4 class="font-bold text-primary mb-2">Nhận diện Ngữ cảnh</h4>
+                        <p class="text-sm text-textLight leading-relaxed">Chặn YouTube khi ở chế độ "Làm việc", nhưng
+                            cho phép khi ở chế độ "Học tập".</p>
+                    </div>
+                    <div class="bg-surface p-6 rounded-xl border border-surfaceHighlight">
+                        <div class="text-3xl mb-3">&#128200;</div>
+                        <h4 class="font-bold text-primary mb-2">Thống kê không Phán xét</h4>
+                        <p class="text-sm text-textLight leading-relaxed">Không chỉ hiển thị số giờ lãng phí, mà hãy
+                            khoe "Số giờ đã thu hồi" cho cuộc sống.</p>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- SECTION 2: CƠ CHẾ CAN THIỆP -->
+            <section id="mechanics" class="section-view max-w-5xl mx-auto">
+                <header class="mb-10">
+                    <h2 class="text-3xl font-serif font-bold text-primary mb-3">Kiến trúc Can thiệp</h2>
+                    <p class="text-textLight max-w-3xl text-lg">
+                        Làm thế nào để chặn hiệu quả? Chúng ta khám phá các cấp độ can thiệp khác nhau.
+                        Hãy thử **Bản mô phỏng** bên dưới để cảm nhận "Lực cản" thực tế.
+                    </p>
+                </header>
+
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-secondary border-opacity-20 mb-10">
+                    <h3 class="font-bold text-xl text-primary mb-6 border-b border-surfaceHighlight pb-4">Thử nghiệm:
+                        Lớp Lực cản Nhận thức</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                        <div>
+                            <p class="text-sm text-textLight mb-6">
+                                <strong>Khái niệm:</strong> Khi bạn cố gắng truy cập một trang bị chặn, đừng dựng một
+                                bức tường. Hãy dựng một rào cản nhỏ để bạn tự hỏi: "Mình có thực sự cần nó lúc này
+                                không?"
+                            </p>
+                            <div class="space-y-3">
+                                <button onclick="setFrictionMode('delay')"
+                                    class="friction-selector w-full px-5 py-4 border border-surfaceHighlight rounded-xl hover:bg-surface text-left flex justify-between items-center transition-all bg-surfaceHighlight font-semibold"
+                                    id="btn-mode-delay">
+                                    <span>&#9203; Tạm dừng Chánh niệm</span>
+                                    <span class="text-xs text-textLight">Chờ 5s</span>
+                                </button>
+                                <button onclick="setFrictionMode('cognitive')"
+                                    class="friction-selector w-full px-5 py-4 border border-surfaceHighlight rounded-xl hover:bg-surface text-left flex justify-between items-center transition-all"
+                                    id="btn-mode-cognitive">
+                                    <span>&#129504; Ngắt quãng Nhận thức</span>
+                                    <span class="text-xs text-textLight">Giải toán</span>
+                                </button>
+                                <button onclick="setFrictionMode('typing')"
+                                    class="friction-selector w-full px-5 py-4 border border-surfaceHighlight rounded-xl hover:bg-surface text-left flex justify-between items-center transition-all"
+                                    id="btn-mode-typing">
+                                    <span>&#9000; Tuyên bố Ý định</span>
+                                    <span class="text-xs text-textLight">Gõ cụm từ</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bg-slate-50 p-8 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col justify-center items-center text-center min-h-[300px] relative overflow-hidden shadow-inner">
+                            <div id="friction-content" class="w-full">
+                                <div class="text-5xl mb-4">&#128274;</div>
+                                <h4 class="font-bold text-primary text-xl mb-2">Trang web bị hạn chế</h4>
+                                <p class="text-sm text-textLight mb-8">Trang này nằm trong danh sách cần hạn chế của
+                                    bạn.</p>
+                                <button onclick="startFrictionTask()"
+                                    class="bg-primary text-white px-8 py-3 rounded-full shadow-md hover:bg-opacity-90 transition-all font-medium">
+                                    Vẫn muốn truy cập
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-xl border border-surfaceHighlight">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="bg-red-100 text-red-600 p-2 rounded-lg text-xl">&#128683;</span>
+                            <h4 class="font-bold text-textMain">Chế độ Hạt nhân</h4>
+                        </div>
+                        <p class="text-sm text-textLight">Khóa tuyệt đối, không thể ghi đè. Dùng cho các kỳ thi hoặc hạn
+                            chót quan trọng.</p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl border border-surfaceHighlight">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="bg-blue-100 text-blue-600 p-2 rounded-lg text-xl">&#128101;</span>
+                            <h4 class="font-bold text-textMain">Trách nhiệm xã hội</h4>
+                        </div>
+                        <p class="text-sm text-textLight">Để mở khóa, cần mật khẩu từ bạn bè hoặc gửi thông báo "tội
+                            lỗi" đến họ.</p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl border border-surfaceHighlight">
+                        <div class="text-xl mb-4 p-2 bg-purple-100 text-purple-600 rounded-lg inline-block">&#128179;
+                        </div>
+                        <h4 class="font-bold text-textMain">Phạt tài chính</h4>
+                        <p class="text-sm text-textLight">Tự động trừ 10.000đ vào quỹ từ thiện mỗi khi bạn cố tình phá
+                            rào cản.</p>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- SECTION 3: PHÂN TÍCH CHUYÊN SÂU -->
+            <section id="analytics" class="section-view max-w-6xl mx-auto">
+                <header class="mb-10">
+                    <h2 class="text-3xl font-serif font-bold text-primary mb-3">Mô đun Thống kê chuyên sâu</h2>
+                    <p class="text-textLight max-w-3xl text-lg">
+                        Vượt xa hơn khái niệm "Screen Time" thông thường. Để thay đổi thói quen, ta cần thấy được mô
+                        hình hành vi ẩn sau các con số.
+                    </p>
+                </header>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                    <div class="bg-white p-6 rounded-2xl border border-surfaceHighlight text-center">
+                        <div class="text-xs text-textLight uppercase tracking-widest mb-2">Lãng phí buổi sáng (6am-9am)
+                        </div>
+                        <div class="text-4xl font-bold text-primary mb-1">12 phút</div>
+                        <div class="text-sm text-green-600 flex items-center justify-center gap-1">
+                            <span>&#8595;</span> Giảm 45%
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-surfaceHighlight text-center">
+                        <div class="text-xs text-textLight uppercase tracking-widest mb-2">Tỉ lệ chặn thành công</div>
+                        <div class="text-4xl font-bold text-primary mb-1">68%</div>
+                        <div class="text-sm text-textLight italic">Bị cản bởi Lực cản nhận thức</div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-surfaceHighlight text-center">
+                        <div class="text-xs text-textLight uppercase tracking-widest mb-2">Chuỗi tập trung (Streak)
+                        </div>
+                        <div class="text-4xl font-bold text-primary mb-1">4 Ngày</div>
+                        <div class="text-sm text-blue-500 font-medium">Kỷ lục: 7 Ngày</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-surfaceHighlight">
+                        <h3 class="font-semibold text-lg text-primary mb-6">Bản đồ nhiệt: Điểm yếu theo giờ</h3>
+                        <div class="chart-container">
+                            <canvas id="heatmapChart"></canvas>
+                        </div>
+                        <p class="mt-6 text-sm text-textLight border-t border-surfaceHighlight pt-4">
+                            <strong>Tính năng đề xuất:</strong> Xác định "Vùng nguy hiểm". Người dùng này dễ nản lòng
+                            nhất vào lúc 10h tối. Ứng dụng sẽ tự động tăng cường lực cản vào khung giờ này.
+                        </p>
+                    </div>
+
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-surfaceHighlight">
+                        <h3 class="font-semibold text-lg text-primary mb-6">Phân loại Cơn thèm (Dữ liệu Nhật ký)</h3>
+                        <div class="space-y-6">
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-sm font-medium">Buồn chán / Trì hoãn</span>
+                                    <span class="font-bold">52%</span>
+                                </div>
+                                <div class="w-full bg-surface h-3 rounded-full overflow-hidden">
+                                    <div class="bg-red-400 h-full w-[52%]"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-sm font-medium">Lo âu / Sợ bỏ lỡ (FOMO)</span>
+                                    <span class="font-bold">28%</span>
+                                </div>
+                                <div class="w-full bg-surface h-3 rounded-full overflow-hidden">
+                                    <div class="bg-orange-400 h-full w-[28%]"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-sm font-medium">Công việc thực tế (Dương tính giả)</span>
+                                    <span class="font-bold">12%</span>
+                                </div>
+                                <div class="w-full bg-surface h-3 rounded-full overflow-hidden">
+                                    <div class="bg-blue-400 h-full w-[12%]"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="mt-8 text-sm text-textLight italic bg-bg p-4 rounded-lg">
+                            <strong>Ghi chép nhanh:</strong> Mỗi khi người dùng vượt qua lớp chặn, ứng dụng hỏi "Tại
+                            sao?". Dữ liệu này giúp người dùng nhận ra họ chỉ đang buồn chán chứ không thực sự cần thông
+                            tin.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- SECTION 4: GAME HÓA -->
+            <section id="gamification" class="section-view max-w-5xl mx-auto">
+                <header class="mb-10">
+                    <h2 class="text-3xl font-serif font-bold text-primary mb-3">Tái cấu trúc Phần thưởng Não bộ</h2>
+                    <p class="text-textLight max-w-3xl text-lg">
+                        Sự nghiện sống nhờ Dopamine. Để đối phó, ta cần những nguồn Dopamine lành mạnh thay thế.
+                    </p>
+                </header>
+
+                <div
+                    class="bg-secondary bg-opacity-10 p-10 rounded-2xl border border-secondary border-opacity-30 mb-10 text-center">
+                    <div class="text-7xl mb-6 animate-bounce">&#127795;</div>
+                    <h3 class="text-2xl font-serif font-bold text-primary mb-3">Khu vườn Kỹ thuật số</h3>
+                    <p class="text-textLight max-w-lg mx-auto mb-8 text-lg">
+                        Mỗi 30 phút tập trung sẽ nuôi dưỡng một cái cây ảo. Nếu bạn phá vỡ kỷ luật, cái cây sẽ héo úa.
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-6">
+                        <div class="bg-white p-5 rounded-xl shadow-sm w-36 border border-surfaceHighlight">
+                            <div class="text-3xl">&#127793;</div>
+                            <div class="text-xs text-textLight mt-2 font-medium">Mầm non (15p)</div>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl shadow-md w-36 border-2 border-secondary">
+                            <div class="text-3xl">&#127794;</div>
+                            <div class="text-xs text-secondary font-bold mt-2">Cây Thông (1h)</div>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl shadow-sm w-36 opacity-50 border border-surfaceHighlight">
+                            <div class="text-3xl">&#127809;</div>
+                            <div class="text-xs text-textLight mt-2">Cây Cổ thụ (4h)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-8 rounded-2xl border border-surfaceHighlight shadow-sm">
+                        <h4 class="font-bold text-textMain text-lg mb-4 flex items-center gap-2">
+                            <span>&#127915;</span> Kinh tế học Token
+                        </h4>
+                        <p class="text-sm text-textLight mb-6 leading-relaxed">
+                            Kiếm "Token Tập trung" khi duy trì kỷ luật. Dùng Token để mua:
+                        </p>
+                        <ul class="text-sm space-y-3">
+                            <li class="flex items-center gap-3 text-textMain">
+                                <span class="text-green-500 font-bold text-lg">&#10003;</span>
+                                10 phút lướt mạng "không tội lỗi"
+                            </li>
+                            <li class="flex items-center gap-3 text-textMain">
+                                <span class="text-green-500 font-bold text-lg">&#10003;</span>
+                                Quyên góp tiền thật cho từ thiện (từ quảng cáo)
+                            </li>
+                            <li class="flex items-center gap-3 text-textMain">
+                                <span class="text-green-500 font-bold text-lg">&#10003;</span>
+                                Giao diện cá nhân hóa cho ứng dụng
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white p-8 rounded-2xl border border-surfaceHighlight shadow-sm">
+                        <h4 class="font-bold text-textMain text-lg mb-4 flex items-center gap-2">
+                            <span>&#128200;</span> Sức mạnh của "Chuỗi"
+                        </h4>
+                        <p class="text-sm text-textLight mb-6 leading-relaxed">
+                            Trực quan hóa sự liên tục tạo ra áp lực tâm lý tích cực để duy trì thói quen.
+                        </p>
+                        <div class="flex justify-between mt-4">
+                            <div
+                                class="h-10 w-10 rounded-lg bg-green-500 flex items-center justify-center text-white font-bold">
+                                T2</div>
+                            <div
+                                class="h-10 w-10 rounded-lg bg-green-500 flex items-center justify-center text-white font-bold">
+                                T3</div>
+                            <div
+                                class="h-10 w-10 rounded-lg bg-green-500 flex items-center justify-center text-white font-bold">
+                                T4</div>
+                            <div
+                                class="h-10 w-10 rounded-lg bg-red-400 flex items-center justify-center text-white font-bold">
+                                T5</div>
+                            <div
+                                class="h-10 w-10 rounded-lg bg-green-500 flex items-center justify-center text-white font-bold">
+                                T6</div>
+                            <div
+                                class="h-10 w-10 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-300 font-bold">
+                                T7</div>
+                            <div
+                                class="h-10 w-10 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-300 font-bold">
+                                CN</div>
+                        </div>
+                        <p class="text-xs text-textLight mt-6 italic text-center">"Việc làm đứt chuỗi tạo cảm giác tồi
+                            tệ hơn là việc nhịn lướt web."</p>
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // --- Quản lý Trạng thái ---
+        const state = {
+            currentSection: 'dashboard',
+            frictionMode: 'delay',
+            chartsInitialized: false
+        };
+
+        // --- Điều hướng ---
+        function navigateTo(sectionId) {
+            state.currentSection = sectionId;
+
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('active', 'bg-surfaceHighlight', 'border-l-4', 'border-secondary', 'font-semibold');
+            });
+            const activeBtn = document.getElementById(`nav-${sectionId}`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            document.querySelectorAll('.section-view').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+
+            if (!state.chartsInitialized && (sectionId === 'dashboard' || sectionId === 'analytics')) {
+                initCharts();
+                state.chartsInitialized = true;
+            }
+        }
+
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        });
+
+        function closeMobileMenu() {
+            document.getElementById('sidebar').classList.add('-translate-x-full');
+        }
+
+        // --- Logic Mô phỏng Lực cản ---
+        const frictionContainer = document.getElementById('friction-content');
+
+        function setFrictionMode(mode) {
+            state.frictionMode = mode;
+            document.querySelectorAll('.friction-selector').forEach(el => {
+                el.classList.remove('bg-surfaceHighlight', 'font-semibold');
+            });
+            document.getElementById(`btn-mode-${mode}`).classList.add('bg-surfaceHighlight', 'font-semibold');
+            resetFrictionDemo();
+        }
+
+        function resetFrictionDemo() {
+            frictionContainer.innerHTML = `
+                <div class="text-5xl mb-4">&#128274;</div>
+                <h4 class="font-bold text-primary text-xl mb-2">Trang web bị hạn chế</h4>
+                <p class="text-sm text-textLight mb-8">Trang này nằm trong danh sách cần hạn chế của bạn.</p>
+                <button onclick="startFrictionTask()" class="bg-primary text-white px-8 py-3 rounded-full shadow-md hover:bg-opacity-90 transition-all font-medium">
+                    Vẫn muốn truy cập
+                </button>
+            `;
+        }
+
+        window.startFrictionTask = function () {
+            if (state.frictionMode === 'delay') runDelayTask();
+            else if (state.frictionMode === 'cognitive') runMathTask();
+            else if (state.frictionMode === 'typing') runTypingTask();
+        };
+
+        function runDelayTask() {
+            let timeLeft = 5;
+            frictionContainer.innerHTML = `
+                <div class="text-5xl mb-4 animate-pulse">&#9203;</div>
+                <h4 class="font-bold text-primary text-xl mb-2">Hít thở sâu...</h4>
+                <p class="text-sm text-textLight mb-6">Mở khóa sau <span id="timer" class="font-bold text-xl text-accent">${timeLeft}</span> giây</p>
+                <div class="w-full bg-gray-200 h-3 rounded-full overflow-hidden max-w-xs mx-auto">
+                    <div id="progress-bar" class="bg-accent h-full w-full transition-all duration-1000 ease-linear"></div>
+                </div>
+            `;
+            const interval = setInterval(() => {
+                timeLeft--;
+                const timerEl = document.getElementById('timer');
+                const progressEl = document.getElementById('progress-bar');
+                if (timerEl) timerEl.innerText = timeLeft;
+                if (progressEl) progressEl.style.width = `${(timeLeft / 5) * 100}%`;
+                if (timeLeft <= 0) {
+                    clearInterval(interval);
+                    showSuccess("Đã mở khóa. Bạn có thực sự muốn xem không?");
+                }
+            }, 1000);
+        }
+
+        function runMathTask() {
+            const n1 = Math.floor(Math.random() * 9) + 5;
+            const n2 = Math.floor(Math.random() * 9) + 5;
+            const ans = n1 * n2;
+            frictionContainer.innerHTML = `
+                <div class="text-5xl mb-4">&#129504;</div>
+                <h4 class="font-bold text-primary text-xl mb-2">Kiểm tra Nhận thức</h4>
+                <p class="text-sm text-textLight mb-6">Kết quả của ${n1} x ${n2} là bao nhiêu?</p>
+                <input type="number" id="math-input" class="border-2 border-surfaceHighlight p-3 rounded-xl w-32 text-center mb-6 text-xl" placeholder="?">
+                <br>
+                <button onclick="checkMath(${ans})" class="bg-secondary text-white px-8 py-2 rounded-full font-medium">Xác nhận</button>
+            `;
+        }
+
+        window.checkMath = function (correct) {
+            const val = parseInt(document.getElementById('math-input').value);
+            if (val === correct) showSuccess("Chính xác. Hãy sử dụng thời gian này hiệu quả.");
+            else {
+                document.getElementById('math-input').classList.add('border-red-400', 'bg-red-50');
+                document.getElementById('math-input').value = '';
+            }
+        }
+
+        function runTypingTask() {
+            const phrase = "Tôi đang chọn lãng phí thời gian";
+            frictionContainer.innerHTML = `
+                <div class="text-5xl mb-4">&#9000;</div>
+                <h4 class="font-bold text-primary text-xl mb-2">Tuyên bố Ý định</h4>
+                <p class="text-xs text-textLight mb-4 italic">Hãy gõ chính xác cụm từ sau:</p>
+                <p class="font-mono text-sm bg-gray-100 p-3 mb-6 rounded-lg font-bold">"${phrase}"</p>
+                <input type="text" id="type-input" class="border-2 border-surfaceHighlight p-3 rounded-xl w-full max-w-sm text-center mb-6" placeholder="Bắt đầu gõ...">
+                <br>
+                <button onclick="checkTyping('${phrase}')" class="bg-secondary text-white px-8 py-2 rounded-full font-medium">Kiểm tra</button>
+            `;
+        }
+
+        window.checkTyping = function (target) {
+            if (document.getElementById('type-input').value === target) showSuccess("Đã xác nhận. Truy cập được cấp phép.");
+            else document.getElementById('type-input').classList.add('border-red-400', 'bg-red-50');
+        }
+
+        function showSuccess(msg) {
+            frictionContainer.innerHTML = `
+                <div class="text-5xl mb-4 text-green-500">&#10003;</div>
+                <h4 class="font-bold text-primary text-xl mb-2">Truy cập thành công</h4>
+                <p class="text-sm text-textLight mb-8">${msg}</p>
+                <button onclick="resetFrictionDemo()" class="text-sm underline text-textLight hover:text-primary font-medium">Đặt lại mô phỏng</button>
+            `;
+        }
+
+        // --- Biểu đồ ---
+        function initCharts() {
+            const ctx1 = document.getElementById('timeDistChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Video ngắn', 'Mạng xã hội', 'Tin tức', 'Mua sắm', 'Công việc'],
+                    datasets: [{
+                        data: [45, 25, 10, 10, 10],
+                        backgroundColor: ['#E29578', '#FFDDD2', '#83C5BE', '#006D77', '#EDF6F9'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { boxWidth: 12, font: { size: 12 } } }
+                    }
+                }
+            });
+
+            const ctx2 = document.getElementById('effectivenessChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4', 'Tuần 8', 'Tuần 12'],
+                    datasets: [
+                        {
+                            label: 'Chặn cứng (Người dùng bỏ cuộc)',
+                            data: [100, 75, 40, 20, 10, 5],
+                            borderColor: '#E29578',
+                            tension: 0.4,
+                            fill: false
+                        },
+                        {
+                            label: 'Lực cản (Hình thành thói quen)',
+                            data: [100, 95, 88, 85, 90, 92],
+                            borderColor: '#52796F',
+                            tension: 0.4,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Tỉ lệ tuân thủ (%)' } }
+                    }
+                }
+            });
+
+            const ctx3 = document.getElementById('heatmapChart').getContext('2d');
+            new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: ['6h sáng', '9h sáng', '12h trưa', '3h chiều', '6h tối', '9h tối', '12h đêm'],
+                    datasets: [{
+                        label: 'Cường độ cơn thèm (0-10)',
+                        data: [2, 3, 5, 8, 4, 10, 7],
+                        backgroundColor: (ctx) => ctx.raw > 7 ? '#E29578' : '#83C5BE',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { display: false, max: 11 },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        window.onload = function () {
+            if (!state.chartsInitialized) initCharts();
+        };
+    </script>
+
+    <!-- Visualization & Content Choices:
+         1. Biểu đồ Doughnut: Phân tích các loại "rác" kỹ thuật số. Giúp người dùng thấy rõ kẻ thù chính (Short video).
+         2. Biểu đồ Đường: Chứng minh luận điểm về "Lực cản" (Friction) bền vững hơn "Chặn cứng".
+         3. Bản mô phỏng tương tác (JS): Phần quan trọng nhất. Thay vì nói, hãy cho người dùng thử cảm giác bị trì hoãn 5s hoặc giải toán. 
+            Điều này thể hiện rõ giá trị UX của sản phẩm.
+         4. Biểu đồ Cột: Trực quan hóa "Vùng nguy hiểm" để giới thiệu tính năng chặn thông minh theo khung giờ.
+         CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+</body>
+
+</html>
