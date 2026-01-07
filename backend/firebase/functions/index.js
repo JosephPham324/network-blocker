@@ -1,16 +1,23 @@
 /** Location: /backend/firebase/functions/index.js **/
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const admin = require("firebase-admin");
+
 admin.initializeApp();
 
+/**
+ * Cloud Function: Tự động chuẩn hóa domain và tăng số phiên bản (v)
+ * Đã được định dạng để vượt qua kiểm tra ESLint (max-len, spacing).
+ */
 exports.normalizeRule = onDocumentCreated("artifacts/{appId}/users/{userId}/block_configs/{docId}", async (event) => {
   const data = event.data.data();
   if (!data.domain || data.normalized) return;
 
   try {
     let domain = data.domain.toLowerCase().trim();
+
     if (domain.includes("/")) {
-      domain = new URL(domain.startsWith("http") ? domain : `https://${domain}`).hostname;
+      const urlStr = domain.startsWith("http") ? domain : `https://${domain}`;
+      domain = new URL(urlStr).hostname;
     }
     domain = domain.replace("www.", "");
 

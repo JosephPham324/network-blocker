@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BlockRule",
+  "description": "Cấu trúc dữ liệu chuẩn cho một quy tắc chặn mạng trong hệ thống MindfulBlock",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "ID duy nhất của quy tắc (thường là Document ID trong Firestore)"
+    },
+    "domain": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)*\\.[a-z]{2,}$",
+      "description": "Tên miền cần chặn (ví dụ: facebook.com)"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["HARD", "FRICTION", "TIMED"],
+      "description": "Chế độ chặn: Chặn cứng, Tạo lực cản, hoặc Chặn theo giờ"
+    },
+    "friction_type": {
+      "type": "string",
+      "enum": ["MATH", "DELAY", "TYPING"],
+      "description": "Loại thử thách nếu mode là FRICTION"
+    },
+    "is_active": {
+      "type": "boolean",
+      "description": "Trạng thái kích hoạt của quy tắc"
+    },
+    "v": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version tag dùng để xử lý xung đột khi đồng bộ (Conflict Resolution)"
+    },
+    "updated_at": {
+      "type": "object",
+      "description": "Thời điểm cập nhật cuối cùng (Firestore ServerTimestamp)"
+    }
+  },
+  "required": ["id", "domain", "mode", "is_active", "v"]
+}
