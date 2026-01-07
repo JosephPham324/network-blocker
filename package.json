@@ -1,0 +1,19 @@
+{
+  "name": "mindful-block-monorepo",
+  "private": true,
+  "description": "Hệ sinh thái cai nghiện kỹ thuật số đa nền tảng",
+  "workspaces": [
+    "apps/*",
+    "shared/*",
+    "backend/*"
+  ],
+  "scripts": {
+    "pc:dev": "pnpm --filter pc tauri dev",
+    "pc:build": "pnpm --filter pc tauri build",
+    "mobile:dev": "cd apps/mobile && flutter run",
+    "backend:deploy": "cd backend/firebase && firebase deploy"
+  },
+  "devDependencies": {
+    "turbo": "latest"
+  }
+}
