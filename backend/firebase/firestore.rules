@@ -1,0 +1,13 @@
+rules_version = '2';
+service cloud.firestore {
+    match /databases/{database}/documents {
+        // Quy tắc bảo mật theo đúng cấu trúc artifact
+        match /artifacts/{appId}/users/{userId}/{collectionName}/{docId} {
+        // Chỉ chủ sở hữu UID mới có quyền đọc và ghi
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+
+        // Ràng buộc dữ liệu: Version tag (v) phải luôn tăng khi update
+        allow update: if request.resource.data.v >= resource.data.v;
+        }
+    }
+}
