@@ -1,7 +1,7 @@
 [package]
 name = "mindful-block"
 version = "1.0.0"
-description = "System-level network blocker for MindfulBlock"
+description = "Hệ thống chặn mạng chánh niệm"
 authors = ["Pham Nhat Quang"]
 edition = "2021"
 
@@ -9,10 +9,13 @@ edition = "2021"
 tauri-build = { version = "1.5", features = [] }
 
 [dependencies]
-tauri = { version = "1.5", features = ["shell-open"] }
+tauri = { version = "1.5", features = [ "api-all"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 is_elevated = "0.1"
+# Thêm log để thỏa mãn các ràng buộc nếu hệ thống tự động tìm kiếm
+log = "0.4" 
 
 [features]
+# Quan trọng: Đảm bảo không có feature nào trỏ tới lib.rs nếu không cần thiết
 custom-protocol = ["tauri/custom-protocol"]

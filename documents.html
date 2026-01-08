@@ -79,7 +79,6 @@
             font-weight: 700;
         }
 
-        /* Sequence Diagram Styling */
         .sequence-line {
             position: absolute;
             top: 0;
@@ -162,15 +161,6 @@
 </head>
 
 <body class="bg-brand-50 text-brand-900 font-sans leading-relaxed">
-
-    <!-- 
-        Application Structure Plan:
-        - Hệ thống tài liệu chia làm 3 trục chính: Đặc tả Yêu cầu (SRS), Thiết kế Chi tiết (SDD) và Kịch bản Sử dụng (Use Cases).
-        - SRS: Tập trung vào "Cái gì" (What) - Các ràng buộc về tính năng và hiệu năng.
-        - SDD: Tập trung vào "Làm thế nào" (How) - Cấu trúc dữ liệu, thuật toán đồng bộ, kiến trúc đa nền tảng.
-        - Use Cases: Mô phỏng quy trình nghiệp vụ chi tiết, đặc biệt là luồng Đồng bộ và Luồng Lực cản.
-    -->
-
     <div class="max-w-6xl mx-auto px-4 py-10">
         <header class="mb-12 border-b border-brand-100 pb-10 flex flex-col md:flex-row justify-between items-end gap-6">
             <div>
@@ -192,7 +182,7 @@
             </div>
         </header>
 
-        <!-- TAB: SRS (Yêu cầu) -->
+        <!-- TAB: SRS -->
         <div id="srs" class="tab-content active space-y-12">
             <section class="bg-white p-8 rounded-3xl shadow-sm border border-brand-100">
                 <h2 class="text-2xl font-bold text-brand-600 mb-8 flex items-center gap-3">
@@ -209,8 +199,9 @@
                             <ul class="space-y-3 text-sm">
                                 <li class="flex gap-3">
                                     <span class="text-brand-600 font-bold">REQ-01:</span>
-                                    <span>Tự động nhận diện DNS query/HTTP request đến danh sách đen trong <
-                                            100ms.</span>
+                                    <!-- SỬA LỖI: Dùng &lt; thay cho ký tự < -->
+                                    <span>Tự động nhận diện DNS query/HTTP request đến danh sách đen trong &lt;
+                                        100ms.</span>
                                 </li>
                                 <li class="flex gap-3">
                                     <span class="text-brand-600 font-bold">REQ-02:</span>
@@ -252,6 +243,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="p-6 bg-brand-50 rounded-2xl border border-brand-100">
                         <h4 class="font-bold text-brand-900 mb-3">Hiệu năng (Performance)</h4>
+                        <!-- SỬA LỖI: Tránh dùng < trực tiếp trong text -->
                         <p class="text-xs text-brand-500">Mức chiếm dụng CPU không quá 1.5% khi chạy ngầm trên Desktop.
                             Pin mobile không hao tổn quá 1% mỗi 12h.</p>
                     </div>
@@ -269,7 +261,7 @@
             </section>
         </div>
 
-        <!-- TAB: SDD (Thiết kế) -->
+        <!-- TAB: SDD -->
         <div id="sdd" class="tab-content space-y-12">
             <section class="bg-white p-8 rounded-3xl shadow-sm border border-brand-100">
                 <h2 class="text-2xl font-bold text-brand-600 mb-8 flex items-center gap-3">
@@ -283,10 +275,10 @@
                             class="p-5 bg-brand-900 rounded-2xl font-mono text-[11px] text-emerald-400 leading-relaxed shadow-xl">
                             <span class="text-slate-500">// Chiến lược Versioning đa thiết bị</span><br>
                             const syncEngine = (localDoc, cloudDoc) => {<br>
-                            &nbsp;&nbsp;if (cloudDoc.v > localDoc.v) {<br>
+                            &nbsp;&nbsp;if (cloudDoc.v &gt; localDoc.v) {<br>
                             &nbsp;&nbsp;&nbsp;&nbsp;return applyRemoteUpdate(cloudDoc); <span class="text-slate-500">//
                                 Update cục bộ</span><br>
-                            &nbsp;&nbsp;} else if (localDoc.v > cloudDoc.v) {<br>
+                            &nbsp;&nbsp;} else if (localDoc.v &gt; cloudDoc.v) {<br>
                             &nbsp;&nbsp;&nbsp;&nbsp;return pushLocalChanges(localDoc); <span class="text-slate-500">//
                                 Ghi đè Cloud</span><br>
                             &nbsp;&nbsp;} else {<br>
@@ -294,8 +286,6 @@
                             &nbsp;&nbsp;}<br>
                             }
                         </div>
-                        <p class="text-sm text-brand-500 italic">Hệ thống sử dụng Version Tag kết hợp Server Timestamp
-                            để đảm bảo tính nhất quán của dữ liệu (Consistency).</p>
                     </div>
                     <div class="space-y-6">
                         <h3 class="font-bold text-lg text-brand-900">Mô hình thực thể (Database Schema)</h3>
@@ -324,31 +314,10 @@
                     </div>
                 </div>
             </section>
-
-            <section class="bg-white p-8 rounded-3xl shadow-sm border border-brand-100">
-                <h2 class="text-2xl font-bold text-brand-600 mb-6">Thiết kế Chặn theo nền tảng</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="p-6 bg-brand-50 rounded-2xl">
-                        <h4 class="font-bold text-brand-900 mb-3 flex items-center gap-2">PC (Rust Core) <span
-                                class="tech-tag">TAURI</span></h4>
-                        <p class="text-sm text-brand-500 mb-4">Sử dụng <strong>DNS Sinkholing</strong> nội bộ kết hợp
-                            với việc sửa đổi file `/etc/hosts` có đặc quyền System. Đối với DNS-over-HTTPS (DoH), app
-                            cài đặt một Local CA để phân tích gói tin.</p>
-                    </div>
-                    <div class="p-6 bg-brand-50 rounded-2xl">
-                        <h4 class="font-bold text-brand-900 mb-3 flex items-center gap-2">Mobile (Dart/Kotlin) <span
-                                class="tech-tag">FLUTTER</span></h4>
-                        <p class="text-sm text-brand-500 mb-4">Triển khai <strong>VpnService (Android)</strong> và
-                            <strong>Network Extension (iOS)</strong>. Tạo một hầm VPN cục bộ (loopback) để lọc toàn bộ
-                            DNS query mà không gửi dữ liệu ra ngoài.</p>
-                    </div>
-                </div>
-            </section>
         </div>
 
         <!-- TAB: USE CASES -->
         <div id="use-cases" class="tab-content space-y-12">
-            <!-- USE CASE 01 -->
             <section class="bg-white p-10 rounded-3xl shadow-sm border border-brand-100">
                 <div class="flex items-center gap-4 mb-10">
                     <span
@@ -375,101 +344,12 @@
                     <div class="use-case-step relative">
                         <h4 class="font-bold text-brand-900 text-lg">B3: Xử lý Thử thách & Ý định</h4>
                         <p class="text-sm text-brand-500">Người dùng giải 1 bài toán hoặc đợi 15 giây. Sau đó, họ phải
-                            nhập lý do: <i>"Tôi đang thực sự mệt mỏi và cần nghỉ 5 phút"</i>.</p>
+                            nhập lý do.</p>
                     </div>
                     <div class="use-case-step relative bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100">
                         <h4 class="font-bold text-emerald-800 text-lg">B4: Cấp quyền Tạm thời (Grace Period)</h4>
                         <p class="text-sm text-emerald-700">App cập nhật bảng định tuyến tạm thời trong bộ nhớ RAM, cho
-                            phép domain đó hoạt động trong 10-15 phút. Hết thời gian, luồng quay lại B1.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- USE CASE 02 -->
-            <section class="bg-white p-10 rounded-3xl shadow-sm border border-brand-100 overflow-hidden">
-                <div class="flex items-center gap-4 mb-10">
-                    <span
-                        class="bg-cloud text-white w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg shadow-cloud/30">02</span>
-                    <div>
-                        <h2 class="text-2xl font-extrabold text-brand-600">Đồng bộ Đa thiết bị (Real-time Sync)</h2>
-                        <p class="text-sm text-brand-500">Phân tích luồng dữ liệu trình tự giữa hai thiết bị và đám mây.
-                        </p>
-                    </div>
-                </div>
-
-                <div
-                    class="relative min-h-[500px] mt-16 bg-slate-50/50 p-8 rounded-3xl border border-slate-100 shadow-inner">
-                    <!-- Actors Header -->
-                    <div class="grid grid-cols-3 gap-4 mb-12 text-center relative z-10">
-                        <div class="flex flex-col items-center">
-                            <div
-                                class="w-20 h-20 bg-brand-900 text-white rounded-3xl flex items-center justify-center text-3xl mb-3 shadow-xl">
-                                📱</div>
-                            <span class="font-bold text-slate-700">Device A (Mobile)</span>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <div
-                                class="w-20 h-20 bg-cloud text-white rounded-full flex items-center justify-center text-3xl mb-3 shadow-xl shadow-cloud/20">
-                                ☁️</div>
-                            <span class="font-bold text-slate-700">Firebase Cloud</span>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <div
-                                class="w-20 h-20 bg-brand-900 text-white rounded-3xl flex items-center justify-center text-3xl mb-3 shadow-xl">
-                                💻</div>
-                            <span class="font-bold text-slate-700">Device B (PC)</span>
-                        </div>
-                    </div>
-
-                    <!-- Vertical Lines -->
-                    <div class="absolute top-28 bottom-0 left-[16.66%] sequence-line"></div>
-                    <div class="absolute top-28 bottom-0 left-[50%] sequence-line"></div>
-                    <div class="absolute top-28 bottom-0 left-[83.33%] sequence-line"></div>
-
-                    <!-- Sequence Messages -->
-                    <div class="space-y-16 py-6 relative z-10">
-                        <div class="grid grid-cols-6 items-center">
-                            <div class="col-start-2 col-span-2 message-arrow">
-                                <div class="data-package">1. Add Block: "facebook.com" (v=1)</div>
-                                <div class="arrow-line arrow-head-right"></div>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-6 items-center">
-                            <div class="col-start-3 col-span-2 flex justify-center">
-                                <div
-                                    class="bg-white border-2 border-cloud p-4 rounded-xl text-[11px] font-mono shadow-md step-active text-center">
-                                    SERVER:<br>Verify Auth &<br>Update Firestore
-                                </div>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-6 items-center">
-                            <div class="col-start-4 col-span-2 message-arrow">
-                                <div class="data-package">2. Sync Event: {site: "fb", v:1}</div>
-                                <div class="arrow-line arrow-head-right"></div>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-6 items-center">
-                            <div class="col-start-5 col-span-1 flex flex-col items-center gap-2">
-                                <div class="bg-emerald-100 text-emerald-800 p-2 rounded text-[10px] font-bold">
-                                    RE-FILTERING</div>
-                                <div class="text-[9px] text-slate-400 font-mono">Hosts updated!</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm">
-                    <div class="bg-brand-50 p-6 rounded-2xl border border-brand-100">
-                        <h4 class="font-bold mb-3">Xử lý Ngoại lệ (Edge Case: Offline)</h4>
-                        <p class="text-brand-500 leading-relaxed">Nếu Device B ngoại tuyến, Firebase sẽ lưu sự kiện vào
-                            <i>Offline Queue</i>. Ngay khi có mạng, SDK thực hiện 'Resync' bằng cách so sánh version tag
-                            và áp dụng thay đổi muộn.</p>
-                    </div>
-                    <div class="bg-brand-50 p-6 rounded-2xl border border-brand-100">
-                        <h4 class="font-bold mb-3">Tối ưu hóa Băng thông</h4>
-                        <p class="text-brand-500 leading-relaxed">Sử dụng <strong>FieldMasks</strong> để chỉ gửi những
-                            thay đổi nhỏ (ví dụ: chỉ gửi URL mới thay vì toàn bộ danh sách 100 web), giúp tiết kiệm dữ
-                            liệu di động.</p>
+                            phép domain đó hoạt động trong 10-15 phút.</p>
                     </div>
                 </div>
             </section>
@@ -515,16 +395,6 @@
             });
         };
     </script>
-
-    <!-- 
-        Visualization & Content Choices:
-        - Radar Chart: Minh họa sự đánh đổi (trade-off) giữa các yếu tố kỹ thuật, trong đó Đồng bộ (Sync) và Ổn định (Stability) được ưu tiên cao nhất.
-        - Sequence Diagram (HTML/CSS): Thay vì dùng ảnh tĩnh hay Mermaid, việc tự xây dựng sơ đồ giúp thể hiện rõ luồng dữ liệu 4 bước giữa Mobile, Cloud và PC với các hiệu ứng thị giác chuyên nghiệp.
-        - Code Snippet: Mô phỏng logic Rust/JS cho việc xử lý xung đột dữ liệu (Versioning), đây là phần quan trọng nhất của SDD cho hệ thống đồng bộ.
-        - Step-by-step Use Case: Phân tích kỹ thuật sâu về cơ chế Đánh chặn (Hijacking) và Grace Period.
-        
-        CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
-    -->
 </body>
 
 </html>

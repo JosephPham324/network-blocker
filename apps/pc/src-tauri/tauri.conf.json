@@ -1,31 +1,50 @@
 {
-  "$schema": "https://schema.tauri.app/config/2",
-  "productName": "MindfulBlock",
-  "version": "0.1.0",
-  "identifier": "com.tauri.dev",
   "build": {
-    "frontendDist": "../build",
-    "devUrl": "http://localhost:3000",
     "beforeDevCommand": "pnpm dev",
-    "beforeBuildCommand": "pnpm build"
+    "beforeBuildCommand": "pnpm build",
+    "devPath": "http://localhost:5173",
+    "distDir": "../dist",
+    "withGlobalTauri": true
   },
-  "app": {
+  "package": {
+    "productName": "MindfulBlock",
+    "version": "1.0.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": true,
+      "shell": {
+        "all": false,
+        "open": true,
+        "execute": true,
+        "sidecar": false,
+        "scope": [
+          {
+            "name": "ipconfig",
+            "cmd": "ipconfig",
+            "args": ["/flushdns"]
+          }
+        ]
+      }
+    },
+    "bundle": {
+      "active": true,
+      "identifier": "com.mindfulblock.app",
+      "icon": ["icons/32x32.png", "icons/128x128.png", "icons/icon.icns", "icons/icon.ico"],
+      "targets": "all"
+    },
+    "security": { "csp": null },
     "windows": [
       {
-        "title": "MindfulBlock",
-        "width": 800,
-        "height": 600,
+        "label": "main",
+        "fullscreen": false,
+        "height": 720,
         "resizable": true,
-        "fullscreen": false
+        "title": "MindfulBlock Desktop",
+        "width": 1100,
+        "decorations": true,
+        "center": true
       }
-    ],
-    "security": {
-      "csp": null
-    }
-  },
-  "bundle": {
-    "active": true,
-    "targets": "all",
-    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"]
+    ]
   }
 }

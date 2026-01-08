@@ -62,6 +62,18 @@ Sau khi hoàn thành thử thách thành công, hệ thống cấp **quyền tru
 - Ghi lại tổng thời gian tập trung thu hồi được.
 - Hiển thị biểu đồ xu hướng sử dụng theo tuần.
 
+  2.5 [FR-05] Chế độ Chặn vĩnh viễn (Persistent Block)
+
+Mô tả: Cho phép người dùng đánh dấu một quy tắc chặn là "Persistent".
+
+Yêu cầu:
+
+Khi ứng dụng MindfulBlock bị tắt, các quy tắc "Persistent" phải được giữ lại trong tệp hosts của hệ thống.
+
+Chỉ các quy tắc không phải vĩnh viễn (Session-based) mới được gỡ bỏ khi người dùng chọn "Tạm dừng bảo vệ" hoặc tắt ứng dụng.
+
+Hệ thống phải có cơ chế kiểm tra và áp dụng lại các quy tắc này mỗi khi máy tính khởi động (Service/Daemon).
+
 ---
 
 ## 3. Yêu cầu Phi chức năng (Non-functional Requirements)
