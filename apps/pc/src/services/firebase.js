@@ -1,8 +1,7 @@
 import { initializeApp, getApps } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
-
-let db, auth, appId;
+import { getAuth, GoogleAuthProvider } from "firebase/auth"; // <--- Important: Imported here
+let db, auth, googleProvider, appId; // <--- Add googleProvider
 let isCloudReady = false;
 
 try {
@@ -16,6 +15,7 @@ try {
       const fbApp = initializeApp(firebaseConfig);
       auth = getAuth(fbApp);
       db = getFirestore(fbApp);
+      googleProvider = new GoogleAuthProvider(); // <--- Initialize this
     }
     appId = typeof __app_id !== "undefined" ? __app_id : "mindful-block-prod";
     isCloudReady = true;
@@ -24,4 +24,4 @@ try {
   console.error("Firebase Init Error:", e);
 }
 
-export { db, auth, appId, isCloudReady };
+export { db, auth, googleProvider, appId, isCloudReady }; // <--- Export it

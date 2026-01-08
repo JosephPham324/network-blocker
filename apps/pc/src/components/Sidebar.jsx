@@ -1,7 +1,14 @@
 import React from "react";
-import { Shield, Activity, Lock } from "lucide-react";
+import { Shield, Activity, Lock, LogOut } from "lucide-react";
+import { signOut } from "firebase/auth"; // <--- Import logic
+import { auth } from "../services/firebase"; // <--- Import auth
 
 const Sidebar = ({ activeTab, setActiveTab, status }) => {
+  // Add Logout Handler
+  const handleLogout = () => {
+    signOut(auth).catch((error) => console.error("Sign out error", error));
+  };
+
   return (
     <aside className="w-72 border-r border-[#F4F1EA] p-8 bg-white flex flex-col shadow-sm">
       <div className="flex items-center gap-3 mb-12">
@@ -12,6 +19,7 @@ const Sidebar = ({ activeTab, setActiveTab, status }) => {
       </div>
 
       <nav className="space-y-2 flex-1">
+        {/* ... (Keep existing buttons) ... */}
         <button
           onClick={() => setActiveTab("dash")}
           className={`w-full flex items-center gap-3 p-4 rounded-2xl transition-all ${
@@ -30,14 +38,27 @@ const Sidebar = ({ activeTab, setActiveTab, status }) => {
         </button>
       </nav>
 
-      <div className="mt-auto p-5 bg-slate-50 rounded-3xl border border-slate-100">
-        <div className="flex items-center gap-2 mb-1">
-          <div
-            className={`w-2 h-2 rounded-full ${status.includes("Bảo vệ") ? "bg-emerald-500 shadow-[0_0_8px_#10b981]" : "bg-amber-400 animate-pulse"}`}
-          />
-          <span className="text-[10px] font-bold uppercase text-slate-400">Hệ thống</span>
+      {/* Footer Section */}
+      <div className="mt-auto space-y-4">
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 p-3 rounded-2xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
+        >
+          <LogOut size={18} /> <span className="text-sm font-bold">Đăng xuất</span>
+        </button>
+
+        <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100">
+          <div className="flex items-center gap-2 mb-1">
+            <div
+              className={`w-2 h-2 rounded-full ${
+                status.includes("Bảo vệ") ? "bg-emerald-500 shadow-[0_0_8px_#10b981]" : "bg-amber-400 animate-pulse"
+              }`}
+            />
+            <span className="text-[10px] font-bold uppercase text-slate-400">Hệ thống</span>
+          </div>
+          <p className="text-[11px] font-bold text-primary truncate leading-tight uppercase tracking-tighter">{status}</p>
         </div>
-        <p className="text-[11px] font-bold text-primary truncate leading-tight uppercase tracking-tighter">{status}</p>
       </div>
     </aside>
   );
