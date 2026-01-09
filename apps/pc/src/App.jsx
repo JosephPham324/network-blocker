@@ -8,19 +8,29 @@ import { useBlockRules } from "./hooks/useBlockRules";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard";
 import BlockList from "./components/BlockList";
-import Login from "./components/Login"; // <--- Import Login
+import Login from "./components/Login";
 import { AdminRequired, LoadingScreen } from "./components/StateScreens";
 
 const App = () => {
   const [activeTab, setActiveTab] = useState("dash");
   const [user, setUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true); // <--- Add loading state for Auth
+  const [authLoading, setAuthLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(true);
 
   // Hook for Block Rules Logic
-  const { rules, status, addRule, deleteRule } = useBlockRules(user, setIsAdmin);
+  // 1. Extract 'groups' here
+  const {
+    rules,
+    groups, // <--- Added this
+    status,
+    addRule,
+    deleteRule,
+    toggleRule,
+    toggleBatch,
+    deleteBatch,
+    moveBatchToGroup,
+  } = useBlockRules(user, setIsAdmin);
 
-  // Check Admin & Auth Status
   useEffect(() => {
     const init = async () => {
       // 1. Check Admin
@@ -29,10 +39,9 @@ const App = () => {
 
       // 2. Check Auth
       if (isCloudReady) {
-        // Stop using signInAnonymously here. Just listen for changes.
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
           setUser(currentUser);
-          setAuthLoading(false); // Stop loading once we know if user is in or out
+          setAuthLoading(false);
         });
         return unsubscribe;
       } else {
@@ -57,7 +66,20 @@ const App = () => {
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} status={status} />
 
       <main className="flex-1 p-12 overflow-y-auto">
-        {activeTab === "dash" ? <Dashboard rulesCount={rules.length} /> : <BlockList rules={rules} onAdd={addRule} onDelete={deleteRule} />}
+        {activeTab === "dash" ? (
+          <Dashboard rulesCount={rules.length} />
+        ) : (
+          <BlockList
+            rules={rules}
+            groups={groups} // <--- Pass it down here
+            onAdd={addRule}
+            onDelete={deleteRule}
+            onToggle={toggleRule}
+            onBatchDelete={deleteBatch}
+            onBatchToggle={toggleBatch}
+            onBatchMove={moveBatchToGroup}
+          />
+        )}
       </main>
     </div>
   );

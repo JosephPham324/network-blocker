@@ -35,6 +35,11 @@
     "updated_at": {
       "type": "object",
       "description": "Thời điểm cập nhật cuối cùng (Firestore ServerTimestamp)"
+    },
+    "group": {
+      "type": "string",
+      "default": "General",
+      "description": "Tên nhóm (ví dụ: 'Social', 'Work', 'Games'). Mặc định là 'General'"
     }
   },
   "required": ["id", "domain", "mode", "is_active", "v"]
