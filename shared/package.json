@@ -1,0 +1,10 @@
+{
+  "name": "@mindful-block/shared",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared logic and schemas for Mindful Block",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

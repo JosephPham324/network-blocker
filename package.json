@@ -8,8 +8,9 @@
     "backend/*"
   ],
   "scripts": {
-    "pc:dev": "pnpm --filter pc tauri dev",
-    "pc:build": "pnpm --filter pc tauri build",
+    "pc:dev": "pnpm --filter @mindful-block/pc tauri dev",
+    "pc:build": "pnpm --filter @mindful-block/pc tauri build",
+    "functions:build": "pnpm --filter @mindful-block/functions build",
     "mobile:dev": "cd apps/mobile && flutter run",
     "backend:deploy": "cd backend/firebase && firebase deploy"
   },

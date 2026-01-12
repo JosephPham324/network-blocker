@@ -71,7 +71,7 @@ const App = () => {
         ) : (
           <BlockList
             rules={rules}
-            groups={groups} // <--- Pass it down here
+            groups={groups}
             onAdd={addRule}
             onDelete={deleteRule}
             onToggle={toggleRule}
