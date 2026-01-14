@@ -9,6 +9,7 @@
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log"
   },
+  "packageManager": "pnpm@10.28.0",
   "engines": {
     "node": "18"
   },
