@@ -1,50 +1,29 @@
 {
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "productName": "mindful-block",
+  "version": "1.0.0",
+  "identifier": "com.mindful-block.app",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "beforeBuildCommand": "pnpm build",
-    "devPath": "http://localhost:5173",
-    "distDir": "../dist",
-    "withGlobalTauri": true
+    "devUrl": "http://localhost:5173",
+    "frontendDist": "../dist"
   },
-  "package": {
-    "productName": "MindfulBlock",
-    "version": "1.0.0"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": true,
-      "shell": {
-        "all": false,
-        "open": true,
-        "execute": true,
-        "sidecar": false,
-        "scope": [
-          {
-            "name": "ipconfig",
-            "cmd": "ipconfig",
-            "args": ["/flushdns"]
-          }
-        ]
-      }
-    },
-    "bundle": {
-      "active": true,
-      "identifier": "com.mindfulblock.app",
-      "icon": ["icons/32x32.png", "icons/128x128.png", "icons/icon.icns", "icons/icon.ico"],
-      "targets": "all"
-    },
-    "security": { "csp": null },
+  "app": {
     "windows": [
       {
-        "label": "main",
-        "fullscreen": false,
-        "height": 720,
-        "resizable": true,
         "title": "MindfulBlock Desktop",
-        "width": 1100,
-        "decorations": true,
-        "center": true
+        "width": 1200,
+        "height": 800
       }
-    ]
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"]
   }
 }

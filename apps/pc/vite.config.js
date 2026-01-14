@@ -8,6 +8,11 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
   },
+  build: {
+    commonjsOptions: {
+      include: [/@mindful-block\/shared/, /node_modules/],
+    },
+  },
   // Hỗ trợ các biến môi trường
   define: {
     "process.env": {},

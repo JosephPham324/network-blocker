@@ -11,6 +11,12 @@ use std::process::Command;
 use std::os::windows::process::CommandExt;
 use tauri::Manager;
 
+// 1. New Imports for v2 Plugins
+use tauri::Emitter; // <--- This is what's missing
+use tauri_plugin_autostart::MacosLauncher;
+use tauri_plugin_oauth::start; 
+use tauri::WebviewWindow; 
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct BlockRule {
     domain: String,
@@ -18,17 +24,13 @@ struct BlockRule {
 }
 
 #[tauri::command]
-async fn check_admin_privileges() -> bool {
+fn check_admin_privileges() -> bool {
     is_elevated()
 }
 
-/**
- * Lấy đường dẫn file hosts chính xác để tránh lỗi Redirector trên Windows 64-bit
- */
 fn get_hosts_path() -> String {
     if cfg!(target_os = "windows") {
         let win_dir = std::env::var("WinDir").unwrap_or_else(|_| "C:\\Windows".to_string());
-        // Sử dụng sysnative nếu app 32bit chạy trên Win 64bit, nếu không dùng System32
         let sys_native = format!("{}\\sysnative\\drivers\\etc\\hosts", win_dir);
         if std::path::Path::new(&sys_native).exists() {
             sys_native
@@ -41,7 +43,7 @@ fn get_hosts_path() -> String {
 }
 
 #[tauri::command]
-async fn apply_blocking_rules(rules: Vec<BlockRule>) -> Result<String, String> {
+fn apply_blocking_rules(rules: Vec<BlockRule>) -> Result<String, String> {
     if !is_elevated() {
         return Err("ADMIN_REQUIRED".into());
     }
@@ -49,7 +51,7 @@ async fn apply_blocking_rules(rules: Vec<BlockRule>) -> Result<String, String> {
     let path = get_hosts_path();
     let mut content = String::new();
     
-    // 1. Đọc và lọc nội dung cũ
+    // Read old content
     if let Ok(file) = File::open(&path) {
         let reader = BufReader::new(file);
         let mut in_block = false;
@@ -65,23 +67,21 @@ async fn apply_blocking_rules(rules: Vec<BlockRule>) -> Result<String, String> {
         }
     }
 
-    // 2. Tạo nội dung chặn mới (Hỗ trợ cả IPv4 và IPv6)
+    // Create new content
     content = content.trim_end().to_string();
     content.push_str("\n\n# MINDFULBLOCK_START\n");
     for rule in rules {
         if rule.is_active {
             let d = rule.domain.to_lowercase().trim().replace("www.", "");
-            // IPv4
             content.push_str(&format!("127.0.0.1 {}\n", d));
             content.push_str(&format!("127.0.0.1 www.{}\n", d));
-            // IPv6 (Quan trọng cho các app hiện đại như Signal)
             content.push_str(&format!("::1 {}\n", d));
             content.push_str(&format!("::1 www.{}\n", d));
         }
     }
     content.push_str("# MINDFULBLOCK_END\n");
 
-    // 3. Ghi file và đồng bộ đĩa
+    // Write file
     let mut file = OpenOptions::new()
         .write(true)
         .create(true)
@@ -92,7 +92,7 @@ async fn apply_blocking_rules(rules: Vec<BlockRule>) -> Result<String, String> {
     file.write_all(content.as_bytes()).map_err(|e| e.to_string())?;
     file.sync_all().map_err(|e| e.to_string())?;
 
-    // 4. Xóa cache DNS để áp dụng ngay lập tức (Chỉ Windows)
+    // Flush DNS
     if cfg!(target_os = "windows") {
         const CREATE_NO_WINDOW: u32 = 0x08000000;
         let _ = Command::new("ipconfig")
@@ -104,15 +104,33 @@ async fn apply_blocking_rules(rules: Vec<BlockRule>) -> Result<String, String> {
     Ok(format!("SUCCESS: DNS Flushed and Hosts updated at {}", path))
 }
 
+#[tauri::command]
+async fn start_server(window: tauri::WebviewWindow) -> Result<u16, String> {
+    // Clone the window handle so it can be moved into the closure safely
+    let w = window.clone();
+    
+    tauri_plugin_oauth::start(move |url| {
+        // Now using .emit() works because we imported tauri::Emitter
+        let _ = w.emit("redirect_uri", url.to_string());
+    })
+    .map_err(|err| err.to_string())
+}
+
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec![])))
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_oauth::init())
         .setup(|app| {
-            if let Some(window) = app.get_window("main") {
+            if let Some(window) = app.get_webview_window("main") {
                 window.show().unwrap();
             }
             Ok(())
         })
+        // Combined into ONE handler call:
         .invoke_handler(tauri::generate_handler![
+            start_server,
             check_admin_privileges,
             apply_blocking_rules
         ])

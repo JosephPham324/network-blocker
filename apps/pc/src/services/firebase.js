@@ -1,22 +1,31 @@
-import { initializeApp, getApps } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAuth, GoogleAuthProvider } from "firebase/auth"; // <--- Important: Imported here
-let db, auth, googleProvider, appId; // <--- Add googleProvider
+import { getAuth, GoogleAuthProvider, setPersistence, indexedDBLocalPersistence } from "firebase/auth";
+
+let app;
+let auth;
+let db;
+let googleProvider;
+let appId;
 let isCloudReady = false;
 
 try {
   const configStr = typeof __firebase_config !== "undefined" ? __firebase_config : null;
   const firebaseConfig = typeof configStr === "string" ? JSON.parse(configStr) : configStr;
 
-  if (!firebaseConfig || !firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY") {
-    console.warn("Firebase config is missing or invalid. App will run in Mock mode.");
+  if (!firebaseConfig || !firebaseConfig.apiKey) {
+    console.warn("Firebase config missing. Mock mode.");
   } else {
-    if (!getApps().length) {
-      const fbApp = initializeApp(firebaseConfig);
-      auth = getAuth(fbApp);
-      db = getFirestore(fbApp);
-      googleProvider = new GoogleAuthProvider(); // <--- Initialize this
-    }
+    app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+
+    auth = getAuth(app);
+
+    // 🔴 MUST RUN EVERY TIME
+    setPersistence(auth, indexedDBLocalPersistence).catch(console.error);
+
+    db = getFirestore(app);
+    googleProvider = new GoogleAuthProvider();
+
     appId = typeof __app_id !== "undefined" ? __app_id : "mindful-block-prod";
     isCloudReady = true;
   }
@@ -24,4 +33,4 @@ try {
   console.error("Firebase Init Error:", e);
 }
 
-export { db, auth, googleProvider, appId, isCloudReady }; // <--- Export it
+export { db, auth, googleProvider, appId, isCloudReady };

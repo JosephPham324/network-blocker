@@ -1,25 +1,41 @@
 import { useState, useEffect } from "react";
-import { collection, onSnapshot, addDoc, deleteDoc, updateDoc, writeBatch, doc, serverTimestamp, query, orderBy } from "firebase/firestore";
+import { collection, onSnapshot, writeBatch, doc, serverTimestamp, query, orderBy } from "firebase/firestore";
 import { db, appId, isCloudReady } from "../services/firebase";
 import { callRust } from "../services/tauri";
 
+import { ruleSchema, ruleGroupSchema } from "@mindful-block/shared";
+
+const validateAgainstSchema = (data, schema) => {
+  if (!schema || !schema.properties) return true;
+  if (schema.required) {
+    for (const field of schema.required) {
+      if (data[field] === undefined || data[field] === null) {
+        console.error(`Schema Validation Failed: Missing required field '${field}'`);
+        return false;
+      }
+    }
+  }
+  return true;
+};
+
 export const useBlockRules = (user, setIsAdmin) => {
   const [rules, setRules] = useState([]);
-  const [groups, setGroups] = useState([{ id: "general", name: "General", is_system: true }]); // Default
+  const [groups, setGroups] = useState([{ id: "general", name: "General", is_system: true }]);
   const [status, setStatus] = useState("Đang khởi tạo...");
 
-  // Sync Rules from Firestore & Apply to Rust
   useEffect(() => {
     if (!user || !isCloudReady || !db) return;
 
-    // Listen to Rules
     const rulesUnsub = onSnapshot(collection(db, `artifacts/${appId}/users/${user.uid}/block_configs`), (snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setRules(data);
 
-      // Rust Sync Logic
       setStatus("Đang đồng bộ...");
-      const formatted = data.map((r) => ({ domain: r.domain, is_active: r.is_active }));
+      const formatted = data.map((r) => ({
+        domain: r.domain,
+        is_active: r.is_active,
+      }));
+
       callRust("apply_blocking_rules", { rules: formatted })
         .then(() => setStatus("Bảo vệ đang bật"))
         .catch((err) => {
@@ -28,10 +44,8 @@ export const useBlockRules = (user, setIsAdmin) => {
         });
     });
 
-    // Listen to Groups
     const groupsUnsub = onSnapshot(query(collection(db, `artifacts/${appId}/users/${user.uid}/block_groups`), orderBy("name")), (snap) => {
       const groupData = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      // Always ensure 'General' exists in the list for UI
       const hasGeneral = groupData.some((g) => g.name === "General");
       const finalGroups = hasGeneral ? groupData : [{ id: "general", name: "General", is_system: true }, ...groupData];
       setGroups(finalGroups);
@@ -43,42 +57,54 @@ export const useBlockRules = (user, setIsAdmin) => {
     };
   }, [user, setIsAdmin]);
 
+  // --- ADD RULE ---
   const addRule = async (newDomain, groupName = "General") => {
     if (!newDomain || !user) return { success: false, error: "Invalid input" };
     const cleanDomain = newDomain.toLowerCase().trim().replace("www.", "");
     const cleanGroup = groupName.trim();
 
-    // Check Duplicate Domain
     if (rules.some((r) => r.domain === cleanDomain)) {
       return { success: false, error: "Tên miền đã tồn tại." };
+    }
+
+    const newRuleData = {
+      domain: cleanDomain,
+      is_active: true,
+      mode: "HARD",
+      group: cleanGroup,
+      v: 1,
+      updated_at: serverTimestamp(),
+    };
+
+    const newGroupData = {
+      name: cleanGroup,
+      is_system: false,
+      created_at: serverTimestamp(),
+    };
+
+    if (!validateAgainstSchema(newRuleData, ruleSchema)) {
+      return { success: false, error: "Invalid Rule Data (Schema Mismatch)" };
+    }
+
+    const groupExists = groups.some((g) => g.name.toLowerCase() === cleanGroup.toLowerCase());
+
+    if (!groupExists && cleanGroup !== "General") {
+      if (!validateAgainstSchema(newGroupData, ruleGroupSchema)) {
+        return { success: false, error: "Invalid Group Data (Schema Mismatch)" };
+      }
     }
 
     if (isCloudReady) {
       try {
         const batch = writeBatch(db);
 
-        // A. Handle Group Creation (if it doesn't exist)
-        const groupExists = groups.some((g) => g.name.toLowerCase() === cleanGroup.toLowerCase());
-        let finalGroupName = cleanGroup;
-
         if (!groupExists && cleanGroup !== "General") {
           const newGroupRef = doc(collection(db, `artifacts/${appId}/users/${user.uid}/block_groups`));
-          batch.set(newGroupRef, {
-            name: cleanGroup,
-            created_at: serverTimestamp(),
-          });
+          batch.set(newGroupRef, newGroupData);
         }
 
-        // B. Add Rule
         const newRuleRef = doc(collection(db, `artifacts/${appId}/users/${user.uid}/block_configs`));
-        batch.set(newRuleRef, {
-          domain: cleanDomain,
-          is_active: true,
-          mode: "HARD",
-          group: finalGroupName, // Storing Name is easier for display, ID is cleaner for DB. Let's use Name for simplicity now.
-          v: 1,
-          updated_at: serverTimestamp(),
-        });
+        batch.set(newRuleRef, newRuleData);
 
         await batch.commit();
         return { success: true };
@@ -87,26 +113,76 @@ export const useBlockRules = (user, setIsAdmin) => {
         return { success: false, error: "Lỗi hệ thống." };
       }
     } else {
-      // Mock
-      setRules([...rules, { id: Date.now().toString(), domain: cleanDomain, group: cleanGroup, is_active: true }]);
+      setRules([
+        ...rules,
+        {
+          id: Date.now().toString(),
+          ...newRuleData,
+          updated_at: new Date(),
+        },
+      ]);
       return { success: true };
+    }
+  };
+
+  // --- DELETE GROUP ---
+  const deleteGroup = async (groupName) => {
+    if (!user || !groupName) return;
+    const cleanGroup = groupName.trim();
+
+    // Prevent deleting System/General groups
+    if (cleanGroup.toLowerCase() === "general") return;
+    const groupObj = groups.find((g) => g.name === cleanGroup);
+    if (groupObj?.is_system) return;
+
+    if (isCloudReady) {
+      const batch = writeBatch(db);
+
+      // 1. Delete all rules in this group
+      const rulesInGroup = rules.filter((r) => r.group === cleanGroup);
+      rulesInGroup.forEach((r) => {
+        const ruleRef = doc(db, `artifacts/${appId}/users/${user.uid}/block_configs`, r.id);
+        batch.delete(ruleRef);
+      });
+
+      // 2. Delete the group document itself (if it exists)
+      if (groupObj && groupObj.id) {
+        const groupRef = doc(db, `artifacts/${appId}/users/${user.uid}/block_groups`, groupObj.id);
+        batch.delete(groupRef);
+      }
+
+      await batch.commit();
+    } else {
+      // Mock Mode
+      setRules(rules.filter((r) => r.group !== cleanGroup));
+      setGroups(groups.filter((g) => g.name !== cleanGroup));
     }
   };
 
   const moveBatchToGroup = async (ids, newGroupName) => {
     if (!user || ids.length === 0) return;
     const cleanGroup = newGroupName.trim();
+    const newGroupData = {
+      name: cleanGroup,
+      is_system: false,
+      created_at: serverTimestamp(),
+    };
+
+    const groupExists = groups.some((g) => g.name.toLowerCase() === cleanGroup.toLowerCase());
+
+    if (!groupExists && cleanGroup !== "General") {
+      if (!validateAgainstSchema(newGroupData, ruleGroupSchema)) {
+        console.error("Cannot move batch: Invalid Group Schema");
+        return;
+      }
+    }
 
     if (isCloudReady) {
       const batch = writeBatch(db);
-
-      // Create group if missing
-      const groupExists = groups.some((g) => g.name.toLowerCase() === cleanGroup.toLowerCase());
       if (!groupExists && cleanGroup !== "General") {
         const newGroupRef = doc(collection(db, `artifacts/${appId}/users/${user.uid}/block_groups`));
-        batch.set(newGroupRef, { name: cleanGroup, created_at: serverTimestamp() });
+        batch.set(newGroupRef, newGroupData);
       }
-
       ids.forEach((id) => {
         const ref = doc(db, `artifacts/${appId}/users/${user.uid}/block_configs`, id);
         batch.update(ref, { group: cleanGroup, updated_at: serverTimestamp() });
@@ -117,7 +193,6 @@ export const useBlockRules = (user, setIsAdmin) => {
 
   const toggleBatch = async (ids, targetStatus) => {
     if (!user || ids.length === 0) return;
-
     if (isCloudReady) {
       const batch = writeBatch(db);
       ids.forEach((id) => {
@@ -132,7 +207,6 @@ export const useBlockRules = (user, setIsAdmin) => {
 
   const deleteBatch = async (ids) => {
     if (!user || ids.length === 0) return;
-
     if (isCloudReady) {
       const batch = writeBatch(db);
       ids.forEach((id) => {
@@ -148,5 +222,16 @@ export const useBlockRules = (user, setIsAdmin) => {
   const toggleRule = (id, currentStatus) => toggleBatch([id], !currentStatus);
   const deleteRule = (id) => deleteBatch([id]);
 
-  return { rules, groups, status, addRule, deleteRule, toggleBatch, deleteBatch, moveBatchToGroup };
+  return {
+    rules,
+    groups,
+    status,
+    addRule,
+    deleteRule,
+    toggleRule,
+    toggleBatch,
+    deleteBatch,
+    moveBatchToGroup,
+    deleteGroup, // Exporting new function
+  };
 };

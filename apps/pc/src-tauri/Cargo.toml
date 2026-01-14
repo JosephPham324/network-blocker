@@ -1,21 +1,22 @@
 [package]
 name = "mindful-block"
 version = "1.0.0"
-description = "Hệ thống chặn mạng chánh niệm"
+description = "Hệ thống chặn mạng"
 authors = ["Pham Nhat Quang"]
 edition = "2021"
 
 [build-dependencies]
-tauri-build = { version = "1.5", features = [] }
+tauri-build = { version = "2.0.0", features = [] }
 
 [dependencies]
-tauri = { version = "1.5", features = [ "api-all"] }
+tauri = { version = "2.0.0", features = [] }
+tauri-plugin-autostart = "2.0.0" # Now compatible!
+tauri-plugin-shell = "2.0.0"     # Required for 'ipconfig' commands
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 is_elevated = "0.1"
-# Thêm log để thỏa mãn các ràng buộc nếu hệ thống tự động tìm kiếm
-log = "0.4" 
-
+log = "0.4"
+tauri-plugin-opener = "2.5.3"
+tauri-plugin-oauth = "2.0.0" # Make sure this matches the official v2 release
 [features]
-# Quan trọng: Đảm bảo không có feature nào trỏ tới lib.rs nếu không cần thiết
 custom-protocol = ["tauri/custom-protocol"]

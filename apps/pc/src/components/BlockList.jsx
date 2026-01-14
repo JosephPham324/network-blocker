@@ -1,7 +1,21 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { Globe, Trash2, Power, ShieldCheck, ShieldOff, CheckSquare, Square, X, FolderInput, Folder, Layers, ChevronDown } from "lucide-react";
+import {
+  Globe,
+  Trash2,
+  Power,
+  ShieldCheck,
+  ShieldOff,
+  CheckSquare,
+  Square,
+  X,
+  FolderInput,
+  Folder,
+  Layers,
+  ChevronDown,
+  AlertTriangle,
+} from "lucide-react";
 
-const BlockList = ({ rules, groups = [], onAdd, onDelete, onBatchDelete, onBatchToggle, onBatchMove }) => {
+const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelete, onBatchToggle, onBatchMove, onDeleteGroup }) => {
   const [newDomain, setNewDomain] = useState("");
   const [newGroup, setNewGroup] = useState("General");
   const [error, setError] = useState("");
@@ -15,46 +29,35 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onBatchDelete, onBatch
   const [isMoving, setIsMoving] = useState(false);
   const [targetGroup, setTargetGroup] = useState("");
 
+  // State for Delete Confirmation Modal
+  const [groupToDelete, setGroupToDelete] = useState(null);
+
   // --- DERIVED STATE ---
 
-  // 1. Combined Groups: Merge explicit groups (from DB) with implicit groups (from Rules)
-  // This ensures the dropdown matches the list view even if the groups collection is empty.
   const allKnownGroups = useMemo(() => {
     const uniqueGroups = new Map();
-
-    // A. Add Explicit Groups
     groups.forEach((g) => uniqueGroups.set(g.name, g));
-
-    // B. Add Implicit Groups from Rules
     rules.forEach((r) => {
       const gName = r.group || "General";
       if (!uniqueGroups.has(gName)) {
-        uniqueGroups.set(gName, { id: gName, name: gName }); // Mock group object
+        uniqueGroups.set(gName, { id: gName, name: gName });
       }
     });
-
     return Array.from(uniqueGroups.values()).sort((a, b) => a.name.localeCompare(b.name));
   }, [groups, rules]);
 
-  // 2. Grouped Rules: Organize rules into sections
   const groupedRules = useMemo(() => {
     const result = {};
-
-    // Initialize all known groups
     allKnownGroups.forEach((g) => {
       result[g.name] = [];
     });
-
-    // Distribute rules
     rules.forEach((rule) => {
       const gName = rule.group || "General";
-      // Safety check if allKnownGroups somehow missed it (unlikely with logic above)
       if (!result[gName]) {
         result[gName] = [];
       }
       result[gName].push(rule);
     });
-
     return result;
   }, [rules, allKnownGroups]);
 
@@ -74,7 +77,6 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onBatchDelete, onBatch
   const handleSelectGroup = (groupName) => {
     const idsInGroup = groupedRules[groupName]?.map((r) => r.id) || [];
     const allSelected = idsInGroup.length > 0 && idsInGroup.every((id) => selectedIds.includes(id));
-
     if (allSelected) {
       setSelectedIds(selectedIds.filter((id) => !idsInGroup.includes(id)));
     } else {
@@ -86,6 +88,19 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onBatchDelete, onBatch
     const idsInGroup = groupedRules[groupName]?.map((r) => r.id) || [];
     if (idsInGroup.length > 0) {
       onBatchToggle(idsInGroup, targetStatus);
+    }
+  };
+
+  // Trigger Modal
+  const handleDeleteGroupClick = (groupName) => {
+    setGroupToDelete(groupName);
+  };
+
+  // Actual Delete Action
+  const confirmDeleteGroup = () => {
+    if (groupToDelete) {
+      onDeleteGroup(groupToDelete);
+      setGroupToDelete(null);
     }
   };
 
@@ -115,7 +130,6 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onBatchDelete, onBatch
     }
   };
 
-  // Filter dropdown items based on input
   const filteredGroups = allKnownGroups.filter((g) => g.name.toLowerCase().includes(newGroup.toLowerCase()));
 
   return (
@@ -128,7 +142,6 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onBatchDelete, onBatch
       {/* --- INPUT FORM --- */}
       <div className="space-y-3">
         <form onSubmit={handleSubmit} className="flex gap-3 z-20 relative">
-          {/* 1. Domain Input */}
           <div className="flex-[2] relative group">
             <Globe
               className={`absolute left-6 top-1/2 -translate-y-1/2 transition-colors ${
@@ -152,14 +165,12 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onBatchDelete, onBatch
             />
           </div>
 
-          {/* 2. Custom Group Combobox */}
           <div className="flex-1 relative min-w-[160px]" ref={dropdownRef}>
             <div className="relative h-full">
               <Folder
                 className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 peer-focus-within:text-secondary transition-colors pointer-events-none z-10"
                 size={20}
               />
-
               <input
                 type="text"
                 value={newGroup}
@@ -168,7 +179,6 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onBatchDelete, onBatch
                 placeholder="Nhóm..."
                 className="w-full h-full pl-12 pr-10 py-6 rounded-[32px] bg-white border-2 border-transparent focus:border-secondary/20 shadow-sm focus:ring-4 focus:ring-secondary/10 outline-none text-lg font-medium text-[#354F52] placeholder:text-slate-300 peer"
               />
-
               <button
                 type="button"
                 onClick={() => setShowGroupDropdown(!showGroupDropdown)}
@@ -177,12 +187,9 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onBatchDelete, onBatch
                 <ChevronDown size={20} className={`transition-transform duration-200 ${showGroupDropdown ? "rotate-180" : ""}`} />
               </button>
             </div>
-
-            {/* Dropdown Menu */}
             {showGroupDropdown && (
               <div className="absolute top-[calc(100%+8px)] left-0 w-full bg-white rounded-[24px] shadow-xl border border-slate-100 overflow-hidden py-2 animate-in slide-in-from-top-2 fade-in z-50 max-h-60 overflow-y-auto">
                 <div className="px-4 py-2 text-xs font-bold text-slate-300 uppercase tracking-wider">Chọn hoặc nhập mới</div>
-
                 {filteredGroups.map((group) => (
                   <button
                     key={group.id || group.name}
@@ -197,15 +204,12 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onBatchDelete, onBatch
                     {newGroup === group.name && <CheckSquare size={16} className="text-secondary" />}
                   </button>
                 ))}
-
-                {/* Empty State / Create New Hint */}
                 {filteredGroups.length === 0 && (
                   <div className="px-5 py-3 text-slate-400 italic text-sm">{newGroup ? `Tạo nhóm mới "${newGroup}"` : "Chưa có nhóm nào"}</div>
                 )}
               </div>
             )}
           </div>
-
           <button
             type="submit"
             className="bg-primary text-white px-8 rounded-[32px] font-bold hover:shadow-lg transition-all active:scale-95 shadow-primary/20 text-lg whitespace-nowrap"
@@ -213,7 +217,6 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onBatchDelete, onBatch
             Thêm
           </button>
         </form>
-
         {error && <div className="pl-6 text-sm font-bold text-red-500 animate-in slide-in-from-left-2">⚠️ {error}</div>}
       </div>
 
@@ -223,7 +226,10 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onBatchDelete, onBatch
           .sort()
           .map(([groupName, groupRules]) => {
             const allInGroupSelected = groupRules.length > 0 && groupRules.every((r) => selectedIds.includes(r.id));
-            const allInGroupActive = groupRules.length > 0 && groupRules.every((r) => r.is_active);
+            const anyInGroupActive = groupRules.length > 0 && groupRules.some((r) => r.is_active);
+
+            const groupObj = allKnownGroups.find((g) => g.name === groupName);
+            const isSystemGroup = groupObj?.is_system || groupName === "General";
 
             return (
               <div key={groupName} className="space-y-3">
@@ -241,20 +247,33 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onBatchDelete, onBatch
                     </button>
                     <span className="bg-slate-100 text-slate-400 text-xs px-2 py-1 rounded-full font-bold">{groupRules.length}</span>
                   </div>
-                  {groupRules.length > 0 && (
-                    <div className="flex items-center gap-2">
+
+                  <div className="flex items-center gap-3">
+                    {/* Delete Group Button */}
+                    {!isSystemGroup && (
                       <button
-                        onClick={() => handleToggleGroup(groupName, !allInGroupActive)}
-                        className={`w-10 h-6 rounded-full transition-colors relative ${allInGroupActive ? "bg-emerald-500" : "bg-slate-200"}`}
+                        onClick={() => handleDeleteGroupClick(groupName)}
+                        className="p-1.5 text-slate-300 hover:text-red-400 hover:bg-red-50 rounded-lg transition-all"
+                        title="Xóa nhóm"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+
+                    {/* Group Toggle Button */}
+                    {groupRules.length > 0 && (
+                      <button
+                        onClick={() => handleToggleGroup(groupName, !anyInGroupActive)}
+                        className={`w-10 h-6 rounded-full transition-colors relative ${anyInGroupActive ? "bg-emerald-500" : "bg-slate-200"}`}
                       >
                         <div
                           className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${
-                            allInGroupActive ? "left-5" : "left-1"
+                            anyInGroupActive ? "left-5" : "left-1"
                           }`}
                         />
                       </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
 
                 {/* Group Rules List */}
@@ -381,6 +400,38 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onBatchDelete, onBatch
           </form>
         )}
       </div>
+
+      {/* --- CONFIRM DELETE MODAL --- */}
+      {groupToDelete && (
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-[32px] p-8 max-w-sm w-full shadow-2xl scale-100 animate-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center text-red-500 mb-2">
+                <AlertTriangle size={32} />
+              </div>
+              <h3 className="text-2xl font-bold text-[#354F52] font-serif">Xóa nhóm {groupToDelete}?</h3>
+              <p className="text-slate-400 text-sm">
+                Hành động này sẽ xóa <b>tất cả tên miền</b> trong nhóm này. Bạn có chắc chắn không?
+              </p>
+
+              <div className="grid grid-cols-2 gap-3 w-full mt-4">
+                <button
+                  onClick={() => setGroupToDelete(null)}
+                  className="py-3 rounded-2xl font-bold text-slate-500 hover:bg-slate-50 transition-colors"
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={confirmDeleteGroup}
+                  className="py-3 rounded-2xl font-bold bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-200 transition-colors"
+                >
+                  Xóa Vĩnh Viễn
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

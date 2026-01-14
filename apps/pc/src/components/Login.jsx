@@ -1,7 +1,11 @@
 import React, { useState } from "react";
-import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
-import { auth, googleProvider } from "../services/firebase";
+// Removed getRedirectResult from here
+import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
+import { auth } from "../services/firebase";
 import { Shield, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
+import { openUrl } from "@tauri-apps/plugin-opener"; // Ensure this name matches below
+import { invoke } from "@tauri-apps/api/core";
+import { listen, once } from "@tauri-apps/api/event";
 
 const Login = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -10,29 +14,92 @@ const Login = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Helper to handle Firebase Errors nicely
+  // Removed useEffect/checkRedirect logic.
+  // If the user lands here, it means App.js checked for redirect and found nothing.
+
   const handleError = (error) => {
     console.error(error);
     const msg = error.code || error.message;
     if (msg.includes("auth/invalid-email")) return "Email không hợp lệ.";
     if (msg.includes("auth/user-not-found")) return "Tài khoản không tồn tại.";
     if (msg.includes("auth/wrong-password")) return "Sai mật khẩu.";
-    if (msg.includes("auth/email-already-in-use")) return "Email này đã được sử dụng.";
-    if (msg.includes("auth/weak-password")) return "Mật khẩu quá yếu (cần 6+ ký tự).";
     return "Đã có lỗi xảy ra. Vui lòng thử lại.";
   };
-
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin_ = async () => {
     setLoading(true);
-    setError("");
     try {
-      await signInWithPopup(auth, googleProvider);
+      // 1. Start local server to catch the redirect
+      // This returns the port the server is listening on
+      const port = await start((url) => {
+        // 3. This callback runs when Google redirects back to localhost
+        const params = new URL(url).searchParams;
+        const idToken = params.get("id_token"); // Or access_token depending on your Google setup
+
+        if (idToken) {
+          const credential = GoogleAuthProvider.credential(idToken);
+          signInWithCredential(auth, credential);
+        }
+      });
+
+      // 2. Construct the Google OAuth URL manually
+      // Use your Firebase project's client ID
+      const clientId = "project-246566415924.apps.googleusercontent.com";
+      const redirectUri = `http://localhost:${port}`;
+      const googleUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=id_token&scope=openid%20email%20profile&nonce=123`;
+
+      await openUrl(googleUrl); // Opens system browser
     } catch (err) {
-      setError(handleError(err));
+      console.error("Login Error:", err);
+      setError("OAuth failed: " + err.message);
+    } finally {
       setLoading(false);
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    try {
+      await once("redirect_uri", async (event) => {
+        const url = new URL(event.payload);
+        const code = url.searchParams.get("code");
+
+        if (code) {
+          // 1. EXCHANGE CODE FOR ID_TOKEN
+          // In a production app, do this exchange in Rust or a Cloud Function!
+          const response = await fetch("https://oauth2.googleapis.com/token", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              code: code,
+              client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+              client_secret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET,
+              redirect_uri: `http://localhost:${port}`,
+              grant_type: "authorization_code",
+            }),
+          });
+
+          const tokens = await response.json();
+
+          if (tokens.id_token) {
+            // 2. NOW you have an id_token to give to Firebase
+            const credential = GoogleAuthProvider.credential(tokens.id_token);
+            await signInWithCredential(auth, credential);
+            console.log("Logged in with Code Flow!");
+          }
+        }
+      });
+
+      const port = await invoke("start_server");
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+      const redirectUri = `http://localhost:${port}`;
+      const googleUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid%20email%20profile&nonce=123`;
+
+      await openUrl(googleUrl);
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+    }
+  };
   const handleEmailAuth = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -43,6 +110,7 @@ const Login = () => {
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
+      // Success is handled by App.js listener
     } catch (err) {
       setError(handleError(err));
       setLoading(false);
@@ -51,7 +119,6 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFCF8] p-6 animate-in fade-in duration-700">
-      {/* Brand Header */}
       <div className="flex items-center gap-3 mb-8">
         <div className="bg-[#354F52] p-3 rounded-2xl text-white shadow-xl shadow-[#354F52]/20">
           <Shield size={28} />
@@ -59,12 +126,10 @@ const Login = () => {
         <h1 className="font-serif font-bold text-3xl text-[#354F52]">MindfulBlock</h1>
       </div>
 
-      {/* Login Card */}
       <div className="w-full max-w-md bg-white rounded-[40px] shadow-sm border border-slate-100 p-10">
         <h2 className="text-2xl font-bold text-[#354F52] mb-2 font-serif">{isSignUp ? "Tạo tài khoản mới" : "Chào mừng trở lại"}</h2>
         <p className="text-slate-400 mb-8 text-sm">{isSignUp ? "Bắt đầu hành trình tập trung của bạn." : "Tiếp tục nơi bạn đã dừng lại."}</p>
 
-        {/* Google Button */}
         <button
           onClick={handleGoogleLogin}
           disabled={loading}
@@ -80,7 +145,6 @@ const Login = () => {
           <div className="flex-grow border-t border-slate-100"></div>
         </div>
 
-        {/* Email Form */}
         <form onSubmit={handleEmailAuth} className="space-y-4">
           <div className="space-y-4">
             <div className="relative group">
@@ -128,7 +192,6 @@ const Login = () => {
           </button>
         </form>
 
-        {/* Toggle Mode */}
         <div className="mt-8 text-center">
           <button
             onClick={() => {
