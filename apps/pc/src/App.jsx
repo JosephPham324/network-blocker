@@ -16,7 +16,7 @@ const App = () => {
   const [authLoading, setAuthLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(true);
 
-  const { rules, groups, status, addRule, deleteRule, toggleRule, toggleBatch, deleteBatch, moveBatchToGroup, deleteGroup } = useBlockRules(
+  const { rules, groups, status, addRule, deleteRule, toggleRule, toggleBatch, deleteBatch, moveBatchToGroup, deleteGroup, importRules } = useBlockRules(
     user,
     setIsAdmin
   );
@@ -75,6 +75,7 @@ const App = () => {
             onBatchToggle={toggleBatch}
             onBatchMove={moveBatchToGroup}
             onDeleteGroup={deleteGroup}
+            onImport={importRules}
           />
         )}
       </main>

@@ -1,0 +1,21 @@
+Domain,Group,Mode
+facebook.com,Social Media,HARD
+instagram.com,Social Media,HARD
+twitter.com,Social Media,FRICTION
+tiktok.com,Social Media,HARD
+reddit.com,Social Media,TIMED
+youtube.com,Entertainment,TIMED
+netflix.com,Entertainment,TIMED
+twitch.tv,Entertainment,FRICTION
+hulu.com,Entertainment,TIMED
+disneyplus.com,Entertainment,TIMED
+pornhub.com,Pornography,HARD
+xvideos.com,Pornography,HARD
+xnxx.com,Pornography,HARD
+chaturbate.com,Pornography,HARD
+onlyfans.com,Pornography,HARD
+steamcommunity.com,Games,FRICTION
+roblox.com,Games,TIMED
+epicgames.com,Games,FRICTION
+9gag.com,Entertainment,TIMED
+buzzfeed.com,Entertainment,TIMED

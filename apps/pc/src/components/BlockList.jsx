@@ -13,13 +13,15 @@ import {
   Layers,
   ChevronDown,
   AlertTriangle,
+  Upload,
 } from "lucide-react";
 
-const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelete, onBatchToggle, onBatchMove, onDeleteGroup }) => {
+const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelete, onBatchToggle, onBatchMove, onDeleteGroup, onImport }) => {
   const [newDomain, setNewDomain] = useState("");
   const [newGroup, setNewGroup] = useState("General");
   const [error, setError] = useState("");
   const [selectedIds, setSelectedIds] = useState([]);
+  const fileInputRef = useRef(null);
 
   // State for Group Selector UI
   const [showGroupDropdown, setShowGroupDropdown] = useState(false);
@@ -130,13 +132,77 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
     }
   };
 
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const text = event.target.result;
+      const lines = text.split(/\r?\n/);
+      // Basic CSV parsing
+      const headers = lines[0].split(",").map(h => h.trim());
+      // Expecting Domain, Group, (Mode)
+      
+      const data = [];
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        // Handle basic CSV: split by comma, remove quotes if present
+        const values = line.split(",").map(v => v.trim().replace(/^"|"$/g, ''));
+        
+        // Map values to headers
+        const entry = {};
+        headers.forEach((h, index) => {
+            if (values[index]) entry[h] = values[index];
+        });
+        
+        if (entry.Domain) {
+            data.push(entry);
+        }
+      }
+
+      if (data.length > 0) {
+        const result = await onImport(data);
+        if (result.success) {
+            // Optional: Show success toast or reset
+            if (result.count > 0) alert(`Imported ${result.count} rules successfully!`);
+            else alert("Import completed but no new rules were added (duplicates skipped).");
+        } else {
+            setError(result.error);
+        }
+      }
+    };
+    reader.readAsText(file);
+    // Reset input
+    e.target.value = null;
+  };
+
   const filteredGroups = allKnownGroups.filter((g) => g.name.toLowerCase().includes(newGroup.toLowerCase()));
 
   return (
     <div className="max-w-3xl space-y-8 animate-in fade-in duration-500 pb-32 relative">
-      <header>
-        <h2 className="text-5xl font-serif font-bold text-[#354F52] tracking-tight">Danh sách chặn</h2>
-        <p className="text-slate-400 mt-2 text-lg">Quản lý theo nhóm để tối ưu quy trình.</p>
+      <header className="flex justify-between items-end">
+        <div>
+           <h2 className="text-5xl font-serif font-bold text-[#354F52] tracking-tight">Danh sách chặn</h2>
+           <p className="text-slate-400 mt-2 text-lg">Quản lý theo nhóm để tối ưu quy trình.</p>
+        </div>
+        <div>
+            <input 
+                type="file" 
+                ref={fileInputRef} 
+                className="hidden" 
+                accept=".csv" 
+                onChange={handleFileUpload}
+            />
+            <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors font-medium"
+            >
+                <Upload size={20} />
+                <span>Import CSV</span>
+            </button>
+        </div>
       </header>
 
       {/* --- INPUT FORM --- */}

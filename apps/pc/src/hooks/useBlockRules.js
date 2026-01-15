@@ -3,25 +3,31 @@ import { collection, onSnapshot, writeBatch, doc, serverTimestamp, query, orderB
 import { db, appId, isCloudReady } from "../services/firebase";
 import { callRust } from "../services/tauri";
 
-import { ruleSchema, ruleGroupSchema } from "@mindful-block/shared";
+import { ruleSchema, ruleGroupSchema, validateAgainstSchema } from "@mindful-block/shared";
 
-const validateAgainstSchema = (data, schema) => {
-  if (!schema || !schema.properties) return true;
-  if (schema.required) {
-    for (const field of schema.required) {
-      if (data[field] === undefined || data[field] === null) {
-        console.error(`Schema Validation Failed: Missing required field '${field}'`);
-        return false;
-      }
-    }
-  }
-  return true;
-};
+
 
 export const useBlockRules = (user, setIsAdmin) => {
   const [rules, setRules] = useState([]);
   const [groups, setGroups] = useState([{ id: "general", name: "General", is_system: true }]);
   const [status, setStatus] = useState("Đang khởi tạo...");
+
+  // Sync Rules with Rust whenever they change
+  useEffect(() => {
+    if (!rules) return;
+    
+    const formatted = rules.map((r) => ({
+        domain: r.domain,
+        is_active: r.is_active,
+      }));
+
+    callRust("apply_blocking_rules", { rules: formatted })
+    .then(() => setStatus("Bảo vệ đang bật"))
+    .catch((err) => {
+        if (String(err).includes("ADMIN")) setIsAdmin(false);
+        setStatus("Lỗi hệ thống");
+    });
+  }, [rules, setIsAdmin]);
 
   useEffect(() => {
     if (!user || !isCloudReady || !db) return;
@@ -29,19 +35,7 @@ export const useBlockRules = (user, setIsAdmin) => {
     const rulesUnsub = onSnapshot(collection(db, `artifacts/${appId}/users/${user.uid}/block_configs`), (snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setRules(data);
-
       setStatus("Đang đồng bộ...");
-      const formatted = data.map((r) => ({
-        domain: r.domain,
-        is_active: r.is_active,
-      }));
-
-      callRust("apply_blocking_rules", { rules: formatted })
-        .then(() => setStatus("Bảo vệ đang bật"))
-        .catch((err) => {
-          if (String(err).includes("ADMIN")) setIsAdmin(false);
-          setStatus("Lỗi hệ thống");
-        });
     });
 
     const groupsUnsub = onSnapshot(query(collection(db, `artifacts/${appId}/users/${user.uid}/block_groups`), orderBy("name")), (snap) => {
@@ -219,6 +213,83 @@ export const useBlockRules = (user, setIsAdmin) => {
     }
   };
 
+  const importRules = async (rulesData) => {
+    if (!user || !rulesData || rulesData.length === 0) return { success: false, error: "No data to import" };
+    
+    // 1. Process and Validate Data
+    const validRules = [];
+    const newGroupsMap = new Map(); // name -> groupData
+
+    for (const item of rulesData) {
+      const domain = item.Domain?.toLowerCase().trim().replace("www.", "");
+      const groupName = item.Group?.trim() || "General";
+      const mode = ["HARD", "FRICTION", "TIMED"].includes(item.Mode?.toUpperCase()) 
+        ? item.Mode.toUpperCase() 
+        : "HARD";
+
+      if (!domain) continue;
+
+      // Check if rule already exists (skip duplicates)
+      if (rules.some(r => r.domain === domain)) continue;
+      // Check if already in our current batch to import
+      if (validRules.some(r => r.domain === domain)) continue;
+
+      validRules.push({
+        domain,
+        group: groupName,
+        mode,
+        is_active: true,
+        v: 1,
+        updated_at: serverTimestamp(),
+      });
+
+      // Prepare Group if it doesn't exist
+      const groupExists = groups.some(g => g.name.toLowerCase() === groupName.toLowerCase());
+      if (!groupExists && groupName !== "General" && !newGroupsMap.has(groupName.toLowerCase())) {
+        newGroupsMap.set(groupName.toLowerCase(), {
+          name: groupName,
+          is_system: false,
+          created_at: serverTimestamp(),
+        });
+      }
+    }
+
+    if (validRules.length === 0) return { success: true, message: "No new rules to import." };
+
+    // 2. Commit to Firestore
+    if (isCloudReady) {
+      try {
+        const batch = writeBatch(db);
+
+        // Add New Groups
+        for (const groupData of newGroupsMap.values()) {
+             const newGroupRef = doc(collection(db, `artifacts/${appId}/users/${user.uid}/block_groups`));
+             batch.set(newGroupRef, groupData);
+        }
+
+        // Add New Rules
+        for (const ruleData of validRules) {
+             const newRuleRef = doc(collection(db, `artifacts/${appId}/users/${user.uid}/block_configs`));
+             batch.set(newRuleRef, ruleData);
+        }
+
+        await batch.commit();
+        return { success: true, count: validRules.length };
+      } catch (e) {
+        console.error("Import Error:", e);
+        return { success: false, error: "Import failed. See console." };
+      }
+    } else {
+      // Mock Data Update
+      const mockGroups = Array.from(newGroupsMap.values()).map(g => ({ ...g, id: `g-${Date.now()}-${Math.random()}` }));
+      const mockRules = validRules.map(r => ({ ...r, id: `r-${Date.now()}-${Math.random()}`, updated_at: new Date() }));
+      
+      setGroups([...groups, ...mockGroups]);
+      setRules([...rules, ...mockRules]);
+      return { success: true, count: validRules.length };
+    }
+  };
+
   const toggleRule = (id, currentStatus) => toggleBatch([id], !currentStatus);
   const deleteRule = (id) => deleteBatch([id]);
 
@@ -232,6 +303,8 @@ export const useBlockRules = (user, setIsAdmin) => {
     toggleBatch,
     deleteBatch,
     moveBatchToGroup,
-    deleteGroup, // Exporting new function
+    moveBatchToGroup,
+    deleteGroup,
+    importRules,
   };
 };
