@@ -1,5 +1,5 @@
 import React from "react";
-import { Shield, Activity, Lock, LogOut } from "lucide-react";
+import { Shield, Activity, Lock, LogOut, Settings as SettingsIcon } from "lucide-react";
 import { signOut } from "firebase/auth"; // <--- Import logic
 import { auth } from "../services/firebase"; // <--- Import auth
 
@@ -35,6 +35,14 @@ const Sidebar = ({ activeTab, setActiveTab, status }) => {
           }`}
         >
           <Lock size={18} /> <span className="text-sm">Danh sách chặn</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("settings")}
+          className={`w-full flex items-center gap-3 p-4 rounded-2xl transition-all ${
+            activeTab === "settings" ? "bg-[#EBE7DE] text-[#354F52] font-bold" : "text-slate-400 hover:bg-slate-50"
+          }`}
+        >
+          <SettingsIcon size={18} /> <span className="text-sm">Cài đặt</span>
         </button>
       </nav>
 

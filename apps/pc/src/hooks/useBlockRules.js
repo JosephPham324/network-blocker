@@ -7,7 +7,7 @@ import { ruleSchema, ruleGroupSchema, validateAgainstSchema } from "@mindful-blo
 
 
 
-export const useBlockRules = (user, setIsAdmin) => {
+export const useBlockRules = (user, setIsAdmin, blockingEnabled = true) => {
   const [rules, setRules] = useState([]);
   const [groups, setGroups] = useState([{ id: "general", name: "General", is_system: true }]);
   const [status, setStatus] = useState("Đang khởi tạo...");
@@ -16,18 +16,21 @@ export const useBlockRules = (user, setIsAdmin) => {
   useEffect(() => {
     if (!rules) return;
     
-    const formatted = rules.map((r) => ({
+     const formatted = rules.map((r) => ({
         domain: r.domain,
         is_active: r.is_active,
       }));
 
-    callRust("apply_blocking_rules", { rules: formatted })
+    // If blocking is disabled globally, send empty list to Rust to clear hosts
+    const rulesToApply = blockingEnabled ? formatted : [];
+
+    callRust("apply_blocking_rules", { rules: rulesToApply })
     .then(() => setStatus("Bảo vệ đang bật"))
     .catch((err) => {
         if (String(err).includes("ADMIN")) setIsAdmin(false);
         setStatus("Lỗi hệ thống");
     });
-  }, [rules, setIsAdmin]);
+  }, [rules, setIsAdmin, blockingEnabled]);
 
   useEffect(() => {
     if (!user || !isCloudReady || !db) return;

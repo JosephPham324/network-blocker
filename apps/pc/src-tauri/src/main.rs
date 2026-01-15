@@ -10,6 +10,8 @@ use is_elevated::is_elevated;
 use std::process::Command;
 use std::os::windows::process::CommandExt;
 use tauri::Manager;
+use std::sync::Mutex; // <--- Import Mutex
+
 
 // 1. New Imports for v2 Plugins
 use tauri::Emitter; // <--- This is what's missing
@@ -21,6 +23,19 @@ use tauri::WebviewWindow;
 struct BlockRule {
     domain: String,
     is_active: bool,
+}
+
+// Global State
+struct AppState {
+    clean_on_exit: Mutex<bool>,
+}
+
+#[tauri::command]
+fn set_clean_on_exit(state: tauri::State<'_, AppState>, enabled: bool) {
+    if let Ok(mut s) = state.clean_on_exit.lock() {
+        *s = enabled;
+        println!("[Rust] Clean on Exit set to: {}", enabled);
+    }
 }
 
 #[tauri::command]
@@ -132,8 +147,29 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             start_server,
             check_admin_privileges,
-            apply_blocking_rules
+            apply_blocking_rules,
+            set_clean_on_exit // Register new command
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .manage(AppState { clean_on_exit: Mutex::new(false) }) // Initialize State
+        .build(tauri::generate_context!()) // Use .build() instead of .run()
+        .expect("error while building tauri application")
+        .run(|app_handle, event| {
+             match event {
+                tauri::RunEvent::ExitRequested { .. } => {
+                    let state = app_handle.state::<AppState>();
+                    let should_clean = {
+                        match state.clean_on_exit.lock() {
+                            Ok(guard) => *guard,
+                            Err(_) => false,
+                        }
+                    };
+
+                    if should_clean {
+                        println!("[Rust] Cleaning hosts file on exit...");
+                        let _ = apply_blocking_rules(vec![]); // Clear all rules
+                    }
+                }
+                _ => {}
+            }
+        });
 }

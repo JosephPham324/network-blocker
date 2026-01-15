@@ -3,11 +3,13 @@ import { onAuthStateChanged, getRedirectResult } from "firebase/auth";
 import { auth, isCloudReady } from "./services/firebase";
 import { callRust } from "./services/tauri";
 import { useBlockRules } from "./hooks/useBlockRules";
+import { useSettings } from "./hooks/useSettings"; // <--- Import hook
 
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard";
 import BlockList from "./components/BlockList";
 import Login from "./components/Login";
+import Settings from "./components/Settings"; // <--- Import component
 import { AdminRequired, LoadingScreen } from "./components/StateScreens";
 
 const App = () => {
@@ -16,10 +18,14 @@ const App = () => {
   const [authLoading, setAuthLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(true);
 
-  const { rules, groups, status, addRule, deleteRule, toggleRule, toggleBatch, deleteBatch, moveBatchToGroup, deleteGroup, importRules } = useBlockRules(
-    user,
-    setIsAdmin
-  );
+  const { settings, toggleBlocking, toggleCleanOnExit } = useSettings();
+
+  const { rules, groups, status, addRule, deleteRule, toggleRule, toggleBatch, deleteBatch, moveBatchToGroup, deleteGroup, importRules } =
+    useBlockRules(
+      user,
+      setIsAdmin,
+      settings.blockingEnabled // <--- Pass to hook
+    );
 
   useEffect(() => {
     let unsubscribe;
@@ -78,6 +84,7 @@ const App = () => {
             onImport={importRules}
           />
         )}
+        {activeTab === "settings" && <Settings settings={settings} toggleBlocking={toggleBlocking} toggleCleanOnExit={toggleCleanOnExit} />}
       </main>
     </div>
   );
