@@ -19,7 +19,7 @@ const App = () => {
   const [authLoading, setAuthLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(true);
 
-  const { settings, toggleBlocking, toggleCleanOnExit } = useSettings();
+  const { settings, toggleBlocking, toggleCleanOnExit, setLanguage } = useSettings();
 
   const { rules, groups, status, addRule, deleteRule, toggleRule, toggleBatch, deleteBatch, moveBatchToGroup, deleteGroup, importRules } =
     useBlockRules(
@@ -74,16 +74,16 @@ const App = () => {
     signOut(auth).catch((error) => console.error("Sign out error", error));
   };
 
-  if (authLoading) return <LoadingScreen />;
-  if (!user) return <Login />;
-  if (!isAdmin) return <AdminRequired />;
+  if (authLoading) return <LoadingScreen language={settings.language} />;
+  if (!user) return <Login language={settings.language} />;
+  if (!isAdmin) return <AdminRequired language={settings.language} />;
 
   return (
     <div className="flex h-screen bg-[#FDFCF8] text-[#2F3E46] font-sans overflow-hidden">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} status={status} onLogout={handleLogout} />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} status={status} onLogout={handleLogout} language={settings.language} />
 
       <main className="flex-1 p-12 overflow-y-auto">
-        {activeTab === "dash" && <Dashboard rulesCount={rules.length} />}
+        {activeTab === "dash" && <Dashboard rulesCount={rules.length} language={settings.language} />}
         {activeTab === "list" && (
           <BlockList
             rules={rules}
@@ -96,9 +96,10 @@ const App = () => {
             onBatchMove={moveBatchToGroup}
             onDeleteGroup={deleteGroup}
             onImport={importRules}
+            language={settings.language}
           />
         )}
-        {activeTab === "settings" && <Settings settings={settings} toggleBlocking={toggleBlocking} toggleCleanOnExit={toggleCleanOnExit} />}
+        {activeTab === "settings" && <Settings settings={settings} toggleBlocking={toggleBlocking} toggleCleanOnExit={toggleCleanOnExit} setLanguage={setLanguage} />}
       </main>
     </div>
   );

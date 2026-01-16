@@ -1,9 +1,11 @@
 import React from "react";
-import { Shield, ShieldAlert, Power, LogOut } from "lucide-react";
+import { Shield, ShieldAlert, Power, LogOut, Globe } from "lucide-react";
 import FrictionModal from "./FrictionModal";
 import { useState } from "react";
+import { translations } from "../locales";
 
-const Settings = ({ settings, toggleBlocking, toggleCleanOnExit }) => {
+const Settings = ({ settings, toggleBlocking, toggleCleanOnExit, setLanguage }) => {
+  const t = translations[settings.language].settings;
   const [showFriction, setShowFriction] = useState(false);
 
   const handleToggleClick = () => {
@@ -24,11 +26,38 @@ const Settings = ({ settings, toggleBlocking, toggleCleanOnExit }) => {
   return (
     <div className="max-w-3xl space-y-8 animate-in fade-in duration-500">
       <header>
-        <h2 className="text-5xl font-serif font-bold text-[#354F52] tracking-tight">Cài đặt</h2>
-        <p className="text-slate-400 mt-2 text-lg">Quản lý hành vi của ứng dụng.</p>
+        <h2 className="text-5xl font-serif font-bold text-[#354F52] tracking-tight">{t.title}</h2>
+        <p className="text-slate-400 mt-2 text-lg">{t.subtitle}</p>
       </header>
 
       <div className="grid gap-6">
+        {/* Language Toggle */}
+        <div className="bg-white p-6 rounded-[32px] border-2 border-slate-100 flex items-center justify-between shadow-sm">
+            <div className="flex items-center gap-4">
+                <div className="p-4 rounded-2xl bg-blue-100 text-blue-600">
+                    <Globe size={24} />
+                </div>
+                <div>
+                    <h3 className="text-xl font-bold text-[#354F52]">{t.language_title}</h3>
+                    <p className="text-slate-400 text-sm">{t.language_desc}</p>
+                </div>
+            </div>
+            <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-full">
+                <button 
+                    onClick={() => setLanguage("vi")}
+                    className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${settings.language === "vi" ? "bg-white text-[#354F52] shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
+                >
+                    Tiếng Việt
+                </button>
+                <button 
+                    onClick={() => setLanguage("en")}
+                    className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${settings.language === "en" ? "bg-white text-[#354F52] shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
+                >
+                    English
+                </button>
+            </div>
+        </div>
+
         {/* Global Blocking Toggle */}
         <div className="bg-white p-6 rounded-[32px] border-2 border-slate-100 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-4">
@@ -36,8 +65,8 @@ const Settings = ({ settings, toggleBlocking, toggleCleanOnExit }) => {
                     {settings.blockingEnabled ? <Shield size={24} /> : <ShieldAlert size={24} />}
                 </div>
                 <div>
-                    <h3 className="text-xl font-bold text-[#354F52]">Áp dụng chặn</h3>
-                    <p className="text-slate-400 text-sm">Tắt tính năng này sẽ vô hiệu hóa tất cả các quy tắc chặn.</p>
+                    <h3 className="text-xl font-bold text-[#354F52]">{t.blocking_title}</h3>
+                    <p className="text-slate-400 text-sm">{t.blocking_desc}</p>
                 </div>
             </div>
             <button 
@@ -55,8 +84,8 @@ const Settings = ({ settings, toggleBlocking, toggleCleanOnExit }) => {
                     <Power size={24} />
                 </div>
                 <div>
-                    <h3 className="text-xl font-bold text-[#354F52]">Xóa quy tắc khi thoát</h3>
-                    <p className="text-slate-400 text-sm">Tự động bỏ chặn tất cả khi bạn tắt ứng dụng.</p>
+                    <h3 className="text-xl font-bold text-[#354F52]">{t.clean_title}</h3>
+                    <p className="text-slate-400 text-sm">{t.clean_desc}</p>
                 </div>
             </div>
             <button 
@@ -72,10 +101,11 @@ const Settings = ({ settings, toggleBlocking, toggleCleanOnExit }) => {
         isOpen={showFriction}
         onClose={() => setShowFriction(false)}
         onConfirm={confirmDisable}
-        title="Tắt chặn toàn bộ?"
-        message="Hành động này sẽ vô hiệu hóa tất cả các quy tắc chặn. Bạn sẽ có thể truy cập các trang web gây xao nhãng."
-        confirmationText="Tôi xác nhận tắt chặn tất cả"
+        title={t.friction_modal_title}
+        message={t.friction_modal_msg}
+        confirmationText={t.friction_confirm}
         actionType="disable"
+        language={settings.language}
       />
     </div>
   );

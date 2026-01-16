@@ -7,7 +7,10 @@ import { openUrl } from "@tauri-apps/plugin-opener"; // Ensure this name matches
 import { invoke } from "@tauri-apps/api/core";
 import { listen, once } from "@tauri-apps/api/event";
 
-const Login = () => {
+import { translations } from "../locales";
+
+const Login = ({ language = "vi" }) => {
+  const t = translations[language].login;
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,10 +23,10 @@ const Login = () => {
   const handleError = (error) => {
     console.error(error);
     const msg = error.code || error.message;
-    if (msg.includes("auth/invalid-email")) return "Email không hợp lệ.";
-    if (msg.includes("auth/user-not-found")) return "Tài khoản không tồn tại.";
-    if (msg.includes("auth/wrong-password")) return "Sai mật khẩu.";
-    return "Đã có lỗi xảy ra. Vui lòng thử lại.";
+    if (msg.includes("auth/invalid-email")) return t.error_email;
+    if (msg.includes("auth/user-not-found")) return t.error_user;
+    if (msg.includes("auth/wrong-password")) return t.error_pass;
+    return t.error_general;
   };
   const handleGoogleLogin_ = async () => {
     setLoading(true);
@@ -127,8 +130,8 @@ const Login = () => {
       </div>
 
       <div className="w-full max-w-md bg-white rounded-[40px] shadow-sm border border-slate-100 p-10">
-        <h2 className="text-2xl font-bold text-[#354F52] mb-2 font-serif">{isSignUp ? "Tạo tài khoản mới" : "Chào mừng trở lại"}</h2>
-        <p className="text-slate-400 mb-8 text-sm">{isSignUp ? "Bắt đầu hành trình tập trung của bạn." : "Tiếp tục nơi bạn đã dừng lại."}</p>
+        <h2 className="text-2xl font-bold text-[#354F52] mb-2 font-serif">{isSignUp ? t.title_signup : t.title_signin}</h2>
+        <p className="text-slate-400 mb-8 text-sm">{isSignUp ? t.subtitle_signup : t.subtitle_signin}</p>
 
         <button
           onClick={handleGoogleLogin}
@@ -136,12 +139,12 @@ const Login = () => {
           className="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 hover:bg-slate-50 text-[#2F3E46] font-bold py-3.5 rounded-2xl transition-all mb-6 active:scale-95 disabled:opacity-50"
         >
           <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" />
-          <span>Tiếp tục với Google</span>
+          <span>{t.google_btn}</span>
         </button>
 
         <div className="relative flex py-2 items-center mb-6">
           <div className="flex-grow border-t border-slate-100"></div>
-          <span className="flex-shrink mx-4 text-slate-300 text-xs font-bold uppercase">Hoặc</span>
+          <span className="flex-shrink mx-4 text-slate-300 text-xs font-bold uppercase">{t.or}</span>
           <div className="flex-grow border-t border-slate-100"></div>
         </div>
 
@@ -152,7 +155,7 @@ const Login = () => {
               <input
                 type="email"
                 required
-                placeholder="Email của bạn"
+                placeholder={t.email_placeholder}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border-transparent focus:bg-white focus:ring-2 focus:ring-primary/10 rounded-2xl outline-none transition-all font-medium text-primary placeholder:text-slate-300"
@@ -163,7 +166,7 @@ const Login = () => {
               <input
                 type="password"
                 required
-                placeholder="Mật khẩu"
+                placeholder={t.password_placeholder}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border-transparent focus:bg-white focus:ring-2 focus:ring-primary/10 rounded-2xl outline-none transition-all font-medium text-primary placeholder:text-slate-300"
@@ -186,7 +189,7 @@ const Login = () => {
               <Loader2 className="animate-spin" size={20} />
             ) : (
               <>
-                {isSignUp ? "Đăng ký" : "Đăng nhập"} <ArrowRight size={18} />
+                {isSignUp ? t.btn_signup : t.btn_signin} <ArrowRight size={18} />
               </>
             )}
           </button>
@@ -200,7 +203,7 @@ const Login = () => {
             }}
             className="text-slate-400 hover:text-primary text-sm font-semibold transition-colors"
           >
-            {isSignUp ? "Đã có tài khoản? Đăng nhập" : "Chưa có tài khoản? Đăng ký ngay"}
+            {isSignUp ? t.toggle_signin : t.toggle_signup}
           </button>
         </div>
       </div>

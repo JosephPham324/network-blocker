@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { AlertTriangle, X } from "lucide-react";
 
+import { translations } from "../locales";
+
 const FrictionModal = ({ 
   isOpen, 
   onClose, 
@@ -8,8 +10,10 @@ const FrictionModal = ({
   title, 
   message, 
   confirmationText, 
-  actionType = "disable" // 'disable' (orange) or 'delete' (red)
+  actionType = "disable",
+  language = "vi"
 }) => {
+  const tf = translations[language].friction;
   const [inputValue, setInputValue] = useState("");
   const [isMatch, setIsMatch] = useState(false);
 
@@ -52,7 +56,7 @@ const FrictionModal = ({
           </p>
 
           <div className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 mt-2">
-            <p className="text-xs text-slate-400 uppercase font-bold tracking-wider mb-2">Nhập chính xác câu sau để xác nhận</p>
+            <p className="text-xs text-slate-400 uppercase font-bold tracking-wider mb-2">{tf.instruction}</p>
             <p className="font-mono text-[#354F52] font-bold select-none pointer-events-none">{confirmationText}</p>
           </div>
 
@@ -64,7 +68,7 @@ const FrictionModal = ({
             autoComplete="off"
             autoCorrect="off"
             spellCheck="false"
-            placeholder="Nhập xác nhận tại đây..."
+            placeholder={tf.placeholder}
             className={`w-full p-4 rounded-xl border-2 outline-none font-medium transition-all ${
                 isMatch 
                 ? `border-${colorClass}-500 bg-${colorClass}-50/10` 
@@ -78,7 +82,7 @@ const FrictionModal = ({
               onClick={onClose}
               className="py-3 rounded-2xl font-bold text-slate-500 hover:bg-slate-50 transition-colors"
             >
-              Hủy
+              {tf.cancel}
             </button>
             <button
               onClick={onConfirm}
@@ -90,7 +94,7 @@ const FrictionModal = ({
                     : "bg-slate-300 cursor-not-allowed"}
               `}
             >
-              Xác nhận
+              {tf.confirm}
             </button>
           </div>
         </div>

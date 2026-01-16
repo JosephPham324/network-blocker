@@ -17,8 +17,11 @@ import {
   Search,
 } from "lucide-react";
 import FrictionModal from "./FrictionModal";
+import { translations } from "../locales";
 
-const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelete, onBatchToggle, onBatchMove, onDeleteGroup, onImport }) => {
+const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelete, onBatchToggle, onBatchMove, onDeleteGroup, onImport, language = "vi" }) => {
+  const t = translations[language].blocklist;
+  const tf = translations[language].friction;
   const [newDomain, setNewDomain] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [newGroup, setNewGroup] = useState("General");
@@ -276,8 +279,8 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
     <div className="max-w-3xl space-y-8 animate-in fade-in duration-500 pb-32 relative">
       <header className="flex justify-between items-end">
         <div>
-           <h2 className="text-5xl font-serif font-bold text-[#354F52] tracking-tight">Danh sách chặn</h2>
-           <p className="text-slate-400 mt-2 text-lg">Quản lý theo nhóm để tối ưu quy trình.</p>
+           <h2 className="text-5xl font-serif font-bold text-[#354F52] tracking-tight">{t.title}</h2>
+           <p className="text-slate-400 mt-2 text-lg">{t.subtitle}</p>
         </div>
         <div className="flex items-center gap-3">
             <div className="relative group">
@@ -286,7 +289,7 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
                     type="text" 
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Tìm kiếm..." 
+                    placeholder={t.search_placeholder} 
                     className="pl-10 pr-4 py-2 rounded-full bg-white border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm transition-all w-48 focus:w-64"
                 />
             </div>
@@ -303,7 +306,7 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
                 className="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors font-medium"
             >
                 <Upload size={20} />
-                <span>Import CSV</span>
+                <span>{t.import_csv}</span>
             </button>
         </div>
       </header>
@@ -325,7 +328,7 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
                 setNewDomain(e.target.value);
                 setError("");
               }}
-              placeholder="youtube.com..."
+              placeholder={t.domain_placeholder}
               className={`w-full pl-14 pr-4 py-6 rounded-[32px] bg-white border-2 shadow-sm focus:ring-4 outline-none text-xl font-medium transition-all ${
                 error
                   ? "border-red-100 focus:border-red-300 text-red-600 placeholder:text-red-300"
@@ -345,7 +348,7 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
                 value={newGroup}
                 onChange={(e) => setNewGroup(e.target.value)}
                 onFocus={() => setShowGroupDropdown(true)}
-                placeholder="Nhóm..."
+                placeholder={t.group_placeholder}
                 className="w-full h-full pl-12 pr-10 py-6 rounded-[32px] bg-white border-2 border-transparent focus:border-secondary/20 shadow-sm focus:ring-4 focus:ring-secondary/10 outline-none text-lg font-medium text-[#354F52] placeholder:text-slate-300 peer"
               />
               <button
@@ -358,7 +361,7 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
             </div>
             {showGroupDropdown && (
               <div className="absolute top-[calc(100%+8px)] left-0 w-full bg-white rounded-[24px] shadow-xl border border-slate-100 overflow-hidden py-2 animate-in slide-in-from-top-2 fade-in z-50 max-h-60 overflow-y-auto">
-                <div className="px-4 py-2 text-xs font-bold text-slate-300 uppercase tracking-wider">Chọn hoặc nhập mới</div>
+                <div className="px-4 py-2 text-xs font-bold text-slate-300 uppercase tracking-wider">{t.select_or_create}</div>
                 {filteredGroups.map((group) => (
                   <button
                     key={group.id || group.name}
@@ -374,7 +377,7 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
                   </button>
                 ))}
                 {filteredGroups.length === 0 && (
-                  <div className="px-5 py-3 text-slate-400 italic text-sm">{newGroup ? `Tạo nhóm mới "${newGroup}"` : "Chưa có nhóm nào"}</div>
+                  <div className="px-5 py-3 text-slate-400 italic text-sm">{newGroup ? t.create_group.replace("{group}", newGroup) : t.no_group}</div>
                 )}
               </div>
             )}
@@ -383,7 +386,7 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
             type="submit"
             className="bg-primary text-white px-8 rounded-[32px] font-bold hover:shadow-lg transition-all active:scale-95 shadow-primary/20 text-lg whitespace-nowrap"
           >
-            Thêm
+            {t.add_button}
           </button>
         </form>
         {error && <div className="pl-6 text-sm font-bold text-red-500 animate-in slide-in-from-left-2">⚠️ {error}</div>}
@@ -449,7 +452,7 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
                 <div className="grid gap-3">
                   {groupRules.length === 0 ? (
                     <div className="p-4 border border-dashed border-slate-200 rounded-[24px] text-center text-slate-300 italic text-sm">
-                      Chưa có tên miền nào trong nhóm này
+                      {t.empty_group}
                     </div>
                   ) : (
                     groupRules.map((r) => {
@@ -509,7 +512,7 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
 
       {rules.length === 0 && Object.keys(groupedRules).length === 0 && (
         <div className="text-center py-20 bg-slate-50/50 rounded-[48px] border-2 border-dashed border-slate-100">
-          <p className="text-slate-300 italic font-bold">Chưa có dữ liệu</p>
+          <p className="text-slate-300 italic font-bold">{t.no_data}</p>
         </div>
       )}
 
@@ -522,7 +525,7 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
       >
         {!isMoving ? (
           <>
-            <span className="font-bold text-sm whitespace-nowrap">{selectedIds.length} mục</span>
+            <span className="font-bold text-sm whitespace-nowrap">{t.items_count.replace("{count}", selectedIds.length)}</span>
             <div className="h-4 w-px bg-white/20"></div>
             <div className="flex items-center gap-1">
               <button onClick={() => onBatchToggle(selectedIds, true)} className="p-3 hover:bg-white/10 rounded-full transition-colors">
@@ -555,13 +558,13 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
             <input
               autoFocus
               type="text"
-              placeholder="Nhập tên nhóm mới..."
+              placeholder={t.move_group_placeholder}
               value={targetGroup}
               onChange={(e) => setTargetGroup(e.target.value)}
               className="bg-transparent border-none outline-none text-white placeholder:text-white/40 text-sm font-medium w-40"
             />
             <button type="submit" className="bg-white text-primary px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-100">
-              Lưu
+              {t.save}
             </button>
             <button type="button" onClick={() => setIsMoving(false)} className="p-1.5 hover:bg-white/10 rounded-full">
               <X size={14} />
@@ -593,6 +596,7 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
             `Tôi xác nhận tắt luật chặn ${frictionState.data?.domain}`
         }
         actionType={frictionState.data?.type?.includes('delete') ? "delete" : "disable"}
+        language={language}
       />
     </div>
   );

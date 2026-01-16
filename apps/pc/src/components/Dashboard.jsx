@@ -1,18 +1,21 @@
 import React from "react";
 import { BarChart3 } from "lucide-react";
 
-const Dashboard = ({ rulesCount }) => {
+import { translations } from "../locales";
+
+const Dashboard = ({ rulesCount, language = "vi" }) => {
+  const t = translations[language].dashboard;
   return (
     <div className="max-w-4xl space-y-12 animate-in fade-in duration-500">
       <header>
-        <h2 className="text-5xl font-serif font-bold text-[#354F52] tracking-tight">Chào bạn,</h2>
-        <p className="text-slate-400 mt-2 text-lg">Hệ thống đang giúp bạn làm chủ thời gian.</p>
+        <h2 className="text-5xl font-serif font-bold text-[#354F52] tracking-tight">{t.title}</h2>
+        <p className="text-slate-400 mt-2 text-lg">{t.subtitle}</p>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-center">
         <div className="bg-white p-10 rounded-[48px] border border-slate-100 shadow-sm transition-all hover:shadow-md">
           <p className="text-6xl font-bold text-emerald-600 mb-2 tracking-tighter">{rulesCount}</p>
-          <p className="text-xs text-slate-400 uppercase font-bold tracking-widest">Quy tắc đang chạy</p>
+          <p className="text-xs text-slate-400 uppercase font-bold tracking-widest">{t.rules_active}</p>
         </div>
         <div className="bg-primary p-10 rounded-[48px] text-white shadow-xl shadow-primary/20">
           <p className="text-6xl font-bold mb-2 tracking-tighter">142m</p>
