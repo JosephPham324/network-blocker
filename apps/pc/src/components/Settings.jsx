@@ -17,7 +17,7 @@ const Settings = ({ settings, toggleBlocking, toggleCleanOnExit }) => {
                     {settings.blockingEnabled ? <Shield size={24} /> : <ShieldAlert size={24} />}
                 </div>
                 <div>
-                    <h3 className="text-xl font-bold text-[#354F52]">Chặn toàn hệ thống</h3>
+                    <h3 className="text-xl font-bold text-[#354F52]">Áp dụng chặn</h3>
                     <p className="text-slate-400 text-sm">Tắt tính năng này sẽ vô hiệu hóa tất cả các quy tắc chặn.</p>
                 </div>
             </div>
