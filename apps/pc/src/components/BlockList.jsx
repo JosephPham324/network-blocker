@@ -14,11 +14,13 @@ import {
   ChevronDown,
   AlertTriangle,
   Upload,
+  Search,
 } from "lucide-react";
 import FrictionModal from "./FrictionModal";
 
 const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelete, onBatchToggle, onBatchMove, onDeleteGroup, onImport }) => {
   const [newDomain, setNewDomain] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [newGroup, setNewGroup] = useState("General");
   const [error, setError] = useState("");
   const [selectedIds, setSelectedIds] = useState([]);
@@ -62,7 +64,12 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
     allKnownGroups.forEach((g) => {
       result[g.name] = [];
     });
-    rules.forEach((rule) => {
+
+    const filteredRules = rules.filter((r) => 
+        r.domain.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    filteredRules.forEach((rule) => {
       const gName = rule.group || "General";
       if (!result[gName]) {
         result[gName] = [];
@@ -70,7 +77,7 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
       result[gName].push(rule);
     });
     return result;
-  }, [rules, allKnownGroups]);
+  }, [rules, allKnownGroups, searchTerm]);
 
   // Click Outside Handler for Dropdown
   useEffect(() => {
@@ -272,7 +279,18 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
            <h2 className="text-5xl font-serif font-bold text-[#354F52] tracking-tight">Danh sách chặn</h2>
            <p className="text-slate-400 mt-2 text-lg">Quản lý theo nhóm để tối ưu quy trình.</p>
         </div>
-        <div>
+        <div className="flex items-center gap-3">
+            <div className="relative group">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
+                <input 
+                    type="text" 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Tìm kiếm..." 
+                    className="pl-10 pr-4 py-2 rounded-full bg-white border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm transition-all w-48 focus:w-64"
+                />
+            </div>
+            <div className="h-8 w-px bg-slate-200 mx-1"></div>
             <input 
                 type="file" 
                 ref={fileInputRef} 

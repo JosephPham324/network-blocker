@@ -4,11 +4,11 @@ import { callRust } from "../services/tauri";
 export const useSettings = () => {
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem("app_settings");
-    return saved
       ? JSON.parse(saved)
       : {
           blockingEnabled: true,
           cleanOnExit: false,
+          language: "vi",
         };
   });
 
@@ -27,9 +27,14 @@ export const useSettings = () => {
     setSettings(prev => ({ ...prev, cleanOnExit: !prev.cleanOnExit }));
   };
 
+  const setLanguage = (lang) => {
+    setSettings(prev => ({ ...prev, language: lang }));
+  };
+
   return {
     settings,
     toggleBlocking,
-    toggleCleanOnExit
+    toggleCleanOnExit,
+    setLanguage
   };
 };
