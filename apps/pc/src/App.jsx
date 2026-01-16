@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { onAuthStateChanged, getRedirectResult } from "firebase/auth";
 import { auth, isCloudReady } from "./services/firebase";
+import { signOut } from "firebase/auth"; // <--- Add import
 import { callRust } from "./services/tauri";
 import { useBlockRules } from "./hooks/useBlockRules";
 import { useSettings } from "./hooks/useSettings"; // <--- Import hook
@@ -60,13 +61,26 @@ const App = () => {
     });
   }, []);
 
+  const handleLogout = async () => {
+    try {
+      // 1. Clean Hosts File
+      await callRust("apply_blocking_rules", { rules: [] });
+      console.log("Hosts file cleaned on logout");
+    } catch (err) {
+      console.error("Failed to clean hosts on logout:", err);
+    }
+    
+    // 2. Sign Out
+    signOut(auth).catch((error) => console.error("Sign out error", error));
+  };
+
   if (authLoading) return <LoadingScreen />;
   if (!user) return <Login />;
   if (!isAdmin) return <AdminRequired />;
 
   return (
     <div className="flex h-screen bg-[#FDFCF8] text-[#2F3E46] font-sans overflow-hidden">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} status={status} />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} status={status} onLogout={handleLogout} />
 
       <main className="flex-1 p-12 overflow-y-auto">
         {activeTab === "dash" && <Dashboard rulesCount={rules.length} />}

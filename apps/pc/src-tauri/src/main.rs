@@ -16,8 +16,8 @@ use std::sync::Mutex; // <--- Import Mutex
 // 1. New Imports for v2 Plugins
 use tauri::Emitter; // <--- This is what's missing
 use tauri_plugin_autostart::MacosLauncher;
-use tauri_plugin_oauth::start; 
-use tauri::WebviewWindow; 
+// use tauri_plugin_oauth::start; 
+// use tauri::WebviewWindow; 
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct BlockRule {

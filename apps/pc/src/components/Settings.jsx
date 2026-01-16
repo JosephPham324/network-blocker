@@ -1,7 +1,26 @@
 import React from "react";
 import { Shield, ShieldAlert, Power, LogOut } from "lucide-react";
+import FrictionModal from "./FrictionModal";
+import { useState } from "react";
 
 const Settings = ({ settings, toggleBlocking, toggleCleanOnExit }) => {
+  const [showFriction, setShowFriction] = useState(false);
+
+  const handleToggleClick = () => {
+    if (settings.blockingEnabled) {
+      // Trying to disable -> Show Friction
+      setShowFriction(true);
+    } else {
+      // Trying to enable -> Go ahead
+      toggleBlocking();
+    }
+  };
+
+  const confirmDisable = () => {
+    toggleBlocking(); // Turn it off
+    setShowFriction(false);
+  };
+
   return (
     <div className="max-w-3xl space-y-8 animate-in fade-in duration-500">
       <header>
@@ -22,7 +41,7 @@ const Settings = ({ settings, toggleBlocking, toggleCleanOnExit }) => {
                 </div>
             </div>
             <button 
-                onClick={toggleBlocking}
+                onClick={handleToggleClick}
                 className={`w-16 h-8 rounded-full transition-colors relative ${settings.blockingEnabled ? "bg-emerald-500" : "bg-slate-200"}`}
             >
                 <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all shadow-sm ${settings.blockingEnabled ? "left-9" : "left-1"}`} />
@@ -48,6 +67,16 @@ const Settings = ({ settings, toggleBlocking, toggleCleanOnExit }) => {
             </button>
         </div>
       </div>
+      
+      <FrictionModal
+        isOpen={showFriction}
+        onClose={() => setShowFriction(false)}
+        onConfirm={confirmDisable}
+        title="Tắt chặn toàn bộ?"
+        message="Hành động này sẽ vô hiệu hóa tất cả các quy tắc chặn. Bạn sẽ có thể truy cập các trang web gây xao nhãng."
+        confirmationText="Tôi xác nhận tắt chặn tất cả"
+        actionType="disable"
+      />
     </div>
   );
 };

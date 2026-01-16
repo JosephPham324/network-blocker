@@ -3,11 +3,7 @@ import { Shield, Activity, Lock, LogOut, Settings as SettingsIcon } from "lucide
 import { signOut } from "firebase/auth"; // <--- Import logic
 import { auth } from "../services/firebase"; // <--- Import auth
 
-const Sidebar = ({ activeTab, setActiveTab, status }) => {
-  // Add Logout Handler
-  const handleLogout = () => {
-    signOut(auth).catch((error) => console.error("Sign out error", error));
-  };
+const Sidebar = ({ activeTab, setActiveTab, status, onLogout }) => {
 
   return (
     <aside className="w-72 border-r border-[#F4F1EA] p-8 bg-white flex flex-col shadow-sm">
@@ -50,7 +46,7 @@ const Sidebar = ({ activeTab, setActiveTab, status }) => {
       <div className="mt-auto space-y-4">
         {/* Logout Button */}
         <button
-          onClick={handleLogout}
+          onClick={onLogout}
           className="w-full flex items-center gap-3 p-3 rounded-2xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
         >
           <LogOut size={18} /> <span className="text-sm font-bold">Đăng xuất</span>

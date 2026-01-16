@@ -1,0 +1,6 @@
+feat: add friction features, clean on logout, and project documentation
+
+- Added `FrictionModal` component to require typed confirmation for critical actions (Global Disable, Rule/Group Delete & Disable).
+- Implemented "Clean on Logout" logic to automatically clear the hosts file when signing out.
+- Added comprehensive `README.md` and `README_vi.md` (Vietnamese) documentation.
+- Enhanced security by preventing copy-paste in confirmation modal and resolving IME conflicts.

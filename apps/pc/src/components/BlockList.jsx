@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   Upload,
 } from "lucide-react";
+import FrictionModal from "./FrictionModal";
 
 const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelete, onBatchToggle, onBatchMove, onDeleteGroup, onImport }) => {
   const [newDomain, setNewDomain] = useState("");
@@ -33,6 +34,14 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
 
   // State for Delete Confirmation Modal
   const [groupToDelete, setGroupToDelete] = useState(null);
+
+  // State for Friction Modal
+  const [frictionState, setFrictionState] = useState({
+      isOpen: false,
+      data: null, // { type: 'rule_toggle', id: '..', domain: '..', currentStatus: true } etc
+  });
+
+  const closeFriction = () => setFrictionState({ ...frictionState, isOpen: false, data: null });
 
   // --- DERIVED STATE ---
 
@@ -100,10 +109,86 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
 
   // Actual Delete Action
   const confirmDeleteGroup = () => {
+     // This is now handled by Friction Modal logic or we can keep it if we want to replace it entirely.
+     // The prompt says "Disable a group", but deleting a group is also a critical action.
+     // I'll replace the simple AlertTriangle modal with the FrictionModal for deletion too, 
+     // or keep it simple if the user only asked for "Disable a group" to have friction.
+     // User request: "Disable a group", "Delete a rule".
+     // User ALSO said: "Maybe let them type out a confirmation ... like 'Tôi xác nhận xoá luật chặn xxx.com'"
+     // It makes sense to unify this.
+     
+     // For now, I'll hook into the existing friction system I'm building.
+     // But wait, the existing code has `groupToDelete` state. I should probably replace that with my new system 
+     // to be consistent, OR just add the friction to the "Disable" part.
+     // The request says: "Disable individual rules", "Disable a group", "Delete a rule".
+     // It DOES NOT explicitly say "Delete a group", but that is a super dangerous action, so I'll add friction there too.
     if (groupToDelete) {
       onDeleteGroup(groupToDelete);
       setGroupToDelete(null);
     }
+  };
+
+  const handleApplyFriction = () => {
+    const { data } = frictionState;
+    if (!data) return;
+
+    if (data.type === 'rule_toggle') {
+        onToggle(data.id, data.currentStatus);
+    } else if (data.type === 'rule_delete') {
+        onDelete(data.id);
+    } else if (data.type === 'group_toggle') {
+        onBatchToggle(data.ids, false); // Turning OFF
+    } else if (data.type === 'group_delete') {
+        onDeleteGroup(data.groupName);
+    }
+    closeFriction();
+  };
+
+  // --- INTERCEPTORS ---
+
+  // 1. Toggle Rule (Intercept specific)
+  const handleToggleRuleClick = (id, currentStatus, domain) => {
+    if (currentStatus) {
+        // Turning OFF -> Friction
+        setFrictionState({
+            isOpen: true,
+            data: { type: 'rule_toggle', id, currentStatus, domain },
+        });
+    } else {
+        // Turning ON -> No Friction
+        onToggle(id, currentStatus);
+    }
+  };
+
+  // 2. Delete Rule (Intercept always)
+  const handleDeleteRuleClick = (id, domain) => {
+    setFrictionState({
+        isOpen: true,
+        data: { type: 'rule_delete', id, domain },
+    });
+  };
+
+  // 3. Toggle Group (Intercept if turning OFF)
+  const handleToggleGroupClick = (groupName, targetStatus) => {
+    // If targetStatus is FALSE (we are turning it OFF because it was active), show friction
+    // If targetStatus is TRUE (we are turning it ON), no friction
+    if (!targetStatus) {
+         const idsInGroup = groupedRules[groupName]?.map((r) => r.id) || [];
+         setFrictionState({
+            isOpen: true,
+            data: { type: 'group_toggle', groupName, ids: idsInGroup },
+         });
+    } else {
+        handleToggleGroup(groupName, targetStatus);
+    }
+  };
+  
+  // 4. Delete Group (Replace existing modal logic with Friction)
+  const handleDeleteGroupClickNew = (groupName) => {
+     setFrictionState({
+        isOpen: true,
+        data: { type: 'group_delete', groupName },
+     });
   };
 
   const handleMoveSubmit = async (e) => {
@@ -318,7 +403,7 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
                     {/* Delete Group Button */}
                     {!isSystemGroup && (
                       <button
-                        onClick={() => handleDeleteGroupClick(groupName)}
+                        onClick={() => handleDeleteGroupClickNew(groupName)}
                         className="p-1.5 text-slate-300 hover:text-red-400 hover:bg-red-50 rounded-lg transition-all"
                         title="Xóa nhóm"
                       >
@@ -329,7 +414,7 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
                     {/* Group Toggle Button */}
                     {groupRules.length > 0 && (
                       <button
-                        onClick={() => handleToggleGroup(groupName, !anyInGroupActive)}
+                        onClick={() => handleToggleGroupClick(groupName, !anyInGroupActive)}
                         className={`w-10 h-6 rounded-full transition-colors relative ${anyInGroupActive ? "bg-emerald-500" : "bg-slate-200"}`}
                       >
                         <div
@@ -381,13 +466,13 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
                             </div>
                             <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                               <button
-                                onClick={() => onToggle(r.id, r.is_active)}
+                                onClick={() => handleToggleRuleClick(r.id, r.is_active, r.domain)}
                                 className={`p-2 rounded-xl ${r.is_active ? "text-emerald-500 bg-emerald-50" : "text-slate-300 hover:bg-slate-100"}`}
                               >
                                 <Power size={16} />
                               </button>
                               <button
-                                onClick={() => onDelete(r.id)}
+                                onClick={() => handleDeleteRuleClick(r.id, r.domain)}
                                 className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
                               >
                                 <Trash2 size={16} />
@@ -467,37 +552,30 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
         )}
       </div>
 
-      {/* --- CONFIRM DELETE MODAL --- */}
-      {groupToDelete && (
-        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-[32px] p-8 max-w-sm w-full shadow-2xl scale-100 animate-in zoom-in-95 duration-200">
-            <div className="flex flex-col items-center text-center gap-4">
-              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center text-red-500 mb-2">
-                <AlertTriangle size={32} />
-              </div>
-              <h3 className="text-2xl font-bold text-[#354F52] font-serif">Xóa nhóm {groupToDelete}?</h3>
-              <p className="text-slate-400 text-sm">
-                Hành động này sẽ xóa <b>tất cả tên miền</b> trong nhóm này. Bạn có chắc chắn không?
-              </p>
-
-              <div className="grid grid-cols-2 gap-3 w-full mt-4">
-                <button
-                  onClick={() => setGroupToDelete(null)}
-                  className="py-3 rounded-2xl font-bold text-slate-500 hover:bg-slate-50 transition-colors"
-                >
-                  Hủy
-                </button>
-                <button
-                  onClick={confirmDeleteGroup}
-                  className="py-3 rounded-2xl font-bold bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-200 transition-colors"
-                >
-                  Xóa Vĩnh Viễn
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* --- FRICTION MODAL --- */}
+      <FrictionModal
+        isOpen={frictionState.isOpen}
+        onClose={closeFriction}
+        onConfirm={handleApplyFriction}
+        title={
+            frictionState.data?.type === 'rule_delete' ? `Xóa chặn ${frictionState.data?.domain}?` :
+            frictionState.data?.type === 'group_delete' ? `Xóa nhóm ${frictionState.data?.groupName}?` :
+            frictionState.data?.type === 'group_toggle' ? `Tắt nhóm ${frictionState.data?.groupName}?` :
+            "Tắt chặn tên miền?"
+        }
+        message={
+            frictionState.data?.type === 'rule_delete' ? "Hành động này sẽ xóa tên miền khỏi danh sách chặn." :
+            frictionState.data?.type === 'group_delete' ? "Hành động này sẽ xóa toàn bộ nhóm và các quy tắc bên trong." :
+            "Bạn sẽ có thể truy cập lại vào tên miền này."
+        }
+        confirmationText={
+            frictionState.data?.type === 'rule_delete' ? `Tôi xác nhận xoá luật chặn ${frictionState.data?.domain}` :
+            frictionState.data?.type === 'group_delete' ? `Tôi xác nhận xoá nhóm ${frictionState.data?.groupName}` :
+            frictionState.data?.type === 'group_toggle' ? `Tôi xác nhận tắt nhóm ${frictionState.data?.groupName}` :
+            `Tôi xác nhận tắt luật chặn ${frictionState.data?.domain}`
+        }
+        actionType={frictionState.data?.type?.includes('delete') ? "delete" : "disable"}
+      />
     </div>
   );
 };
