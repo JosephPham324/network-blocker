@@ -21,6 +21,9 @@ import FrictionModal from "./FrictionModal";
 import { translations } from "../locales";
 import { BLOCK_PRESETS, SAMPLE_CSV_CONTENT } from "../constants/presets";
 import { Download, BookOpen } from "lucide-react";
+import { save } from '@tauri-apps/plugin-dialog';
+import { writeTextFile } from '@tauri-apps/plugin-fs';
+
 const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelete, onBatchToggle, onBatchMove, onDeleteGroup, onImport, onUpdateMode, language = "vi" }) => {
   const t = translations[language].blocklist;
   const tf = translations[language].friction;
@@ -298,7 +301,7 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
             </div>
             <div className="h-8 w-px bg-slate-200 mx-1"></div>
 
-            {/* Presets Dropdown */}
+             {/* Presets Dropdown */}
              <div className="relative group/presets">
                 <button className="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors font-medium">
                     <BookOpen size={20} />
@@ -318,23 +321,6 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
                     ))}
                 </div>
             </div>
-
-             {/* Download Sample */}
-             <button
-                onClick={() => {
-                    const blob = new Blob([SAMPLE_CSV_CONTENT], { type: 'text/csv' });
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'mindful_block_sample.csv';
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                }}
-                className="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors font-medium"
-                title={t.download_sample}
-            >
-                <Download size={20} />
-            </button>
 
             <div className="h-8 w-px bg-slate-200 mx-1"></div>
             <input 
@@ -684,6 +670,43 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
                   </div>
                   
                   <div className="p-6 pt-2 flex gap-3">
+                      <button 
+                          onClick={async () => {
+                            const csvHeader = "Domain,Group,Mode\n";
+                            const csvRows = previewPreset.rules.map(r => `${r.domain},${r.group},${r.mode || 'HARD'}`).join("\n");
+                            const content = csvHeader + csvRows;
+
+                            try {
+                                // Try Native Save
+                                const path = await save({
+                                    filters: [{
+                                        name: 'CSV',
+                                        extensions: ['csv']
+                                    }],
+                                    defaultPath: `${previewPreset.id}_preset.csv`
+                                });
+
+                                if (path) {
+                                    await writeTextFile(path, content);
+                                    // Optional: Notify success?
+                                }
+                            } catch (e) {
+                                console.warn("Native save failed, falling back to browser download:", e);
+                                // Fallback for Browser / Permission Error
+                                const blob = new Blob([content], { type: 'text/csv' });
+                                const url = window.URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = `${previewPreset.id}_preset.csv`;
+                                a.click();
+                                window.URL.revokeObjectURL(url);
+                            }
+                          }}
+                          className="p-3 rounded-full font-bold text-slate-400 hover:bg-slate-50 transition-colors"
+                          title={t.download_sample}
+                      >
+                          <Download size={20} />
+                      </button>
                       <button 
                           onClick={() => setPreviewPreset(null)}
                           className="flex-1 py-3 rounded-full font-bold text-slate-400 hover:bg-slate-50 transition-colors"

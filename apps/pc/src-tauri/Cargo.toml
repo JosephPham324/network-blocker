@@ -19,5 +19,7 @@ log = "0.4"
 tauri-plugin-opener = "2.5.3"
 tauri-plugin-oauth = "2.0.0" # Make sure this matches the official v2 release
 tiny_http = "0.12"
+tauri-plugin-dialog = "2.6.0"
+tauri-plugin-fs = "2.4.5"
 [features]
 custom-protocol = ["tauri/custom-protocol"]
