@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Mindful Block - Access Restricted</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fdfcf8;
+            color: #2f3e46;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #354f52;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #84a59d;
+            margin-bottom: 30px;
+        }
+
+        .challenge-box {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            margin-top: 10px;
+            font-size: 16px;
+            text-align: center;
+            outline: none;
+            box-sizing: border-box;
+            /* Fix padding issue */
+        }
+
+        input:focus {
+            border-color: #52796f;
+        }
+
+        button {
+            background: #52796f;
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #354f52;
+        }
+
+        .error {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Mindful Pause</h1>
+        <p>This site is on your block list.</p>
+
+        <div class="challenge-box">
+            <div style="font-size: 14px; margin-bottom: 5px; font-weight: 600;">Math Challenge</div>
+            <div id="equation" style="font-size: 24px; font-weight: bold; color: #354f52;"></div>
+            <input type="number" id="answer" placeholder="Result?" />
+            <div id="error" class="error">Incorrect, try again.</div>
+        </div>
+
+        <button id="submitBtn">Unlock for 10 Minutes</button>
+    </div>
+    <script src="block.js"></script>
+</body>
+
+</html>

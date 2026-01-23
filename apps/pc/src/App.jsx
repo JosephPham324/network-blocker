@@ -19,9 +19,9 @@ const App = () => {
   const [authLoading, setAuthLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(true);
 
-  const { settings, toggleBlocking, toggleCleanOnExit, setLanguage } = useSettings();
+  const { settings, toggleBlocking, toggleCleanOnExit, setLanguage, toggleAutoStart } = useSettings();
 
-  const { rules, groups, status, addRule, deleteRule, toggleRule, toggleBatch, deleteBatch, moveBatchToGroup, deleteGroup, importRules } =
+  const { rules, groups, status, addRule, deleteRule, toggleRule, toggleBatch, deleteBatch, moveBatchToGroup, updateRuleMode, deleteGroup, importRules } =
     useBlockRules(
       user,
       setIsAdmin,
@@ -96,10 +96,11 @@ const App = () => {
             onBatchMove={moveBatchToGroup}
             onDeleteGroup={deleteGroup}
             onImport={importRules}
+            onUpdateMode={updateRuleMode}
             language={settings.language}
           />
         )}
-        {activeTab === "settings" && <Settings settings={settings} toggleBlocking={toggleBlocking} toggleCleanOnExit={toggleCleanOnExit} setLanguage={setLanguage} />}
+        {activeTab === "settings" && <Settings settings={settings} toggleBlocking={toggleBlocking} toggleCleanOnExit={toggleCleanOnExit} setLanguage={setLanguage} toggleAutoStart={toggleAutoStart} />}
       </main>
     </div>
   );

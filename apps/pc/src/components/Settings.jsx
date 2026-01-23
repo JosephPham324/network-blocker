@@ -4,7 +4,7 @@ import FrictionModal from "./FrictionModal";
 import { useState } from "react";
 import { translations } from "../locales";
 
-const Settings = ({ settings, toggleBlocking, toggleCleanOnExit, setLanguage }) => {
+const Settings = ({ settings, toggleBlocking, toggleCleanOnExit, setLanguage, toggleAutoStart }) => {
   const t = translations[settings.language].settings;
   const [showFriction, setShowFriction] = useState(false);
 
@@ -93,6 +93,25 @@ const Settings = ({ settings, toggleBlocking, toggleCleanOnExit, setLanguage }) 
                 className={`w-16 h-8 rounded-full transition-colors relative ${settings.cleanOnExit ? "bg-amber-500" : "bg-slate-200"}`}
             >
                 <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all shadow-sm ${settings.cleanOnExit ? "left-9" : "left-1"}`} />
+            </button>
+        </div>
+
+        {/* Auto Start Toggle */}
+        <div className="bg-white p-6 rounded-[32px] border-2 border-slate-100 flex items-center justify-between shadow-sm">
+            <div className="flex items-center gap-4">
+                <div className="p-4 rounded-2xl bg-purple-100 text-purple-600">
+                    <Power size={24} className="rotate-180" />
+                </div>
+                <div>
+                    <h3 className="text-xl font-bold text-[#354F52]">{t.autostart_title}</h3>
+                    <p className="text-slate-400 text-sm">{t.autostart_desc}</p>
+                </div>
+            </div>
+            <button 
+                onClick={toggleAutoStart}
+                className={`w-16 h-8 rounded-full transition-colors relative ${settings.autostart ? "bg-purple-500" : "bg-slate-200"}`}
+            >
+                <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all shadow-sm ${settings.autostart ? "left-9" : "left-1"}`} />
             </button>
         </div>
       </div>

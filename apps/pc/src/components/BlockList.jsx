@@ -15,11 +15,12 @@ import {
   AlertTriangle,
   Upload,
   Search,
+  ShieldAlert,
 } from "lucide-react";
 import FrictionModal from "./FrictionModal";
 import { translations } from "../locales";
 
-const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelete, onBatchToggle, onBatchMove, onDeleteGroup, onImport, language = "vi" }) => {
+const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelete, onBatchToggle, onBatchMove, onDeleteGroup, onImport, onUpdateMode, language = "vi" }) => {
   const t = translations[language].blocklist;
   const tf = translations[language].friction;
   const [newDomain, setNewDomain] = useState("");
@@ -484,6 +485,21 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
                               <span className={`font-bold text-lg ${r.is_active ? "text-[#354F52]" : "text-slate-400 line-through"}`}>
                                 {r.domain}
                               </span>
+                              {/* Mode Badge - Clickable */}
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const newMode = (r.mode === 'friction' || r.mode === 'FRICTION') ? 'hard' : 'friction';
+                                  onUpdateMode(r.id, newMode);
+                                }}
+                                className={`px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer hover:opacity-80 ${
+                                  (r.mode === 'friction' || r.mode === 'FRICTION') ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'
+                                }`}
+                                title="Click to change mode"
+                              >
+                                  {(r.mode === 'friction' || r.mode === 'FRICTION') ? <Layers size={10} /> : <ShieldAlert size={10} />}
+                                  {(r.mode === 'friction' || r.mode === 'FRICTION') ? tf.mode_friction : tf.mode_hard}
+                              </button>
                             </div>
                             <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                               <button

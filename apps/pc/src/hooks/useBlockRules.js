@@ -19,6 +19,7 @@ export const useBlockRules = (user, setIsAdmin, blockingEnabled = true) => {
      const formatted = rules.map((r) => ({
         domain: r.domain,
         is_active: r.is_active,
+        mode: r.mode || "hard", // Default to hard for legacy
       }));
 
     // If blocking is disabled globally, send empty list to Rust to clear hosts
@@ -55,7 +56,7 @@ export const useBlockRules = (user, setIsAdmin, blockingEnabled = true) => {
   }, [user, setIsAdmin]);
 
   // --- ADD RULE ---
-  const addRule = async (newDomain, groupName = "General") => {
+  const addRule = async (newDomain, groupName = "General", mode = "hard") => {
     if (!newDomain || !user) return { success: false, error: "Invalid input" };
     const cleanDomain = newDomain.toLowerCase().trim().replace("www.", "");
     const cleanGroup = groupName.trim();
@@ -67,7 +68,7 @@ export const useBlockRules = (user, setIsAdmin, blockingEnabled = true) => {
     const newRuleData = {
       domain: cleanDomain,
       is_active: true,
-      mode: "HARD",
+      mode: mode, // Use passed mode
       group: cleanGroup,
       v: 1,
       updated_at: serverTimestamp(),
@@ -216,6 +217,18 @@ export const useBlockRules = (user, setIsAdmin, blockingEnabled = true) => {
     }
   };
 
+  const updateRuleMode = async (id, newMode) => {
+    if (!user || !id) return;
+    if (isCloudReady) {
+      const batch = writeBatch(db);
+      const ref = doc(db, `artifacts/${appId}/users/${user.uid}/block_configs`, id);
+      batch.update(ref, { mode: newMode, updated_at: serverTimestamp() });
+      await batch.commit();
+    } else {
+      setRules(rules.map((r) => (r.id === id ? { ...r, mode: newMode } : r)));
+    }
+  };
+
   const importRules = async (rulesData) => {
     if (!user || !rulesData || rulesData.length === 0) return { success: false, error: "No data to import" };
     
@@ -306,7 +319,7 @@ export const useBlockRules = (user, setIsAdmin, blockingEnabled = true) => {
     toggleBatch,
     deleteBatch,
     moveBatchToGroup,
-    moveBatchToGroup,
+    updateRuleMode,
     deleteGroup,
     importRules,
   };

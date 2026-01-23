@@ -23,11 +23,21 @@ use tauri_plugin_autostart::MacosLauncher;
 struct BlockRule {
     domain: String,
     is_active: bool,
+    #[serde(default = "default_mode")]
+    mode: String, // "hard" or "friction"
 }
+
+fn default_mode() -> String {
+    "hard".to_string()
+}
+
+use tiny_http::{Server, Response, Header};
+use std::sync::Arc;
 
 // Global State
 struct AppState {
     clean_on_exit: Mutex<bool>,
+    cached_rules: Arc<Mutex<Vec<String>>>, // Shared with HTTP server
 }
 
 #[tauri::command]
@@ -58,7 +68,18 @@ fn get_hosts_path() -> String {
 }
 
 #[tauri::command]
-fn apply_blocking_rules(rules: Vec<BlockRule>) -> Result<String, String> {
+fn apply_blocking_rules(state: tauri::State<'_, AppState>, rules: Vec<BlockRule>) -> Result<String, String> {
+    // 1. Update In-Memory Cache for Extension (Friction Mode)
+    if let Ok(mut cache) = state.cached_rules.lock() {
+        cache.clear();
+        for rule in &rules {
+            if rule.is_active && rule.mode == "friction" {
+                 // Store minimal domain info for extension
+                cache.push(rule.domain.to_lowercase().trim().replace("www.", ""));
+            }
+        }
+    }
+
     if !is_elevated() {
         return Err("ADMIN_REQUIRED".into());
     }
@@ -82,11 +103,11 @@ fn apply_blocking_rules(rules: Vec<BlockRule>) -> Result<String, String> {
         }
     }
 
-    // Create new content
+    // Create new content (Hard Mode Only)
     content = content.trim_end().to_string();
     content.push_str("\n\n# MINDFULBLOCK_START\n");
     for rule in rules {
-        if rule.is_active {
+        if rule.is_active && rule.mode == "hard" {
             let d = rule.domain.to_lowercase().trim().replace("www.", "");
             content.push_str(&format!("127.0.0.1 {}\n", d));
             content.push_str(&format!("127.0.0.1 www.{}\n", d));
@@ -132,6 +153,36 @@ async fn start_server(window: tauri::WebviewWindow) -> Result<u16, String> {
 }
 
 fn main() {
+    // Initialize Shared State
+    let cached_rules = Arc::new(Mutex::new(Vec::new()));
+    let server_rules = cached_rules.clone();
+
+    // Spawn HTTP Server Thread
+    std::thread::spawn(move || {
+        let server = Server::http("127.0.0.1:17430").unwrap();
+        println!("[Rust] Local Friction Server running on :17430");
+        
+        for request in server.incoming_requests() {
+            let url = request.url().to_string();
+            
+            // CORS Headers
+            let headers = vec![
+                Header::from_bytes(&b"Access-Control-Allow-Origin"[..], &b"*"[..]).unwrap(),
+                Header::from_bytes(&b"Content-Type"[..], &b"application/json"[..]).unwrap(),
+            ];
+
+            if url == "/rules" {
+                let rules = server_rules.lock().unwrap();
+                let json = serde_json::to_string(&*rules).unwrap_or("[]".to_string());
+                let response = Response::from_string(json).with_header(headers[0].clone()).with_header(headers[1].clone());
+                let _ = request.respond(response);
+            } else {
+                let response = Response::from_string("{}".to_string()).with_status_code(404);
+                let _ = request.respond(response);
+            }
+        }
+    });
+
     tauri::Builder::default()
         .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec![])))
         .plugin(tauri_plugin_shell::init())
@@ -150,7 +201,10 @@ fn main() {
             apply_blocking_rules,
             set_clean_on_exit // Register new command
         ])
-        .manage(AppState { clean_on_exit: Mutex::new(false) }) // Initialize State
+        .manage(AppState { 
+            clean_on_exit: Mutex::new(false),
+            cached_rules: cached_rules 
+        }) 
         .build(tauri::generate_context!()) // Use .build() instead of .run()
         .expect("error while building tauri application")
         .run(|app_handle, event| {
@@ -166,7 +220,8 @@ fn main() {
 
                     if should_clean {
                         println!("[Rust] Cleaning hosts file on exit...");
-                        let _ = apply_blocking_rules(vec![]); // Clear all rules
+                        // Also clear cache? Not strictly necessary as process dies
+                        let _ = apply_blocking_rules(state.clone(), vec![]); // Clear all rules
                     }
                 }
                 _ => {}

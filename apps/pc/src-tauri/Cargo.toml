@@ -18,5 +18,6 @@ is_elevated = "0.1"
 log = "0.4"
 tauri-plugin-opener = "2.5.3"
 tauri-plugin-oauth = "2.0.0" # Make sure this matches the official v2 release
+tiny_http = "0.12"
 [features]
 custom-protocol = ["tauri/custom-protocol"]

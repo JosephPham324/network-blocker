@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Mindful Block</title>
+    <style>
+        body {
+            width: 280px;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fdfcf8;
+            color: #2f3e46;
+            margin: 0;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+        }
+
+        h1 {
+            font-size: 18px;
+            margin: 0;
+            color: #354f52;
+            font-weight: 700;
+        }
+
+        .status-card {
+            background: white;
+            padding: 16px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(53, 79, 82, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .label {
+            font-size: 13px;
+            color: #84a59d;
+            font-weight: 600;
+        }
+
+        .value {
+            font-size: 13px;
+            font-weight: 700;
+            color: #354f52;
+        }
+
+        .indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .status-online {
+            background-color: #10b981;
+        }
+
+        .status-offline {
+            background-color: #ef4444;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 11px;
+            color: #cbd5e1;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <img src="icon.png" alt="Logo" class="logo">
+        <h1>Mindful Block</h1>
+    </div>
+
+    <div class="status-card">
+        <div class="status-item">
+            <span class="label">Desktop App</span>
+            <span class="value" id="appStatus">
+                <span class="indicator status-offline"></span>Checking...
+            </span>
+        </div>
+        <div class="status-item">
+            <span class="label">Protection</span>
+            <span class="value" id="protectionStatus">Active</span>
+        </div>
+    </div>
+
+    <div class="footer">
+        Friction & Mindful Browsing
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>
