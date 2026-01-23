@@ -16,6 +16,9 @@ export const translations = {
       status_protection: "Đang được bảo vệ",
       status_exposed: "Chưa kích hoạt chặn",
       enable_now: "Bật ngay",
+      time_saved: "Thời gian thu hồi",
+      analysis_title: "Phân tích chánh niệm",
+      analysis_desc: "Dữ liệu thống kê sẽ xuất hiện sau khi bạn bị chặn.",
     },
     blocklist: {
       title: "Danh sách chặn",
@@ -119,6 +122,9 @@ export const translations = {
       status_protection: "Protected",
       status_exposed: "Protection Disabled",
       enable_now: "Enable Now",
+      time_saved: "Time Saved",
+      analysis_title: "Mindful Analysis",
+      analysis_desc: "Statistical data will appear after blocking events.",
     },
     blocklist: {
       title: "Block List",

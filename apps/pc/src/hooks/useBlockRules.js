@@ -16,18 +16,21 @@ export const useBlockRules = (user, setIsAdmin, blockingEnabled = true) => {
   useEffect(() => {
     if (!rules) return;
     
-     const formatted = rules.map((r) => ({
+      const formatted = rules.map((r) => ({
         domain: r.domain,
         is_active: r.is_active,
-        mode: r.mode || "hard", // Default to hard for legacy
+        mode: (r.mode || "hard").toLowerCase(), // Ensure lowercase for Rust
       }));
 
     // If blocking is disabled globally, send empty list to Rust to clear hosts
     const rulesToApply = blockingEnabled ? formatted : [];
+    
+    console.log("[Sync] Applying Rules to Rust:", rulesToApply);
 
     callRust("apply_blocking_rules", { rules: rulesToApply })
-    .then(() => setStatus("Bảo vệ đang bật"))
+    .then((res) => setStatus(`Bảo vệ đang bật (${res})`))
     .catch((err) => {
+        console.error("[Sync] Error:", err);
         if (String(err).includes("ADMIN")) setIsAdmin(false);
         setStatus("Lỗi hệ thống");
     });
@@ -68,7 +71,7 @@ export const useBlockRules = (user, setIsAdmin, blockingEnabled = true) => {
     const newRuleData = {
       domain: cleanDomain,
       is_active: true,
-      mode: mode, // Use passed mode
+      mode: mode.toLowerCase(), // Ensure lowercase
       group: cleanGroup,
       v: 1,
       updated_at: serverTimestamp(),
@@ -243,9 +246,9 @@ export const useBlockRules = (user, setIsAdmin, blockingEnabled = true) => {
 
       const domain = rawDomain?.toLowerCase().trim().replace("www.", "");
       const groupName = rawGroup?.trim() || "General";
-      const mode = ["HARD", "FRICTION", "TIMED"].includes(rawMode?.toUpperCase()) 
-        ? rawMode.toUpperCase() 
-        : "HARD";
+      const mode = ["hard", "friction", "timed"].includes(rawMode?.toLowerCase()) 
+        ? rawMode.toLowerCase() 
+        : "hard";
 
       if (!domain) continue;
 

@@ -4,8 +4,8 @@ import { auth, isCloudReady } from "./services/firebase";
 import { signOut } from "firebase/auth"; // <--- Add import
 import { callRust } from "./services/tauri";
 import { useBlockRules } from "./hooks/useBlockRules";
+import { useAnalytics } from "./hooks/useAnalytics"; // <--- Import hook
 import { useSettings } from "./hooks/useSettings"; // <--- Import hook
-
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard";
 import BlockList from "./components/BlockList";
@@ -20,6 +20,8 @@ const App = () => {
   const [isAdmin, setIsAdmin] = useState(true);
 
   const { settings, toggleBlocking, toggleCleanOnExit, setLanguage, toggleAutoStart } = useSettings();
+  
+  const analytics = useAnalytics(user); // <--- Use hook
 
   const { rules, groups, status, addRule, deleteRule, toggleRule, toggleBatch, deleteBatch, moveBatchToGroup, updateRuleMode, deleteGroup, importRules } =
     useBlockRules(
@@ -83,7 +85,7 @@ const App = () => {
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} status={status} onLogout={handleLogout} language={settings.language} />
 
       <main className="flex-1 p-12 overflow-y-auto">
-        {activeTab === "dash" && <Dashboard rulesCount={rules.length} language={settings.language} />}
+        {activeTab === "dash" && <Dashboard rulesCount={rules.length} stats={analytics} language={settings.language} />}
         {activeTab === "list" && (
           <BlockList
             rules={rules}

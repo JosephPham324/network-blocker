@@ -155,33 +155,9 @@ async fn start_server(window: tauri::WebviewWindow) -> Result<u16, String> {
 fn main() {
     // Initialize Shared State
     let cached_rules = Arc::new(Mutex::new(Vec::new()));
-    let server_rules = cached_rules.clone();
-
-    // Spawn HTTP Server Thread
-    std::thread::spawn(move || {
-        let server = Server::http("127.0.0.1:17430").unwrap();
-        println!("[Rust] Local Friction Server running on :17430");
-        
-        for request in server.incoming_requests() {
-            let url = request.url().to_string();
-            
-            // CORS Headers
-            let headers = vec![
-                Header::from_bytes(&b"Access-Control-Allow-Origin"[..], &b"*"[..]).unwrap(),
-                Header::from_bytes(&b"Content-Type"[..], &b"application/json"[..]).unwrap(),
-            ];
-
-            if url == "/rules" {
-                let rules = server_rules.lock().unwrap();
-                let json = serde_json::to_string(&*rules).unwrap_or("[]".to_string());
-                let response = Response::from_string(json).with_header(headers[0].clone()).with_header(headers[1].clone());
-                let _ = request.respond(response);
-            } else {
-                let response = Response::from_string("{}".to_string()).with_status_code(404);
-                let _ = request.respond(response);
-            }
-        }
-    });
+    
+    // Create a clone specifically for the setup thread
+    let rules_for_setup = cached_rules.clone();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec![])))
@@ -190,10 +166,63 @@ fn main() {
         .plugin(tauri_plugin_oauth::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
-        .setup(|app| {
+        .setup(move |app| {
             if let Some(window) = app.get_webview_window("main") {
                 window.show().unwrap();
             }
+
+            // --- SPAWN HTTP SERVER WITH APP HANDLE ACCESS ---
+            let handle = app.handle().clone();
+            // Use the clone we captured in 'setup' move closure
+            let server_rules = rules_for_setup.clone();
+            
+            std::thread::spawn(move || {
+                let server = Server::http("127.0.0.1:17430").unwrap();
+                println!("[Rust] Local Friction Server running on :17430");
+                
+                for mut request in server.incoming_requests() {
+                    let url = request.url().to_string();
+                    let method = request.method().as_str().to_string();
+                    
+                    // CORS Headers
+                    let headers = vec![
+                        Header::from_bytes(&b"Access-Control-Allow-Origin"[..], &b"*"[..]).unwrap(),
+                        Header::from_bytes(&b"Content-Type"[..], &b"application/json"[..]).unwrap(),
+                    ];
+
+                    if method == "OPTIONS" {
+                         let response = Response::from_string("").with_header(headers[0].clone()).with_header(headers[1].clone());
+                         let _ = request.respond(response);
+                         continue;
+                    }
+
+                    if url == "/rules" {
+                        let rules = server_rules.lock().unwrap();
+                        let json = serde_json::to_string(&*rules).unwrap_or("[]".to_string());
+                        let response = Response::from_string(json).with_header(headers[0].clone()).with_header(headers[1].clone());
+                        let _ = request.respond(response);
+                    } else if url == "/report" && method == "POST" {
+                        // Read body
+                        let mut content = String::new();
+                        let _ = request.as_reader().read_to_string(&mut content);
+                        
+                        // Parse safely (optional) or just emit raw string
+                        println!("[Rust] Received Report: {}", content);
+                        
+                        // Emit to Frontend
+                        let _ = handle.emit("analytics_event", content);
+
+                        let response = Response::from_string("{\"status\":\"ok\"}".to_string())
+                            .with_header(headers[0].clone())
+                            .with_header(headers[1].clone());
+                        let _ = request.respond(response);
+                    } else {
+                        let response = Response::from_string("{}".to_string()).with_status_code(404);
+                        let _ = request.respond(response);
+                    }
+                }
+            });
+
             Ok(())
         })
         // Combined into ONE handler call:

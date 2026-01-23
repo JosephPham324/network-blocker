@@ -33,7 +33,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function reportEvent(type, domain) {
+      try {
+        await fetch("http://127.0.0.1:17430/report", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type, domain })
+        });
+      } catch (e) { console.warn(e); }
+    }
+
     async function unlock() {
+        // Report Override
+        await reportEvent("override", hostname);
+
         const expiry = Date.now() + (10 * 60 * 1000); // 10 minutes
         
         const store = await chrome.storage.local.get("whitelisted");
