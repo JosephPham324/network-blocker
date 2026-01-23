@@ -19,7 +19,8 @@ import {
 } from "lucide-react";
 import FrictionModal from "./FrictionModal";
 import { translations } from "../locales";
-
+import { BLOCK_PRESETS, SAMPLE_CSV_CONTENT } from "../constants/presets";
+import { Download, BookOpen } from "lucide-react";
 const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelete, onBatchToggle, onBatchMove, onDeleteGroup, onImport, onUpdateMode, language = "vi" }) => {
   const t = translations[language].blocklist;
   const tf = translations[language].friction;
@@ -46,6 +47,7 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
       isOpen: false,
       data: null, // { type: 'rule_toggle', id: '..', domain: '..', currentStatus: true } etc
   });
+  const [previewPreset, setPreviewPreset] = useState(null);
 
   const closeFriction = () => setFrictionState({ ...frictionState, isOpen: false, data: null });
 
@@ -277,7 +279,7 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
   const filteredGroups = allKnownGroups.filter((g) => g.name.toLowerCase().includes(newGroup.toLowerCase()));
 
   return (
-    <div className="max-w-3xl space-y-8 animate-in fade-in duration-500 pb-32 relative">
+    <div className="max-w-full space-y-8 animate-in fade-in duration-500 pb-32 relative">
       <header className="flex justify-between items-end">
         <div>
            <h2 className="text-5xl font-serif font-bold text-[#354F52] tracking-tight">{t.title}</h2>
@@ -294,6 +296,46 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
                     className="pl-10 pr-4 py-2 rounded-full bg-white border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm transition-all w-48 focus:w-64"
                 />
             </div>
+            <div className="h-8 w-px bg-slate-200 mx-1"></div>
+
+            {/* Presets Dropdown */}
+             <div className="relative group/presets">
+                <button className="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors font-medium">
+                    <BookOpen size={20} />
+                    <span>{t.presets_btn}</span>
+                </button>
+                <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 p-2 invisible opacity-0 group-hover/presets:visible group-hover/presets:opacity-100 transition-all z-50 transform origin-top-right">
+                    <div className="text-xs font-bold text-slate-300 uppercase px-3 py-2">{t.presets_quick_import}</div>
+                    {BLOCK_PRESETS.map(preset => (
+                        <button
+                            key={preset.id}
+                            onClick={() => setPreviewPreset(preset)}
+                            className="w-full text-left px-3 py-2 hover:bg-slate-50 rounded-lg transition-colors"
+                        >
+                            <div className="font-bold text-[#354F52]">{preset.name}</div>
+                            <div className="text-xs text-slate-400">{preset.description}</div>
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+             {/* Download Sample */}
+             <button
+                onClick={() => {
+                    const blob = new Blob([SAMPLE_CSV_CONTENT], { type: 'text/csv' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'mindful_block_sample.csv';
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                }}
+                className="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors font-medium"
+                title={t.download_sample}
+            >
+                <Download size={20} />
+            </button>
+
             <div className="h-8 w-px bg-slate-200 mx-1"></div>
             <input 
                 type="file" 
@@ -492,12 +534,14 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
                                   const newMode = (r.mode === 'friction' || r.mode === 'FRICTION') ? 'hard' : 'friction';
                                   onUpdateMode(r.id, newMode);
                                 }}
-                                className={`px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer hover:opacity-80 ${
-                                  (r.mode === 'friction' || r.mode === 'FRICTION') ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'
+                                className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95 ${
+                                  (r.mode === 'friction' || r.mode === 'FRICTION') 
+                                    ? 'bg-blue-500 text-white shadow-blue-200 hover:bg-blue-600' 
+                                    : 'bg-red-500 text-white shadow-red-200 hover:bg-red-600'
                                 }`}
                                 title="Click to change mode"
                               >
-                                  {(r.mode === 'friction' || r.mode === 'FRICTION') ? <Layers size={10} /> : <ShieldAlert size={10} />}
+                                  {(r.mode === 'friction' || r.mode === 'FRICTION') ? <Layers size={12} /> : <ShieldAlert size={12} />}
                                   {(r.mode === 'friction' || r.mode === 'FRICTION') ? tf.mode_friction : tf.mode_hard}
                               </button>
                             </div>
@@ -614,6 +658,51 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
         actionType={frictionState.data?.type?.includes('delete') ? "delete" : "disable"}
         language={language}
       />
+
+      {/* --- PRESET PREVIEW MODAL --- */}
+      {previewPreset && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
+              <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+                  <div className="p-6 pb-0">
+                      <h3 className="text-2xl font-serif font-bold text-[#354F52]">
+                          {t.preview_title.replace("{name}", previewPreset.name)}
+                      </h3>
+                      <p className="text-slate-400 mt-1">{previewPreset.description}</p>
+                      
+                      <div className="mt-4 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-300">
+                          <span>{t.preview_count.replace("{count}", previewPreset.rules.length)}</span>
+                      </div>
+                  </div>
+
+                  <div className="max-h-[300px] overflow-y-auto p-4 pt-2 space-y-2">
+                      {previewPreset.rules.map((rule, idx) => (
+                          <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
+                               <span className="font-bold text-[#354F52]">{rule.domain}</span>
+                               <span className="text-xs text-slate-400 bg-white px-2 py-1 rounded-md border border-slate-100">{rule.group}</span>
+                          </div>
+                      ))}
+                  </div>
+                  
+                  <div className="p-6 pt-2 flex gap-3">
+                      <button 
+                          onClick={() => setPreviewPreset(null)}
+                          className="flex-1 py-3 rounded-full font-bold text-slate-400 hover:bg-slate-50 transition-colors"
+                      >
+                          {t.cancel}
+                      </button>
+                      <button 
+                          onClick={() => {
+                              onImport(previewPreset.rules);
+                              setPreviewPreset(null);
+                          }}
+                          className="flex-1 py-3 rounded-full font-bold bg-primary text-white shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+                      >
+                          {t.import_action}
+                      </button>
+                  </div>
+              </div>
+          </div>
+      )}
     </div>
   );
 };

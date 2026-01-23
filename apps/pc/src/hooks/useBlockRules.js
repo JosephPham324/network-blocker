@@ -237,10 +237,14 @@ export const useBlockRules = (user, setIsAdmin, blockingEnabled = true) => {
     const newGroupsMap = new Map(); // name -> groupData
 
     for (const item of rulesData) {
-      const domain = item.Domain?.toLowerCase().trim().replace("www.", "");
-      const groupName = item.Group?.trim() || "General";
-      const mode = ["HARD", "FRICTION", "TIMED"].includes(item.Mode?.toUpperCase()) 
-        ? item.Mode.toUpperCase() 
+      const rawDomain = item.Domain || item.domain;
+      const rawGroup = item.Group || item.group;
+      const rawMode = item.Mode || item.mode;
+
+      const domain = rawDomain?.toLowerCase().trim().replace("www.", "");
+      const groupName = rawGroup?.trim() || "General";
+      const mode = ["HARD", "FRICTION", "TIMED"].includes(rawMode?.toUpperCase()) 
+        ? rawMode.toUpperCase() 
         : "HARD";
 
       if (!domain) continue;
