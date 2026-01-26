@@ -205,8 +205,12 @@
                                 </li>
                                 <li class="flex gap-3">
                                     <span class="text-brand-600 font-bold">REQ-02:</span>
-                                    <span>Cung cấp 3 loại thử thách: Chờ đợi (5-30s), Giải toán, hoặc Gõ văn bản cam
-                                        kết.</span>
+                                    <span>Cung cấp thử thách: <strong>Giải toán (Math Challenge)</strong> để kiểm tra
+                                        nhận thức.</span>
+                                </li>
+                                <li class="flex gap-3">
+                                    <span class="text-brand-600 font-bold">REQ-02.1:</span>
+                                    <span>Quản lý danh sách chặn: Hỗ trợ Import/Export CSV để chia sẻ cấu hình.</span>
                                 </li>
                             </ul>
                         </div>
@@ -350,6 +354,34 @@
                         <h4 class="font-bold text-emerald-800 text-lg">B4: Cấp quyền Tạm thời (Grace Period)</h4>
                         <p class="text-sm text-emerald-700">App cập nhật bảng định tuyến tạm thời trong bộ nhớ RAM, cho
                             phép domain đó hoạt động trong 10-15 phút.</p>
+                    </div>
+                </div>
+
+                <div class="mt-12">
+                    <div class="flex items-center gap-4 mb-10">
+                        <span
+                            class="bg-red-500 text-white w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg shadow-red-500/30">02</span>
+                        <div>
+                            <h2 class="text-2xl font-extrabold text-brand-600">Administrative Safeguards</h2>
+                            <p class="text-sm text-brand-500">Bảo vệ cấu hình khỏi việc thay đổi bốc đồng.</p>
+                        </div>
+                    </div>
+
+                    <div class="relative ml-6 border-l-2 border-brand-100 pl-10 space-y-12 py-4">
+                        <div class="use-case-step relative">
+                            <h4 class="font-bold text-brand-900 text-lg">B1: Yêu cầu Thay đổi Nhạy cảm</h4>
+                            <p class="text-sm text-brand-500">Người dùng cố gắng xóa Ruleset hoặc Tắt ứng dụng.</p>
+                        </div>
+                        <div class="use-case-step relative">
+                            <h4 class="font-bold text-brand-900 text-lg">B2: Modal Xác nhận "Friction"</h4>
+                            <p class="text-sm text-brand-500">Hệ thống hiện Modal yêu cầu gõ lại chính xác một câu cam
+                                kết (VD: "Tôi đang làm điều này có chủ đích").</p>
+                        </div>
+                        <div class="use-case-step relative">
+                            <h4 class="font-bold text-brand-900 text-lg">B3: Chống Copy/Paste</h4>
+                            <p class="text-sm text-brand-500">Ô nhập liệu chặn sự kiện Paste, buộc người dùng phải gõ
+                                từng ký tự để tăng thời gian suy nghĩ.</p>
+                        </div>
                     </div>
                 </div>
             </section>
