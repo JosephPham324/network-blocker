@@ -79,6 +79,9 @@ export const translations = {
         confirm: "Xác nhận",
         mode_hard: "Chặn cứng",
         mode_friction: "Thử thách",
+        mode_math: "Giải toán",
+        mode_wait: "Chờ đợi (15s)",
+        mode_typing: "Gõ xác nhận",
     },
     login: {
       title_signup: "Tạo tài khoản mới",
@@ -183,6 +186,9 @@ export const translations = {
         confirm: "Confirm",
         mode_hard: "Hard Block",
         mode_friction: "Friction",
+        mode_math: "Math Challenge",
+        mode_wait: "Wait (15s)",
+        mode_typing: "Type Confirm",
     },
     login: {
       title_signup: "Create new account",

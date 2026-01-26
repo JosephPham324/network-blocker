@@ -91,11 +91,31 @@
         <h1>Mindful Pause</h1>
         <p>This site is on your block list.</p>
 
-        <div class="challenge-box">
+        <div id="math-challenge" class="challenge-box" style="display: none;">
             <div style="font-size: 14px; margin-bottom: 5px; font-weight: 600;">Math Challenge</div>
             <div id="equation" style="font-size: 24px; font-weight: bold; color: #354f52;"></div>
             <input type="number" id="answer" placeholder="Result?" />
             <div id="error" class="error">Incorrect, try again.</div>
+        </div>
+
+        <div id="wait-challenge" class="challenge-box" style="display: none;">
+            <div style="font-size: 14px; margin-bottom: 5px; font-weight: 600;">Mindful Pause</div>
+            <div id="timer" style="font-size: 48px; font-weight: bold; color: #354f52; margin: 20px 0;">15</div>
+            <div style="width: 100%; background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden;">
+                <div id="progress" style="width: 100%; background: #52796f; height: 100%; transition: width 1s linear;">
+                </div>
+            </div>
+            <p style="font-size: 12px; margin-top: 10px; margin-bottom: 0;">Take a deep breath...</p>
+        </div>
+
+        <div id="typing-challenge" class="challenge-box" style="display: none;">
+            <div style="font-size: 14px; margin-bottom: 5px; font-weight: 600;">Intention Check</div>
+            <div style="background: #e2e8f0; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+                <code id="typing-prompt" style="font-size: 14px; color: #354f52; word-break: break-all;"></code>
+            </div>
+            <input type="text" id="typing-input" placeholder="Type the phrase above" autocomplete="off"
+                onpaste="return false;" />
+            <div id="typing-error" class="error">Text does not match.</div>
         </div>
 
         <button id="submitBtn">Unlock for 10 Minutes</button>

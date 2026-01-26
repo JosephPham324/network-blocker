@@ -16,6 +16,9 @@ import {
   Upload,
   Search,
   ShieldAlert,
+  Calculator,
+  Hourglass,
+  Keyboard,
 } from "lucide-react";
 import FrictionModal from "./FrictionModal";
 import { translations } from "../locales";
@@ -38,6 +41,9 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
   const [showGroupDropdown, setShowGroupDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
+  // State for Mode Selector UI (ID of the rule whose dropdown is open)
+  const [openModeId, setOpenModeId] = useState(null);
+
   // State for "Move to Group" UI
   const [isMoving, setIsMoving] = useState(false);
   const [targetGroup, setTargetGroup] = useState("");
@@ -53,6 +59,17 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
   const [previewPreset, setPreviewPreset] = useState(null);
 
   const closeFriction = () => setFrictionState({ ...frictionState, isOpen: false, data: null });
+
+  // Close mode dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+        if (!e.target.closest('.mode-dropdown-container')) {
+            setOpenModeId(null);
+        }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   // --- DERIVED STATE ---
 
@@ -513,23 +530,92 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
                               <span className={`font-bold text-lg ${r.is_active ? "text-[#354F52]" : "text-slate-400 line-through"}`}>
                                 {r.domain}
                               </span>
-                              {/* Mode Badge - Clickable */}
-                              <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const newMode = (r.mode === 'friction' || r.mode === 'FRICTION') ? 'hard' : 'friction';
-                                  onUpdateMode(r.id, newMode);
-                                }}
-                                className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95 ${
-                                  (r.mode === 'friction' || r.mode === 'FRICTION') 
-                                    ? 'bg-blue-500 text-white shadow-blue-200 hover:bg-blue-600' 
-                                    : 'bg-red-500 text-white shadow-red-200 hover:bg-red-600'
-                                }`}
-                                title="Click to change mode"
-                              >
-                                  {(r.mode === 'friction' || r.mode === 'FRICTION') ? <Layers size={12} /> : <ShieldAlert size={12} />}
-                                  {(r.mode === 'friction' || r.mode === 'FRICTION') ? tf.mode_friction : tf.mode_hard}
-                              </button>
+                              {/* Mode Badge - Clickable Dropdown */}
+                              <div className="relative mode-dropdown-container">
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenModeId(openModeId === r.id ? null : r.id);
+                                  }}
+                                  className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95 ${
+                                    (r.mode?.includes('friction')) 
+                                      ? 'bg-blue-500 text-white shadow-blue-200 hover:bg-blue-600' 
+                                      : 'bg-red-500 text-white shadow-red-200 hover:bg-red-600'
+                                  }`}
+                                  title="Change blocking mode"
+                                >
+                                    {r.mode?.includes('friction') ? (
+                                        r.mode === 'friction_wait' ? <Hourglass size={12} /> :
+                                        r.mode === 'friction_typing' ? <Keyboard size={12} /> :
+                                        <Calculator size={12} />
+                                    ) : <ShieldAlert size={12} />}
+                                    
+                                    {r.mode === 'friction_wait' ? tf.mode_wait : 
+                                     r.mode === 'friction_typing' ? tf.mode_typing :
+                                     r.mode?.includes('friction') ? tf.mode_math : // Default friction is math
+                                     tf.mode_hard}
+                                    <ChevronDown size={10} className={`duration-200 ${openModeId === r.id ? 'rotate-180' : ''}`} />
+                                </button>
+
+                                {/* Dropdown Menu */}
+                                {openModeId === r.id && (
+                                    <div className="absolute top-[calc(100%+8px)] left-0 z-50 w-48 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-left">
+                                        <div className="px-3 py-2 text-[10px] font-bold text-slate-300 uppercase tracking-wider">Select Mode</div>
+                                        
+                                        {/* Hard Mode */}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onUpdateMode(r.id, 'hard');
+                                                setOpenModeId(null);
+                                            }}
+                                            className={`w-full text-left px-4 py-3 flex items-center gap-2 text-sm font-bold transition-colors ${r.mode === 'hard' || !r.mode ? 'bg-red-50 text-red-600' : 'text-slate-500 hover:bg-slate-50'}`}
+                                        >
+                                            <ShieldAlert size={16} />
+                                            {tf.mode_hard}
+                                        </button>
+
+                                        {/* Math Mode */}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onUpdateMode(r.id, 'friction_math');
+                                                setOpenModeId(null);
+                                            }}
+                                            className={`w-full text-left px-4 py-3 flex items-center gap-2 text-sm font-bold transition-colors ${r.mode === 'friction' || r.mode === 'friction_math' ? 'bg-blue-50 text-blue-600' : 'text-slate-500 hover:bg-slate-50'}`}
+                                        >
+                                            <Calculator size={16} />
+                                            {tf.mode_math}
+                                        </button>
+
+                                        {/* Wait Mode */}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onUpdateMode(r.id, 'friction_wait');
+                                                setOpenModeId(null);
+                                            }}
+                                            className={`w-full text-left px-4 py-3 flex items-center gap-2 text-sm font-bold transition-colors ${r.mode === 'friction_wait' ? 'bg-amber-50 text-amber-600' : 'text-slate-500 hover:bg-slate-50'}`}
+                                        >
+                                            <Hourglass size={16} />
+                                            {tf.mode_wait}
+                                        </button>
+
+                                        {/* Typing Mode */}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onUpdateMode(r.id, 'friction_typing');
+                                                setOpenModeId(null);
+                                            }}
+                                            className={`w-full text-left px-4 py-3 flex items-center gap-2 text-sm font-bold transition-colors ${r.mode === 'friction_typing' ? 'bg-purple-50 text-purple-600' : 'text-slate-500 hover:bg-slate-50'}`}
+                                        >
+                                            <Keyboard size={16} />
+                                            {tf.mode_typing}
+                                        </button>
+                                    </div>
+                                )}
+                              </div>
                             </div>
                             <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                               <button

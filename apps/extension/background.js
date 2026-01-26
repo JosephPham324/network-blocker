@@ -1,14 +1,23 @@
 const SERVER_URL = "http://127.0.0.1:17430/rules";
-let blockedDomains = [];
+let blockedRules = []; // Array of { domain: "...", mode: "..." }
+let currentLanguage = "vi";
 
 // Fetch rules from Desktop App
 async function fetchRules() {
   try {
     const response = await fetch(SERVER_URL);
     if (response.ok) {
-      const rules = await response.json();
-      blockedDomains = rules;
-      console.log("Updated blocked domains:", blockedDomains);
+      const data = await response.json();
+      
+      // Handle both old format (array of strings) and new format (object)
+      if (Array.isArray(data)) {
+         // Fallback for old version
+         blockedRules = data.map(d => ({ domain: d, mode: 'friction' }));
+      } else {
+         blockedRules = data.rules || [];
+         currentLanguage = data.language || "vi";
+      }
+      console.log("Updated blocked rules:", blockedRules);
     }
   } catch (error) {
     console.warn("Failed to fetch blocked domains from MindfulBlock Desktop:", error);
@@ -41,9 +50,9 @@ chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
   const hostname = url.hostname.replace(/^www\./, "");
 
   // Check if blocked
-  const isBlocked = blockedDomains.some(domain => hostname === domain || hostname.endsWith("." + domain));
+  const matchedRule = blockedRules.find(r => hostname === r.domain || hostname.endsWith("." + r.domain));
 
-  if (isBlocked) {
+  if (matchedRule) {
     // Check if whitelisted (Temporary Unblock)
     const store = await chrome.storage.local.get("whitelisted");
     const whitelisted = store.whitelisted || {};
@@ -57,7 +66,12 @@ chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
     reportEvent("block", hostname);
 
     // Redirect to Block Screen
-    const blockUrl = chrome.runtime.getURL("block.html") + "?url=" + encodeURIComponent(details.url);
+    // Pass Mode and Language
+    const blockUrl = chrome.runtime.getURL("block.html") + 
+        "?url=" + encodeURIComponent(details.url) + 
+        "&mode=" + encodeURIComponent(matchedRule.mode) +
+        "&lang=" + encodeURIComponent(currentLanguage);
+        
     chrome.tabs.update(details.tabId, { url: blockUrl });
   }
 });

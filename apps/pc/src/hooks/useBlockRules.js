@@ -14,20 +14,30 @@ export const useBlockRules = (user, setIsAdmin, blockingEnabled = true) => {
 
   // Sync Rules with Rust whenever they change
   useEffect(() => {
+    // Determine language from localStorage or default 'vi' (since we don't have direct access to i18n context here comfortably without props prop drilling. 
+    // Ideally this hook should take `language` as argument or read a global context. 
+    // The previous code snippet in BlockList passed `language` as prop, so we can assume the user of this hook might want to pass it.
+    // However, to avoid breaking API too much for now, let's try to grab it from a simple source or default.
+    // Wait, useBlockRules doesn't take language. I need to update the hook signature.
+    // But `useBlockRules` is used in `Dashboard.jsx`.
+    // I will read `localStorage.getItem('i18nextLng')` which is standard for i18next, or default 'vi'.
+    
     if (!rules) return;
     
+    const currentLang = localStorage.getItem('blocker_language') || 'vi';
+
       const formatted = rules.map((r) => ({
         domain: r.domain,
         is_active: r.is_active,
-        mode: (r.mode || "hard").toLowerCase(), // Ensure lowercase for Rust
+        mode: (r.mode || "hard").toLowerCase(), 
       }));
 
     // If blocking is disabled globally, send empty list to Rust to clear hosts
     const rulesToApply = blockingEnabled ? formatted : [];
     
-    console.log("[Sync] Applying Rules to Rust:", rulesToApply);
+    console.log(`[Sync] Applying Rules to Rust (Lang: ${currentLang}):`, rulesToApply);
 
-    callRust("apply_blocking_rules", { rules: rulesToApply })
+    callRust("apply_blocking_rules", { rules: rulesToApply, language: currentLang })
     .then((res) => setStatus(`Bảo vệ đang bật (${res})`))
     .catch((err) => {
         console.error("[Sync] Error:", err);

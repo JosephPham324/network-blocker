@@ -23,11 +23,23 @@ struct BlockRule {
     domain: String,
     is_active: bool,
     #[serde(default = "default_mode")]
-    mode: String, // "hard" or "friction"
+    mode: String, // "hard", "friction", "friction_wait", "friction_typing"
 }
 
 fn default_mode() -> String {
     "hard".to_string()
+}
+
+#[derive(Serialize, Clone, Debug)]
+struct CachedRule {
+    domain: String,
+    mode: String,
+}
+
+#[derive(Serialize, Clone, Debug)]
+struct ServerResponse {
+    rules: Vec<CachedRule>,
+    language: String,
 }
 
 use tiny_http::{Server, Response, Header};
@@ -36,7 +48,8 @@ use std::sync::Arc;
 // Global State
 struct AppState {
     clean_on_exit: Mutex<bool>,
-    cached_rules: Arc<Mutex<Vec<String>>>, // Shared with HTTP server
+    cached_rules: Arc<Mutex<Vec<CachedRule>>>, // Shared with HTTP server
+    language: Arc<Mutex<String>>,
 }
 
 #[tauri::command]
@@ -114,7 +127,6 @@ fn set_autostart_admin(enable: bool) -> Result<String, String> {
              Ok("Disabled Admin Autostart".to_string())
         } else {
              let err_msg = String::from_utf8_lossy(&output.stderr);
-             // If task doesn't exist, that's fine too, but schtasks errors if not found
              if err_msg.contains("The specified task name was not found") {
                  Ok("Disabled (Task was already missing)".to_string())
              } else {
@@ -141,16 +153,23 @@ fn get_hosts_path() -> String {
 }
 
 #[tauri::command]
-fn apply_blocking_rules(state: tauri::State<'_, AppState>, rules: Vec<BlockRule>) -> Result<String, String> {
-    // 1. Update In-Memory Cache for Extension (Friction Mode)
+fn apply_blocking_rules(state: tauri::State<'_, AppState>, rules: Vec<BlockRule>, language: String) -> Result<String, String> {
+    // 1. Update In-Memory Cache for Extension (Friction Mode) & Language
     if let Ok(mut cache) = state.cached_rules.lock() {
         cache.clear();
         for rule in &rules {
-            if rule.is_active && rule.mode == "friction" {
-                 // Store minimal domain info for extension
-                cache.push(rule.domain.to_lowercase().trim().replace("www.", ""));
+            if rule.is_active && rule.mode.contains("friction") {
+                 // Store domain + mode for extension
+                 cache.push(CachedRule {
+                     domain: rule.domain.to_lowercase().trim().replace("www.", ""),
+                     mode: rule.mode.clone(),
+                 });
             }
         }
+    }
+
+    if let Ok(mut lang) = state.language.lock() {
+        *lang = language;
     }
 
     if !is_elevated() {
@@ -228,9 +247,11 @@ async fn start_server(window: tauri::WebviewWindow) -> Result<u16, String> {
 fn main() {
     // Initialize Shared State
     let cached_rules = Arc::new(Mutex::new(Vec::new()));
+    let language = Arc::new(Mutex::new("vi".to_string()));
     
-    // Create a clone specifically for the setup thread
+    // Create clones for setup thread
     let rules_for_setup = cached_rules.clone();
+    let lang_for_setup = language.clone();
 
     tauri::Builder::default()
         // .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec![]))) // Removed
@@ -248,6 +269,7 @@ fn main() {
             let handle = app.handle().clone();
             // Use the clone we captured in 'setup' move closure
             let server_rules = rules_for_setup.clone();
+            let server_lang = lang_for_setup.clone();
             
             std::thread::spawn(move || {
                 let server = Server::http("127.0.0.1:17430").unwrap();
@@ -270,8 +292,15 @@ fn main() {
                     }
 
                     if url == "/rules" {
-                        let rules = server_rules.lock().unwrap();
-                        let json = serde_json::to_string(&*rules).unwrap_or("[]".to_string());
+                        let rules_guard = server_rules.lock().unwrap();
+                        let lang_guard = server_lang.lock().unwrap();
+                        
+                        let response_data = ServerResponse {
+                            rules: rules_guard.clone(),
+                            language: lang_guard.clone(),
+                        };
+                        
+                        let json = serde_json::to_string(&response_data).unwrap_or("{}".to_string());
                         let response = Response::from_string(json).with_header(headers[0].clone()).with_header(headers[1].clone());
                         let _ = request.respond(response);
                     } else if url == "/report" && method == "POST" {
@@ -309,7 +338,8 @@ fn main() {
         ])
         .manage(AppState { 
             clean_on_exit: Mutex::new(false),
-            cached_rules: cached_rules 
+            cached_rules: cached_rules,
+            language: language 
         }) 
         .build(tauri::generate_context!()) // Use .build() instead of .run()
         .expect("error while building tauri application")
@@ -327,7 +357,8 @@ fn main() {
                     if should_clean {
                         println!("[Rust] Cleaning hosts file on exit...");
                         // Also clear cache? Not strictly necessary as process dies
-                        let _ = apply_blocking_rules(state.clone(), vec![]); // Clear all rules
+                        // Pass empty language
+                        let _ = apply_blocking_rules(state.clone(), vec![], "vi".to_string()); // Clear all rules
                     }
                 }
                 _ => {}
