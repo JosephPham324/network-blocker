@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { callRust } from "../services/tauri";
-import { enable, disable, isEnabled } from "@tauri-apps/plugin-autostart";
 
 export const useSettings = () => {
   const [settings, setSettings] = useState(() => {
@@ -18,7 +17,7 @@ export const useSettings = () => {
   useEffect(() => {
     const checkAutostart = async () => {
       try {
-        const active = await isEnabled();
+        const active = await callRust("check_autostart_admin");
         setSettings(prev => {
            if (prev.autostart !== active) {
                return { ...prev, autostart: active };
@@ -50,16 +49,16 @@ export const useSettings = () => {
   const toggleAutoStart = async () => {
       try {
           const currentlyEnabled = settings.autostart;
-          if (currentlyEnabled) {
-              await disable();
-              console.log("Autostart disabled");
-          } else {
-              await enable();
-              console.log("Autostart enabled");
-          }
-          setSettings(prev => ({ ...prev, autostart: !prev.autostart }));
+          // Calculate NEW state
+          const newState = !currentlyEnabled;
+          
+          await callRust("set_autostart_admin", { enable: newState });
+          console.log(`Autostart set to ${newState}`);
+
+          setSettings(prev => ({ ...prev, autostart: newState }));
       } catch (e) {
           console.error("Failed to toggle autostart:", e);
+          // Revert visual state if failed??? For now just log
       }
   };
 

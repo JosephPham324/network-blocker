@@ -10,12 +10,11 @@ use is_elevated::is_elevated;
 use std::process::Command;
 use std::os::windows::process::CommandExt;
 use tauri::Manager;
-use std::sync::Mutex; // <--- Import Mutex
-
+use std::sync::Mutex; 
 
 // 1. New Imports for v2 Plugins
-use tauri::Emitter; // <--- This is what's missing
-use tauri_plugin_autostart::MacosLauncher;
+use tauri::Emitter; 
+// use tauri_plugin_autostart::MacosLauncher; // Removed
 // use tauri_plugin_oauth::start; 
 // use tauri::WebviewWindow; 
 
@@ -52,6 +51,80 @@ fn set_clean_on_exit(state: tauri::State<'_, AppState>, enabled: bool) {
 fn check_admin_privileges() -> bool {
     is_elevated()
 }
+
+// --- NEW AUTOSTART COMMANDS ---
+
+#[tauri::command]
+fn check_autostart_admin() -> bool {
+    if cfg!(target_os = "windows") {
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+        let output = Command::new("schtasks")
+            .args(&["/Query", "/TN", "MindfulBlockerAutostart"])
+            .creation_flags(CREATE_NO_WINDOW)
+            .output();
+            
+        match output {
+            Ok(o) => o.status.success(),
+            Err(_) => false,
+        }
+    } else {
+        false
+    }
+}
+
+#[tauri::command]
+fn set_autostart_admin(enable: bool) -> Result<String, String> {
+    if !cfg!(target_os = "windows") {
+        return Err("Only supported on Windows".to_string());
+    }
+
+    const CREATE_NO_WINDOW: u32 = 0x08000000;
+    
+    if enable {
+        let current_exe = std::env::current_exe().map_err(|e| e.to_string())?;
+        let required_path = current_exe.to_string_lossy().to_string();
+        
+        let output = Command::new("schtasks")
+            .args(&[
+                "/Create", 
+                "/F", 
+                "/SC", "ONLOGON", 
+                "/RL", "HIGHEST", 
+                "/TN", "MindfulBlockerAutostart", 
+                "/TR", &format!("'{}'", required_path) // Quote path
+            ])
+            .creation_flags(CREATE_NO_WINDOW)
+            .output()
+            .map_err(|e| e.to_string())?;
+            
+        if output.status.success() {
+             Ok("Enabled Admin Autostart".to_string())
+        } else {
+             let err_msg = String::from_utf8_lossy(&output.stderr);
+             Err(format!("Failed to create task: {}", err_msg))
+        }
+    } else {
+         let output = Command::new("schtasks")
+            .args(&["/Delete", "/F", "/TN", "MindfulBlockerAutostart"])
+            .creation_flags(CREATE_NO_WINDOW)
+            .output()
+            .map_err(|e| e.to_string())?;
+            
+        if output.status.success() {
+             Ok("Disabled Admin Autostart".to_string())
+        } else {
+             let err_msg = String::from_utf8_lossy(&output.stderr);
+             // If task doesn't exist, that's fine too, but schtasks errors if not found
+             if err_msg.contains("The specified task name was not found") {
+                 Ok("Disabled (Task was already missing)".to_string())
+             } else {
+                 Err(format!("Failed to delete task: {}", err_msg))
+             }
+        }
+    }
+}
+
+// ------------------------------
 
 fn get_hosts_path() -> String {
     if cfg!(target_os = "windows") {
@@ -160,7 +233,7 @@ fn main() {
     let rules_for_setup = cached_rules.clone();
 
     tauri::Builder::default()
-        .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec![])))
+        // .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec![]))) // Removed
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_oauth::init())
@@ -230,7 +303,9 @@ fn main() {
             start_server,
             check_admin_privileges,
             apply_blocking_rules,
-            set_clean_on_exit // Register new command
+            set_clean_on_exit,
+            check_autostart_admin, // New
+            set_autostart_admin    // New
         ])
         .manage(AppState { 
             clean_on_exit: Mutex::new(false),
