@@ -77,24 +77,24 @@ const FrictionModal = ({
             autoFocus
           />
 
-          <div className="grid grid-cols-2 gap-3 w-full mt-2">
-            <button
-              onClick={onClose}
-              className="py-3 rounded-2xl font-bold text-slate-500 hover:bg-slate-50 transition-colors"
-            >
-              {tf.cancel}
-            </button>
+          <div className="flex flex-col-reverse gap-3 w-full mt-2">
             <button
               onClick={onConfirm}
               disabled={!isMatch}
               className={`
-                py-3 rounded-2xl font-bold text-white shadow-lg transition-all
+                py-3 rounded-2xl font-bold transition-all border-2
                 ${isMatch 
-                    ? `bg-${colorClass}-500 hover:bg-${colorClass}-600 shadow-${colorClass}-200` 
-                    : "bg-slate-300 cursor-not-allowed"}
+                    ? `border-${colorClass}-100 text-${colorClass}-600 hover:bg-${colorClass}-50 hover:border-${colorClass}-200` 
+                    : "border-transparent text-slate-300 cursor-not-allowed"}
               `}
             >
               {tf.confirm}
+            </button>
+            <button
+              onClick={onClose}
+              className="py-4 rounded-2xl font-bold text-white bg-[#354F52] hover:bg-[#2F3E46] shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all"
+            >
+              {tf.cancel}
             </button>
           </div>
         </div>

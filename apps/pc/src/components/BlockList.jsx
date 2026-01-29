@@ -711,21 +711,22 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
         onClose={closeFriction}
         onConfirm={handleApplyFriction}
         title={
-            frictionState.data?.type === 'rule_delete' ? `Xóa chặn ${frictionState.data?.domain}?` :
-            frictionState.data?.type === 'group_delete' ? `Xóa nhóm ${frictionState.data?.groupName}?` :
-            frictionState.data?.type === 'group_toggle' ? `Tắt nhóm ${frictionState.data?.groupName}?` :
-            "Tắt chặn tên miền?"
+            frictionState.data?.type === 'rule_delete' ? tf.title_delete_rule.replace("{domain}", frictionState.data?.domain) :
+            frictionState.data?.type === 'group_delete' ? tf.title_delete_group.replace("{group}", frictionState.data?.groupName) :
+            frictionState.data?.type === 'group_toggle' ? tf.title_disable_group.replace("{group}", frictionState.data?.groupName) :
+            tf.title_disable_rule
         }
         message={
-            frictionState.data?.type === 'rule_delete' ? "Hành động này sẽ xóa tên miền khỏi danh sách chặn." :
-            frictionState.data?.type === 'group_delete' ? "Hành động này sẽ xóa toàn bộ nhóm và các quy tắc bên trong." :
-            "Bạn sẽ có thể truy cập lại vào tên miền này."
+            frictionState.data?.type === 'rule_delete' ? tf.msg_delete_rule :
+            frictionState.data?.type === 'group_delete' ? tf.msg_delete_group :
+            frictionState.data?.type === 'group_toggle' ? tf.msg_disable_group :
+            tf.msg_disable_rule
         }
         confirmationText={
-            frictionState.data?.type === 'rule_delete' ? `Tôi xác nhận xoá luật chặn ${frictionState.data?.domain}` :
-            frictionState.data?.type === 'group_delete' ? `Tôi xác nhận xoá nhóm ${frictionState.data?.groupName}` :
-            frictionState.data?.type === 'group_toggle' ? `Tôi xác nhận tắt nhóm ${frictionState.data?.groupName}` :
-            `Tôi xác nhận tắt luật chặn ${frictionState.data?.domain}`
+            frictionState.data?.type === 'rule_delete' ? tf.confirm_delete_rule.replace("{domain}", frictionState.data?.domain) :
+            frictionState.data?.type === 'group_delete' ? tf.confirm_delete_group.replace("{group}", frictionState.data?.groupName) :
+            frictionState.data?.type === 'group_toggle' ? tf.confirm_disable_group.replace("{group}", frictionState.data?.groupName) :
+            tf.confirm_disable_rule.replace("{domain}", frictionState.data?.domain)
         }
         actionType={frictionState.data?.type?.includes('delete') ? "delete" : "disable"}
         language={language}
