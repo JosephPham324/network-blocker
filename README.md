@@ -33,6 +33,7 @@ Mindful Block is a desktop application designed to help users maintain focus by 
 -   [Product Idea & Concept](docs/index.html)
 -   [Detailed Requirements (SRS/SDD)](docs/documents.html)
 -   [Tech Stack Blueprint](docs/tech_stack_blueprint.html)
+-   [Tech Context](docs/tech-context.md)
 
 ## Technology Stack
 
