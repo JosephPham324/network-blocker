@@ -24,12 +24,14 @@ import FrictionModal from "./FrictionModal";
 import { translations } from "../locales";
 import { BLOCK_PRESETS, SAMPLE_CSV_CONTENT } from "../constants/presets";
 import { Download, BookOpen } from "lucide-react";
+import { useFocus } from "../context/FocusContext";
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeTextFile } from '@tauri-apps/plugin-fs';
 
 const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelete, onBatchToggle, onBatchMove, onDeleteGroup, onImport, onUpdateMode, language = "vi" }) => {
   const t = translations[language].blocklist;
   const tf = translations[language].friction;
+  const tFocus = translations[language].focus; // <--- Add this
   const [newDomain, setNewDomain] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [newGroup, setNewGroup] = useState("General");
@@ -57,6 +59,8 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
       data: null, // { type: 'rule_toggle', id: '..', domain: '..', currentStatus: true } etc
   });
   const [previewPreset, setPreviewPreset] = useState(null);
+
+  const { isFocusing } = useFocus();
 
   const closeFriction = () => setFrictionState({ ...frictionState, isOpen: false, data: null });
 
@@ -137,24 +141,15 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
 
   // Trigger Modal
   const handleDeleteGroupClick = (groupName) => {
+      if (isFocusing) {
+        alert("🔒 Focus Mode Active: You cannot delete groups while focusing!");
+        return;
+     }
     setGroupToDelete(groupName);
   };
 
   // Actual Delete Action
   const confirmDeleteGroup = () => {
-     // This is now handled by Friction Modal logic or we can keep it if we want to replace it entirely.
-     // The prompt says "Disable a group", but deleting a group is also a critical action.
-     // I'll replace the simple AlertTriangle modal with the FrictionModal for deletion too, 
-     // or keep it simple if the user only asked for "Disable a group" to have friction.
-     // User request: "Disable a group", "Delete a rule".
-     // User ALSO said: "Maybe let them type out a confirmation ... like 'Tôi xác nhận xoá luật chặn xxx.com'"
-     // It makes sense to unify this.
-     
-     // For now, I'll hook into the existing friction system I'm building.
-     // But wait, the existing code has `groupToDelete` state. I should probably replace that with my new system 
-     // to be consistent, OR just add the friction to the "Disable" part.
-     // The request says: "Disable individual rules", "Disable a group", "Delete a rule".
-     // It DOES NOT explicitly say "Delete a group", but that is a super dangerous action, so I'll add friction there too.
     if (groupToDelete) {
       onDeleteGroup(groupToDelete);
       setGroupToDelete(null);
@@ -177,10 +172,12 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
     closeFriction();
   };
 
-  // --- INTERCEPTORS ---
-
   // 1. Toggle Rule (Intercept specific)
   const handleToggleRuleClick = (id, currentStatus, domain) => {
+    if (isFocusing && currentStatus) {
+        alert(tFocus.locked_alert_rule);
+        return;
+    }
     if (currentStatus) {
         // Turning OFF -> Friction
         setFrictionState({
@@ -195,6 +192,10 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
 
   // 2. Delete Rule (Intercept always)
   const handleDeleteRuleClick = (id, domain) => {
+    if (isFocusing) {
+        alert(tFocus.locked_alert_delete_rule);
+        return;
+    }
     setFrictionState({
         isOpen: true,
         data: { type: 'rule_delete', id, domain },
@@ -203,9 +204,12 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
 
   // 3. Toggle Group (Intercept if turning OFF)
   const handleToggleGroupClick = (groupName, targetStatus) => {
-    // If targetStatus is FALSE (we are turning it OFF because it was active), show friction
-    // If targetStatus is TRUE (we are turning it ON), no friction
+    // If targetStatus is FALSE (we are turning it OFF because it was active)
     if (!targetStatus) {
+         if (isFocusing) {
+            alert(tFocus.locked_alert_group);
+            return;
+         }
          const idsInGroup = groupedRules[groupName]?.map((r) => r.id) || [];
          setFrictionState({
             isOpen: true,
@@ -218,6 +222,10 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
   
   // 4. Delete Group (Replace existing modal logic with Friction)
   const handleDeleteGroupClickNew = (groupName) => {
+     if (isFocusing) {
+        alert(tFocus.locked_alert_delete_group);
+        return;
+     }
      setFrictionState({
         isOpen: true,
         data: { type: 'group_delete', groupName },

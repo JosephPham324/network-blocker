@@ -62,6 +62,14 @@ export const useSettings = () => {
       }
   };
 
+  const setBlocking = (enabled) => {
+      setSettings(prev => {
+          // Avoid unnecessary updates
+          if (prev.blockingEnabled === enabled) return prev;
+          return { ...prev, blockingEnabled: enabled };
+      });
+  };
+
   const setLanguage = (lang) => {
     setSettings(prev => ({ ...prev, language: lang }));
   };
@@ -71,6 +79,9 @@ export const useSettings = () => {
     toggleBlocking,
     toggleCleanOnExit,
     toggleAutoStart,
-    setLanguage
+    toggleCleanOnExit,
+    toggleAutoStart,
+    setLanguage,
+    setBlocking // <--- Export
   };
 };

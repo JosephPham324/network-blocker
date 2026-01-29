@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { GamificationService } from '../services/GamificationService';
+import { useFocus } from '../context/FocusContext';
+import { translations } from "../locales"; // <--- Import // <--- Import
 
 // --- Sub-Components ---
 
-const DigitalGarden = ({ trees }) => {
+const DigitalGarden = ({ trees, t }) => {
   return (
     <div className="bg-white p-6 rounded-2xl border border-[#EBE7DE] shadow-sm mb-6">
       <h3 className="text-xl font-serif font-bold text-[#354F52] mb-4 flex items-center gap-2">
-        <span className="text-2xl">🌱</span> Digital Garden
+        <span className="text-2xl">🌱</span> {t.garden_title}
       </h3>
       <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 min-h-[150px] bg-[#F4F1EA] p-4 rounded-xl inner-shadow">
         {trees.length === 0 && (
             <div className="col-span-full flex flex-col items-center justify-center text-[#5C6B73] opacity-60">
                 <span className="text-4xl mb-2">🍂</span>
-                <p>Khu vườn trống trải. Hãy tập trung để trồng cây!</p>
+                <p>{t.garden_empty}</p>
             </div>
         )}
         {trees.map((tree, idx) => (
@@ -31,16 +33,16 @@ const DigitalGarden = ({ trees }) => {
   );
 };
 
-const StreakCalendar = ({ streak }) => {
+const StreakCalendar = ({ streak, t }) => {
   return (
     <div className="bg-white p-6 rounded-2xl border border-[#EBE7DE] shadow-sm mb-6">
        <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-serif font-bold text-[#354F52] flex items-center gap-2">
-                <span className="text-2xl">🔥</span> Streak Power
+                <span className="text-2xl">🔥</span> {t.streak_title}
             </h3>
             <div className="text-right">
                 <span className="text-3xl font-bold text-[#E29578]">{streak.current}</span>
-                <span className="text-xs text-[#5C6B73] uppercase tracking-wide ml-2">Ngày liên tiếp</span>
+                <span className="text-xs text-[#5C6B73] uppercase tracking-wide ml-2">{t.streak_unit}</span>
             </div>
        </div>
        <div className="flex gap-2">
@@ -62,9 +64,10 @@ const StreakCalendar = ({ streak }) => {
   );
 };
 
-const TokenShop = ({ balance, onPurchase }) => {
+const TokenShop = ({ balance, onPurchase, t }) => {
+    // Items are hardcoded for now, ideally they should be in locale or fetched
     const items = [
-        { id: 'break_10', name: '10 Phút giải lao', icon: '☕', cost: 50 },
+        { id: 'break_10', name: '10 Phút giải lao', icon: '☕', cost: 50 }, // Requires deeper I18n
         { id: 'theme_dark', name: 'Giao diện Tối', icon: '🌙', cost: 200 },
         { id: 'donate', name: 'Quyên góp từ thiện', icon: '🎗️', cost: 500 },
     ];
@@ -73,7 +76,7 @@ const TokenShop = ({ balance, onPurchase }) => {
         <div className="bg-white p-6 rounded-2xl border border-[#EBE7DE] shadow-sm">
             <div className="flex justify-between items-center mb-6">
                  <h3 className="text-xl font-serif font-bold text-[#354F52] flex items-center gap-2">
-                    <span className="text-2xl">🪙</span> Cửa hàng Token
+                    <span className="text-2xl">🪙</span> {t.shop_title}
                 </h3>
                 <div className="bg-[#52796F] text-white px-4 py-2 rounded-full font-bold shadow-sm flex items-center gap-2">
                     <span>{balance}</span>
@@ -95,7 +98,7 @@ const TokenShop = ({ balance, onPurchase }) => {
                             <span className="text-2xl bg-[#EBE7DE] w-10 h-10 flex items-center justify-center rounded-lg">{item.icon}</span>
                             <div className="text-left">
                                 <div className="font-bold text-[#2F3E46]">{item.name}</div>
-                                <div className="text-xs text-[#5C6B73]">Mua bằng token</div>
+                                <div className="text-xs text-[#5C6B73]">{t.shop_buy_desc}</div>
                             </div>
                         </div>
                         <span className="font-bold text-[#52796F]">{item.cost} 🪙</span>
@@ -109,7 +112,8 @@ const TokenShop = ({ balance, onPurchase }) => {
 
 // --- Main Page Component ---
 
-const Gamification = ({ language }) => {
+const Gamification = ({ language = 'vi' }) => {
+  const t = translations[language].focus; // <--- Get Translations
   const [data, setData] = useState({
       balance: 0,
       trees: [],
@@ -130,31 +134,28 @@ const Gamification = ({ language }) => {
     });
   };
 
-// --- Timer Component ---
+// --- Timer Component (Connected to Context) ---
     const FocusTimer = ({ onComplete }) => {
+        const { isFocusing, timeLeft, totalDuration, startFocus, stopFocus } = useFocus();
         const [minutes, setMinutes] = useState(25);
-        const [timeLeft, setTimeLeft] = useState(25 * 60);
-        const [isActive, setIsActive] = useState(false);
 
+        // ... (Effects unchanged)
+        
         useEffect(() => {
-            let interval = null;
-            if (isActive && timeLeft > 0) {
-                interval = setInterval(() => {
-                    setTimeLeft(timeLeft - 1);
-                }, 1000);
-            } else if (timeLeft === 0 && isActive) {
-                setIsActive(false);
-                onComplete(minutes);
+            if (isFocusing && timeLeft === 0) {
+                 // Timer finished!
+                 onComplete(totalDuration / 60); // Pass minutes
+                 stopFocus();
             }
-            return () => clearInterval(interval);
-        }, [isActive, timeLeft, minutes, onComplete]);
+        }, [isFocusing, timeLeft, totalDuration, stopFocus, onComplete]);
 
         const toggleTimer = () => {
-            if (!isActive) {
-                setTimeLeft(minutes * 60);
-                setIsActive(true);
+            if (!isFocusing) {
+                startFocus(minutes);
             } else {
-                setIsActive(false);
+                // Give up
+                const confirm = window.confirm(t.give_up_warning);
+                if (confirm) stopFocus();
             }
         };
 
@@ -163,37 +164,44 @@ const Gamification = ({ language }) => {
             const s = seconds % 60;
             return `${m}:${s < 10 ? '0' : ''}${s}`;
         };
+        
+        const progress = totalDuration > 0 ? ((totalDuration - timeLeft) / totalDuration) * 100 : 0;
 
         return (
-            <div className="bg-white p-6 rounded-2xl border border-[#EBE7DE] shadow-sm mb-6 flex flex-col items-center">
+            <div className="bg-white p-6 rounded-2xl border border-[#EBE7DE] shadow-sm mb-6 flex flex-col items-center relative overflow-hidden">
+                {isFocusing && (
+                    <div className="absolute top-0 left-0 h-1 bg-[#52796F] transition-all duration-1000" style={{width: `${progress}%`}}></div>
+                )}
+
                  <h3 className="text-xl font-serif font-bold text-[#354F52] mb-4 flex items-center gap-2">
-                    <span className="text-2xl">⏳</span> Focus Session
+                    <span className="text-2xl">⏳</span> {t.focus_session}
                 </h3>
                 
-                <div className="text-6xl font-bold text-[#354F52] font-mono mb-6">
-                    {formatTime(timeLeft)}
+                <div className={`text-6xl font-bold font-mono mb-6 transition-colors ${isFocusing ? 'text-[#E29578]' : 'text-[#354F52]'}`}>
+                    {isFocusing ? formatTime(timeLeft) : formatTime(minutes * 60)}
                 </div>
 
-                <div className="flex gap-4 mb-6">
-                    {[15, 25, 45, 60].map(m => (
-                        <button 
-                            key={m}
-                            onClick={() => { setMinutes(m); setTimeLeft(m * 60); setIsActive(false); }}
-                            className={`px-3 py-1 rounded-lg text-sm font-bold transition-all ${minutes === m ? 'bg-[#52796F] text-white' : 'bg-[#F4F1EA] text-[#5C6B73] hover:bg-[#EBE7DE]'}`}
-                            disabled={isActive}
-                        >
-                            {m}m
-                        </button>
-                    ))}
-                </div>
+                {!isFocusing && (
+                    <div className="flex gap-4 mb-6">
+                        {[15, 25, 45, 60].map(m => (
+                            <button 
+                                key={m}
+                                onClick={() => setMinutes(m)}
+                                className={`px-3 py-1 rounded-lg text-sm font-bold transition-all ${minutes === m ? 'bg-[#52796F] text-white' : 'bg-[#F4F1EA] text-[#5C6B73] hover:bg-[#EBE7DE]'}`}
+                            >
+                                {m}m
+                            </button>
+                        ))}
+                    </div>
+                )}
 
                 <button 
                     onClick={toggleTimer}
-                    className={`px-8 py-3 rounded-full text-lg font-bold shadow-md transition-all active:scale-95 ${isActive ? 'bg-[#E29578] text-white' : 'bg-[#354F52] text-white'}`}
+                    className={`px-8 py-3 rounded-full text-lg font-bold shadow-md transition-all active:scale-95 ${isFocusing ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-[#354F52] text-white hover:bg-[#2F3E46]'}`}
                 >
-                    {isActive ? 'Give Up' : 'Start Focus'}
+                    {isFocusing ? t.give_up : t.start_focus}
                 </button>
-                {isActive && <p className="text-xs text-[#E29578] mt-3 animate-pulse">Stay focused! Planting a tree...</p>}
+                {isFocusing && <p className="text-xs text-[#E29578] mt-3 animate-pulse">{t.mode_active}</p>}
             </div>
         );
     };
@@ -210,13 +218,12 @@ const Gamification = ({ language }) => {
         GamificationService.checkin(); // Daily streak
         refreshData();
         
-        // Simple alert for now - could be a nice modal later
-        alert(`Session Complete! You earned ${amount} tokens and planted a ${treeType}.`);
+        alert(t.session_complete.replace('{amount}', amount).replace('{treeType}', treeType));
     };
 
     const handlePurchase = (item) => {
         if (GamificationService.spendTokens(item.cost, item.name)) {
-            alert(`Bạn đã mua: ${item.name}`); 
+            alert(t.purchase_success.replace('{name}', item.name)); 
             refreshData();
         }
     };
@@ -224,18 +231,18 @@ const Gamification = ({ language }) => {
   return (
     <div className="animate-fade-in max-w-5xl mx-auto">
         <header className="mb-8">
-            <h2 className="text-3xl font-serif font-bold text-[#354F52] mb-2">Thói quen & Phần thưởng</h2>
-            <p className="text-[#5C6B73]">Nuôi dưỡng khu vườn tâm trí của bạn.</p>
+            <h2 className="text-3xl font-serif font-bold text-[#354F52] mb-2">{t.page_title}</h2>
+            <p className="text-[#5C6B73]">{t.page_subtitle}</p>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
                 <FocusTimer onComplete={handleTimerComplete} />
-                <DigitalGarden trees={data.trees} />
-                <StreakCalendar streak={data.streak} />
+                <DigitalGarden trees={data.trees} t={t} />
+                <StreakCalendar streak={data.streak} t={t} />
             </div>
             <div>
-                <TokenShop balance={data.balance} onPurchase={handlePurchase} />
+                <TokenShop balance={data.balance} onPurchase={handlePurchase} t={t} />
             </div>
         </div>
     </div>
