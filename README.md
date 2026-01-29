@@ -30,9 +30,9 @@ Mindful Block is a desktop application designed to help users maintain focus by 
 -   **Clean on Exit**: Option to automatically remove all blocking entries from the hosts file when the application is closed.
 
 ## Documentation
--   [Product Idea & Concept](index.html)
--   [Detailed Requirements (SRS/SDD)](documents.html)
--   [Tech Stack Blueprint](tech_stack_blueprint.html)
+-   [Product Idea & Concept](docs/index.html)
+-   [Detailed Requirements (SRS/SDD)](docs/documents.html)
+-   [Tech Stack Blueprint](docs/tech_stack_blueprint.html)
 
 ## Technology Stack
 
