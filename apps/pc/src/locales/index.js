@@ -3,6 +3,8 @@ export const translations = {
     sidebar: {
       dash: "Tổng quan",
       list: "Danh sách chặn",
+      video: "Video ngắn",
+      gamification: "Thói quen",
       settings: "Cài đặt",
       logout: "Đăng xuất",
       status_active: "Đang chặn",
@@ -111,6 +113,7 @@ export const translations = {
     sidebar: {
       dash: "Dashboard",
       list: "Block List",
+      gamification: "Habits",
       settings: "Settings",
       logout: "Log Out",
       status_active: "Active",

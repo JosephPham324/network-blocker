@@ -10,7 +10,8 @@ import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard";
 import BlockList from "./components/BlockList";
 import Login from "./components/Login";
-import Settings from "./components/Settings"; // <--- Import component
+import Settings from "./components/Settings";
+import Gamification from "./components/Gamification"; // <--- Add import
 import { AdminRequired, LoadingScreen } from "./components/StateScreens";
 
 const App = () => {
@@ -102,6 +103,7 @@ const App = () => {
             language={settings.language}
           />
         )}
+        {activeTab === "gamification" && <Gamification language={settings.language} />}
         {activeTab === "settings" && <Settings settings={settings} toggleBlocking={toggleBlocking} toggleCleanOnExit={toggleCleanOnExit} setLanguage={setLanguage} toggleAutoStart={toggleAutoStart} />}
       </main>
     </div>

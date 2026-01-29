@@ -42,6 +42,14 @@ const Sidebar = ({ activeTab, setActiveTab, status, onLogout, language = "vi" })
         >
           <SettingsIcon size={18} /> <span className="text-sm">{t.settings}</span>
         </button>
+        <button
+          onClick={() => setActiveTab("gamification")}
+          className={`w-full flex items-center gap-3 p-4 rounded-2xl transition-all ${
+            activeTab === "gamification" ? "bg-[#EBE7DE] text-[#354F52] font-bold" : "text-slate-400 hover:bg-slate-50"
+          }`}
+        >
+          <span className="text-lg">🌱</span> <span className="text-sm">{t.gamification}</span>
+        </button>
       </nav>
 
       {/* Footer Section */}
