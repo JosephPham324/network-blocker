@@ -8,9 +8,15 @@ Mindful Block is a desktop application designed to help users maintain focus by 
 ## Features
 
 ### Core Functionality
--   **Website Blocking**: Blocks access to distracting websites by mapping their domains to `127.0.0.1` and `::1` in the system `hosts` file.
+-   **Blocking Modes**:
+    -   **Hard Block**: Traditional hosts-based blocking. No access allowed.
+    -   **Friction Block**: Requires completing a challenge to access content. Types:
+        -   **Math Challenge**: Solve a multiplication problem.
+        -   **Wait**: Pause for 15 seconds.
+        -   **Typing**: Type a specific confirmation phrase (e.g., "I choose to be distracted").
 -   **Hosts File Management**: Automatically handles reading, writing, and backing up the hosts file. Requires Administrator privileges.
 -   **DNS Flushing**: Automatically flushes the DNS cache on Windows to ensure blocking rules take effect immediately.
+-   **Browser Extension**: Essential for "Friction Mode". Intercepts navigation to blocked sites and displays the challenge interface.
 
 ### Rule Management
 -   **Add/Remove Rules**: easily add domains to your block list.
@@ -19,9 +25,14 @@ Mindful Block is a desktop application designed to help users maintain focus by 
 -   **Import Rules**: Import blocking rules from external sources (CSV support).
 -   **Cloud Sync**: Syncs your blocking rules and groups across devices using Firebase Authentication (Google Login).
 
-### specific Settings
+### Specific Settings
 -   **Global Toggle**: Quickly enable or disable all blocking rules with a single switch.
--   **Clean on Exit**: Option to automatically remove all blocking entries from the hosts file when the application is closed, ensuring your network returns to normal.
+-   **Clean on Exit**: Option to automatically remove all blocking entries from the hosts file when the application is closed.
+
+## Documentation
+-   [Product Idea & Concept](index.html)
+-   [Detailed Requirements (SRS/SDD)](documents.html)
+-   [Tech Stack Blueprint](tech_stack_blueprint.html)
 
 ## Technology Stack
 

@@ -148,6 +148,16 @@
                     id="nav-gamification">
                     <span>&#127793;</span> Thói quen & Phần thưởng
                 </button>
+                <button onclick="window.location.href='documents.html'"
+                    class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-surfaceHighlight transition-colors flex items-center gap-3"
+                    id="nav-docs">
+                    <span>&#128196;</span> Tài liệu Kỹ thuật (SRS/SDD)
+                </button>
+                <button onclick="window.location.href='tech_stack_blueprint.html'"
+                    class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-surfaceHighlight transition-colors flex items-center gap-3"
+                    id="nav-stack">
+                    <span>&#128736;</span> Tech Stack Blueprint
+                </button>
             </nav>
 
             <div class="p-6 border-t border-surfaceHighlight">
@@ -260,7 +270,7 @@
                                     class="friction-selector w-full px-5 py-4 border border-surfaceHighlight rounded-xl hover:bg-surface text-left flex justify-between items-center transition-all bg-surfaceHighlight font-semibold"
                                     id="btn-mode-delay">
                                     <span>&#9203; Tạm dừng Chánh niệm</span>
-                                    <span class="text-xs text-textLight">Chờ 5s</span>
+                                    <span class="text-xs text-textLight">Chờ 15s</span>
                                 </button>
                                 <button onclick="setFrictionMode('cognitive')"
                                     class="friction-selector w-full px-5 py-4 border border-surfaceHighlight rounded-xl hover:bg-surface text-left flex justify-between items-center transition-all"
@@ -271,10 +281,13 @@
                                 <button onclick="setFrictionMode('typing')"
                                     class="friction-selector w-full px-5 py-4 border border-surfaceHighlight rounded-xl hover:bg-surface text-left flex justify-between items-center transition-all"
                                     id="btn-mode-typing">
-                                    <span class="text-xs text-textLight">Gõ cụm từ</span>
+                                    <span>&#9000; Tuyên bố Ý định</span>
+                                    <span class="text-xs text-textLight">Gõ cụm từ xác nhận</span>
                                 </button>
-                                <p class="text-xs text-slate-400 mt-2 italic">*Hiện tại phiên bản Extension đang mặc
-                                    định sử dụng Thử thách Toán học.</p>
+                                <p
+                                    class="text-xs text-secondary mt-2 font-bold px-2 py-1 bg-secondary/10 rounded inline-block">
+                                    ✅ Đã được triển khai đầy đủ trong Extension
+                                </p>
                             </div>
                         </div>
 

@@ -8,35 +8,39 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link
-        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap"
         rel="stylesheet">
 
-    <!-- Chosen Palette: Tech Focus -->
-    <!-- Background: Slate Light (#F8FAFC) -->
-    <!-- Accent 1: Indigo Blue (#4F46E5) - Professionalism -->
-    <!-- Accent 2: Emerald Green (#10B981) - Stability -->
-    <!-- Text: Slate Dark (#1E293B) -->
+    <!-- Chosen Palette: Calm Harmony (Unified) -->
+    <!-- Background: Warm Neutral (#FDFCF8) -->
+    <!-- Primary: Deep Teal (#354F52) -->
+    <!-- Secondary: Sage Green (#52796F) -->
+    <!-- Accent: Coral (#E29578) -->
 
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        bg: '#F8FAFC',
-                        surface: '#FFFFFF',
-                        primary: '#4F46E5',
-                        secondary: '#10B981',
-                        accent: '#F59E0B',
+                        bg: '#FDFCF8',
+                        surface: '#F4F1EA',
+                        surfaceHighlight: '#EBE7DE',
+                        primary: '#354F52',
+                        secondary: '#52796F',
+                        accent: '#E29578',
+                        textMain: '#2F3E46',
+                        textLight: '#5C6B73',
                         slate: {
-                            800: '#1E293B',
-                            600: '#475569',
-                            400: '#94A3B8',
-                            100: '#F1F5F9'
+                            800: '#2F3E46', // textMain
+                            600: '#5C6B73', // textLight
+                            400: '#a5a58d', // muted
+                            100: '#EBE7DE'  // surfaceHighlight
                         }
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
+                        serif: ['Lora', 'serif'],
                     }
                 }
             }
@@ -45,8 +49,15 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #F8FAFC;
-            color: #1E293B;
+            background-color: #FDFCF8;
+            color: #2F3E46;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            font-family: 'Lora', serif;
         }
 
         .chart-container {
@@ -62,9 +73,10 @@
         }
 
         .nav-item.active {
-            background-color: #EEF2FF;
-            color: #4F46E5;
-            border-right: 4px solid #4F46E5;
+            background-color: #EBE7DE;
+            color: #354F52;
+            border-right: 4px solid #52796F;
+            font-weight: 600;
         }
 
         .section-view {
@@ -90,7 +102,7 @@
     </style>
 </head>
 
-<body class="flex flex-col h-screen overflow-hidden">
+<body class="flex flex-col h-screen overflow-hidden text-textMain">
 
     <!-- Application Structure Plan: 
          Ứng dụng được thiết kế như một bản báo cáo kỹ thuật tương tác.
@@ -103,14 +115,14 @@
 
     <div class="flex flex-1 overflow-hidden">
         <!-- Sidebar -->
-        <aside class="w-72 bg-white border-r border-slate-100 flex flex-col hidden md:flex">
+        <aside class="w-72 bg-surface border-r border-surfaceHighlight flex flex-col hidden md:flex">
             <div class="p-8">
                 <div class="flex items-center gap-2 mb-2">
                     <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold">M
                     </div>
-                    <h1 class="text-xl font-bold text-slate-800">MindfulBlock</h1>
+                    <h1 class="text-xl font-bold text-primary">MindfulBlock</h1>
                 </div>
-                <p class="text-xs text-slate-400 font-mono">STAK SPECIFICATION v2.1</p>
+                <p class="text-xs text-textLight font-mono">STAK SPECIFICATION v2.1</p>
             </div>
 
             <nav class="flex-1 px-4 space-y-1">
@@ -134,10 +146,21 @@
                     id="nav-network">
                     <span>&#128246;</span> Cơ chế Chặn Mạng
                 </button>
+
+                <div class="mt-4 pt-4 border-t border-surfaceHighlight">
+                    <button onclick="window.location.href='index.html'"
+                        class="w-full text-left px-4 py-2 rounded-lg flex items-center gap-3 text-textLight hover:text-primary transition-all text-xs">
+                        <span>&#8592;</span> Về Trang chủ
+                    </button>
+                    <button onclick="window.location.href='documents.html'"
+                        class="w-full text-left px-4 py-2 rounded-lg flex items-center gap-3 text-textLight hover:text-primary transition-all text-xs">
+                        <span>&#128196;</span> Xem tài liệu SRS
+                    </button>
+                </div>
             </nav>
 
-            <div class="p-6 bg-slate-50 border-t border-slate-100">
-                <div class="text-[10px] text-slate-400 uppercase tracking-widest mb-2 font-bold">Trạng thái Hệ thống
+            <div class="p-6 bg-bg border-t border-surfaceHighlight">
+                <div class="text-[10px] text-textLight uppercase tracking-widest mb-2 font-bold">Trạng thái Hệ thống
                 </div>
                 <div class="flex items-center gap-2 text-xs text-secondary font-semibold">
                     <span class="relative flex h-2 w-2">
@@ -156,8 +179,8 @@
             <!-- SECTION 1: KIẾN TRÚC TỔNG THỂ -->
             <section id="overview" class="section-view active max-w-5xl mx-auto">
                 <div class="mb-10">
-                    <h2 class="text-4xl font-bold text-slate-800 mb-4">Kiến trúc Hệ thống Đa nền tảng</h2>
-                    <p class="text-slate-600 text-lg leading-relaxed">
+                    <h2 class="text-4xl font-bold text-primary mb-4">Kiến trúc Hệ thống Đa nền tảng</h2>
+                    <p class="text-textLight text-lg leading-relaxed">
                         Để đạt được sự đồng bộ hoàn hảo, MindfulBlock sử dụng mô hình <strong>Client-Heavy,
                             Server-Light</strong>.
                         Phần lớn logic chặn mạng nằm ở thiết bị cục bộ để đảm bảo quyền riêng tư và tốc độ, trong khi
@@ -166,15 +189,16 @@
                 </div>
 
                 <!-- Visual Diagram (HTML/CSS) -->
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 mb-10 relative overflow-hidden">
+                <div
+                    class="bg-white p-8 rounded-3xl shadow-sm border border-surfaceHighlight mb-10 relative overflow-hidden">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center text-center">
                         <!-- Client PC -->
                         <div class="flex flex-col items-center">
                             <div
-                                class="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center text-3xl mb-4 border border-slate-200">
+                                class="w-20 h-20 bg-surface rounded-2xl flex items-center justify-center text-3xl mb-4 border border-surfaceHighlight">
                                 💻</div>
-                            <h4 class="font-bold text-slate-800">Mindful PC</h4>
-                            <p class="text-xs text-slate-400 mt-1 font-mono">Windows / macOS</p>
+                            <h4 class="font-bold text-primary">Mindful PC</h4>
+                            <p class="text-xs text-textLight mt-1 font-mono">Windows / macOS</p>
                             <div class="mt-4 px-3 py-1 bg-primary/10 text-primary text-[10px] rounded-full font-bold">
                                 RUST / TAURI</div>
                         </div>
@@ -182,17 +206,18 @@
                         <!-- Sync Cloud -->
                         <div class="flex flex-col items-center relative">
                             <!-- Connection Lines (Hidden on mobile) -->
-                            <div class="hidden md:block absolute top-1/2 left-[-50%] w-full h-[2px] bg-slate-100 -z-10">
+                            <div
+                                class="hidden md:block absolute top-1/2 left-[-50%] w-full h-[2px] bg-surfaceHighlight -z-10">
                             </div>
                             <div
-                                class="hidden md:block absolute top-1/2 right-[-50%] w-full h-[2px] bg-slate-100 -z-10">
+                                class="hidden md:block absolute top-1/2 right-[-50%] w-full h-[2px] bg-surfaceHighlight -z-10">
                             </div>
 
                             <div
                                 class="w-24 h-24 bg-primary rounded-full flex items-center justify-center text-4xl mb-4 shadow-xl shadow-primary/20 ring-8 ring-primary/5">
                                 ☁️</div>
-                            <h4 class="font-bold text-slate-800">Central Account</h4>
-                            <p class="text-xs text-slate-400 mt-1 font-mono">Firebase / Firestore</p>
+                            <h4 class="font-bold text-primary">Central Account</h4>
+                            <p class="text-xs text-textLight mt-1 font-mono">Firebase / Firestore</p>
                             <div
                                 class="mt-4 px-3 py-1 bg-secondary/10 text-secondary text-[10px] rounded-full font-bold">
                                 REAL-TIME SYNC</div>
@@ -201,56 +226,55 @@
                         <!-- Client Mobile -->
                         <div class="flex flex-col items-center">
                             <div
-                                class="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center text-3xl mb-4 border border-slate-200">
+                                class="w-20 h-20 bg-surface rounded-2xl flex items-center justify-center text-3xl mb-4 border border-surfaceHighlight">
                                 📱</div>
-                            <h4 class="font-bold text-slate-800">Mindful Mobile</h4>
-                            <p class="text-xs text-slate-400 mt-1 font-mono">iOS / Android</p>
-                            <div
-                                class="mt-4 px-3 py-1 bg-amber-500/10 text-amber-600 text-[10px] rounded-full font-bold">
+                            <h4 class="font-bold text-primary">Mindful Mobile</h4>
+                            <p class="text-xs text-textLight mt-1 font-mono">iOS / Android</p>
+                            <div class="mt-4 px-3 py-1 bg-accent/10 text-accent text-[10px] rounded-full font-bold">
                                 ROADMAP</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="bg-white p-6 rounded-2xl border border-slate-100">
-                        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <div class="bg-white p-6 rounded-2xl border border-surfaceHighlight">
+                        <h3 class="font-bold text-primary mb-4 flex items-center gap-2">
                             <span class="w-2 h-2 bg-primary rounded-full"></span> Luồng Đồng bộ Dữ liệu
                         </h3>
                         <div class="chart-container">
                             <canvas id="syncFlowChart"></canvas>
                         </div>
                     </div>
-                    <div class="bg-white p-6 rounded-2xl border border-slate-100 flex flex-col justify-center">
-                        <h3 class="font-bold text-slate-800 mb-4">Các thành phần chính</h3>
+                    <div class="bg-white p-6 rounded-2xl border border-surfaceHighlight flex flex-col justify-center">
+                        <h3 class="font-bold text-primary mb-4">Các thành phần chính</h3>
                         <ul class="space-y-4">
                             <li class="flex items-start gap-3">
                                 <div
-                                    class="w-6 h-6 bg-blue-50 text-blue-600 rounded flex items-center justify-center text-xs font-bold">
+                                    class="w-6 h-6 bg-primary/10 text-primary rounded flex items-center justify-center text-xs font-bold">
                                     1</div>
                                 <div>
                                     <p class="font-semibold text-sm">Xác thực tập trung</p>
-                                    <p class="text-xs text-slate-400">Đăng nhập một lần (SSO) cho toàn bộ hệ sinh thái
+                                    <p class="text-xs text-textLight">Đăng nhập một lần (SSO) cho toàn bộ hệ sinh thái
                                         thiết bị.</p>
                                 </div>
                             </li>
                             <li class="flex items-start gap-3">
                                 <div
-                                    class="w-6 h-6 bg-green-50 text-green-600 rounded flex items-center justify-center text-xs font-bold">
+                                    class="w-6 h-6 bg-secondary/10 text-secondary rounded flex items-center justify-center text-xs font-bold">
                                     2</div>
                                 <div>
                                     <p class="font-semibold text-sm">Conflict Resolution</p>
-                                    <p class="text-xs text-slate-400">Xử lý khi thay đổi thiết lập đồng thời trên cả
+                                    <p class="text-xs text-textLight">Xử lý khi thay đổi thiết lập đồng thời trên cả
                                         điện thoại và máy tính.</p>
                                 </div>
                             </li>
                             <li class="flex items-start gap-3">
                                 <div
-                                    class="w-6 h-6 bg-amber-50 text-amber-600 rounded flex items-center justify-center text-xs font-bold">
+                                    class="w-6 h-6 bg-accent/10 text-accent rounded flex items-center justify-center text-xs font-bold">
                                     3</div>
                                 <div>
                                     <p class="font-semibold text-sm">Offline-First</p>
-                                    <p class="text-xs text-slate-400">Vẫn chặn mạng ngay cả khi không có kết nối
+                                    <p class="text-xs text-textLight">Vẫn chặn mạng ngay cả khi không có kết nối
                                         internet (Local DB).</p>
                                 </div>
                             </li>
@@ -262,8 +286,8 @@
             <!-- SECTION 2: FRONTEND STACK -->
             <section id="frontend" class="section-view max-w-5xl mx-auto">
                 <div class="mb-10">
-                    <h2 class="text-4xl font-bold text-slate-800 mb-4">Lớp Ứng dụng & Giao diện</h2>
-                    <p class="text-slate-600 text-lg leading-relaxed">
+                    <h2 class="text-4xl font-bold text-primary mb-4">Lớp Ứng dụng & Giao diện</h2>
+                    <p class="text-textLight text-lg leading-relaxed">
                         Để tối ưu nguồn lực phát triển nhưng vẫn giữ được hiệu suất tối đa (Native Performance), chúng
                         tôi chọn giải pháp <strong>Multi-Framework</strong> dựa trên ngôn ngữ biên dịch mạnh mẽ.
                     </p>
@@ -271,15 +295,16 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
                     <!-- Desktop Stack -->
-                    <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm tech-card transition-all">
+                    <div
+                        class="bg-white p-8 rounded-3xl border border-surfaceHighlight shadow-sm tech-card transition-all">
                         <div class="flex justify-between items-start mb-6">
-                            <div class="p-4 bg-slate-900 rounded-2xl text-white text-2xl font-mono">Rust</div>
+                            <div class="p-4 bg-primary text-white rounded-2xl text-2xl font-mono">Rust</div>
                             <div class="text-right">
-                                <h4 class="font-bold text-slate-800">PC / Desktop</h4>
-                                <span class="text-xs text-primary font-bold">Tauri Framework</span>
+                                <h4 class="font-bold text-primary">PC / Desktop</h4>
+                                <span class="text-xs text-textLight font-bold">Tauri Framework</span>
                             </div>
                         </div>
-                        <ul class="space-y-3 text-sm text-slate-600 mb-6">
+                        <ul class="space-y-3 text-sm text-textLight mb-6">
                             <li class="flex gap-2">✅ <span class="font-semibold">Siêu nhẹ:</span> File cài đặt chỉ
                                 ~5-10MB (so với 100MB+ của Electron).</li>
                             <li class="flex gap-2">✅ <span class="font-semibold">Bảo mật cao:</span> Core bằng Rust giúp
@@ -287,7 +312,8 @@
                             <li class="flex gap-2">✅ <span class="font-semibold">Tận dụng Web:</span> UI viết bằng
                                 React/Tailwind giúp thiết kế hiện đại.</li>
                         </ul>
-                        <div class="p-4 bg-slate-50 rounded-xl text-[11px] font-mono text-slate-500">
+                        <div
+                            class="p-4 bg-surface rounded-xl text-[11px] font-mono text-textMain border border-surfaceHighlight">
                             // Logic chặn hệ thống qua Rust <br>
                             tauri::command { <br>
                             &nbsp;&nbsp;update_hosts_file(sites: Vec&lt;String&gt;); <br>
@@ -296,16 +322,17 @@
                     </div>
 
                     <!-- Mobile Stack -->
-                    <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm tech-card transition-all">
+                    <div
+                        class="bg-white p-8 rounded-3xl border border-surfaceHighlight shadow-sm tech-card transition-all">
                         <div class="flex justify-between items-start mb-6">
-                            <div class="p-4 bg-blue-500 rounded-2xl text-white text-2xl">Flutter</div>
+                            <div class="p-4 bg-secondary text-white rounded-2xl text-2xl">Flutter</div>
                             <div class="text-right">
-                                <h4 class="font-bold text-slate-800">Android / iOS</h4>
+                                <h4 class="font-bold text-primary">Android / iOS</h4>
                                 <span class="text-xs text-secondary font-bold">Google Framework</span>
-                                <span class="block text-[10px] text-amber-500 font-bold mt-1">(Đang phát triển)</span>
+                                <span class="block text-[10px] text-accent font-bold mt-1">(Đang phát triển)</span>
                             </div>
                         </div>
-                        <ul class="space-y-3 text-sm text-slate-600 mb-6">
+                        <ul class="space-y-3 text-sm text-textLight mb-6">
                             <li class="flex gap-2">✅ <span class="font-semibold">60 FPS:</span> Giao diện mượt mà tuyệt
                                 đối cho cả 2 hệ điều hành.</li>
                             <li class="flex gap-2">✅ <span class="font-semibold">VpnService:</span> Khả năng gọi các hàm
@@ -313,7 +340,8 @@
                             <li class="flex gap-2">✅ <span class="font-semibold">Single Codebase:</span> Viết một lần
                                 cho cả iPhone và Samsung.</li>
                         </ul>
-                        <div class="p-4 bg-slate-50 rounded-xl text-[11px] font-mono text-slate-500">
+                        <div
+                            class="p-4 bg-surface rounded-xl text-[11px] font-mono text-textMain border border-surfaceHighlight">
                             // Gọi MethodChannel để bật VPN chặn mạng <br>
                             static const platform = MethodChannel('blocker'); <br>
                             await platform.invokeMethod('startVPN');
@@ -323,7 +351,7 @@
 
                 <div class="bg-primary/5 p-8 rounded-3xl border border-primary/10">
                     <h3 class="font-bold text-primary mb-4">Tại sao không dùng React Native hay Electron?</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-slate-600">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-textLight">
                         <p><strong>Electron:</strong> Quá nặng nề và tiêu tốn RAM, không phù hợp cho một ứng dụng chạy
                             ngầm liên tục như blocker.</p>
                         <p><strong>React Native:</strong> Khó khăn hơn Flutter trong việc can thiệp sâu vào các Bridge
@@ -335,8 +363,8 @@
             <!-- SECTION 3: BACKEND & SYNC -->
             <section id="backend" class="section-view max-w-5xl mx-auto">
                 <div class="mb-10">
-                    <h2 class="text-4xl font-bold text-slate-800 mb-4">Đồng bộ hóa & Lưu trữ Cloud</h2>
-                    <p class="text-slate-600 text-lg leading-relaxed">
+                    <h2 class="text-4xl font-bold text-primary mb-4">Đồng bộ hóa & Lưu trữ Cloud</h2>
+                    <p class="text-textLight text-lg leading-relaxed">
                         Cốt lõi của việc đồng bộ hóa đa thiết bị là tốc độ và sự ổn định. Chúng tôi đề xuất giải pháp
                         <strong>Serverless</strong> để giảm thiểu chi phí vận hành và tối đa hóa khả năng mở rộng.
                     </p>
@@ -344,29 +372,29 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
                     <div class="space-y-6">
-                        <div class="bg-white p-6 rounded-2xl border border-slate-100">
-                            <h4 class="font-bold text-slate-800 mb-2">Google Firebase Ecosystem</h4>
-                            <p class="text-sm text-slate-500 mb-4">Lựa chọn hàng đầu cho việc đồng bộ hóa dữ liệu thời
+                        <div class="bg-white p-6 rounded-2xl border border-surfaceHighlight">
+                            <h4 class="font-bold text-primary mb-2">Google Firebase Ecosystem</h4>
+                            <p class="text-sm text-textLight mb-4">Lựa chọn hàng đầu cho việc đồng bộ hóa dữ liệu thời
                                 gian thực mà không cần xây dựng WebSocket phức tạp.</p>
                             <div class="space-y-3">
-                                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                                    <span class="text-xs font-bold text-slate-600">Auth</span>
-                                    <span class="text-xs text-slate-400">Firebase Authentication</span>
+                                <div class="flex items-center justify-between p-3 bg-surface rounded-lg">
+                                    <span class="text-xs font-bold text-textMain">Auth</span>
+                                    <span class="text-xs text-textLight">Firebase Authentication</span>
                                 </div>
-                                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                                    <span class="text-xs font-bold text-slate-600">Database</span>
-                                    <span class="text-xs text-slate-400">Firestore (NoSQL)</span>
+                                <div class="flex items-center justify-between p-3 bg-surface rounded-lg">
+                                    <span class="text-xs font-bold text-textMain">Database</span>
+                                    <span class="text-xs text-textLight">Firestore (NoSQL)</span>
                                 </div>
-                                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                                    <span class="text-xs font-bold text-slate-600">Storage</span>
-                                    <span class="text-xs text-slate-400">Cloud Storage (User Avatars)</span>
+                                <div class="flex items-center justify-between p-3 bg-surface rounded-lg">
+                                    <span class="text-xs font-bold text-textMain">Storage</span>
+                                    <span class="text-xs text-textLight">Cloud Storage (User Avatars)</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="bg-white p-6 rounded-2xl border border-slate-100">
-                            <h4 class="font-bold text-slate-800 mb-2">Cấu trúc dữ liệu Đồng bộ</h4>
-                            <div class="p-4 bg-slate-900 rounded-xl text-[11px] font-mono text-emerald-400">
+                        <div class="bg-white p-6 rounded-2xl border border-surfaceHighlight">
+                            <h4 class="font-bold text-primary mb-2">Cấu trúc dữ liệu Đồng bộ</h4>
+                            <div class="p-4 bg-primary rounded-xl text-[11px] font-mono text-emerald-200">
                                 { <br>
                                 &nbsp;&nbsp;"userId": "user_123", <br>
                                 &nbsp;&nbsp;"restrictedSites": [ <br>
@@ -380,12 +408,12 @@
                     </div>
 
                     <div
-                        class="bg-white p-8 rounded-3xl border border-slate-100 flex flex-col items-center justify-center text-center">
-                        <h4 class="font-bold text-slate-800 mb-4">So sánh Tốc độ Đồng bộ</h4>
+                        class="bg-white p-8 rounded-3xl border border-surfaceHighlight flex flex-col items-center justify-center text-center">
+                        <h4 class="font-bold text-primary mb-4">So sánh Tốc độ Đồng bộ</h4>
                         <div class="chart-container">
                             <canvas id="syncPerformanceChart"></canvas>
                         </div>
-                        <p class="text-xs text-slate-400 mt-6 italic">Firebase Realtime SDK giúp thay đổi trên Mobile
+                        <p class="text-xs text-textLight mt-6 italic">Firebase Realtime SDK giúp thay đổi trên Mobile
                             phản ánh lên PC trong chưa đầy 200ms.</p>
                     </div>
                 </div>
@@ -394,51 +422,51 @@
             <!-- SECTION 4: NETWORK BLOCKING -->
             <section id="network" class="section-view max-w-5xl mx-auto">
                 <div class="mb-10">
-                    <h2 class="text-4xl font-bold text-slate-800 mb-4">Cơ chế Chặn Mạng: "The Secret Sauce"</h2>
-                    <p class="text-slate-600 text-lg leading-relaxed">
+                    <h2 class="text-4xl font-bold text-primary mb-4">Cơ chế Chặn Mạng: "The Secret Sauce"</h2>
+                    <p class="text-textLight text-lg leading-relaxed">
                         Chặn mạng là phần thách thức nhất về mặt kỹ thuật vì mỗi hệ điều hành có một cơ chế bảo mật khác
                         nhau.
                     </p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="bg-white p-8 rounded-3xl border border-slate-100">
-                        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">PC (Windows/Mac)</h3>
+                    <div class="bg-white p-8 rounded-3xl border border-surfaceHighlight">
+                        <h3 class="font-bold text-primary mb-4 flex items-center gap-2">PC (Windows/Mac)</h3>
                         <div class="space-y-4">
-                            <div class="p-4 border-l-4 border-primary bg-slate-50">
+                            <div class="p-4 border-l-4 border-primary bg-surfaceHighlight">
                                 <h5 class="font-bold text-sm">Cấp độ 1: Hosts File</h5>
-                                <p class="text-xs text-slate-500">Dễ triển khai, nhẹ, nhưng dễ bị người dùng rành kỹ
+                                <p class="text-xs text-textLight">Dễ triển khai, nhẹ, nhưng dễ bị người dùng rành kỹ
                                     thuật vượt qua.</p>
                             </div>
-                            <div class="p-4 border-l-4 border-secondary bg-slate-50">
+                            <div class="p-4 border-l-4 border-secondary bg-surfaceHighlight">
                                 <h5 class="font-bold text-sm">Cấp độ 2: Local DNS Proxy</h5>
-                                <p class="text-xs text-slate-500">Viết bằng Rust để điều hướng tất cả lưu lượng DNS về
+                                <p class="text-xs text-textLight">Viết bằng Rust để điều hướng tất cả lưu lượng DNS về
                                     một bộ lọc nội bộ.</p>
                             </div>
-                            <div class="p-4 border-l-4 border-accent bg-slate-50">
+                            <div class="p-4 border-l-4 border-accent bg-surfaceHighlight">
                                 <h5 class="font-bold text-sm">Cấp độ 3: Web Extension</h5>
-                                <p class="text-xs text-slate-500">Chặn chính xác từng URL trong trình duyệt, cho phép
+                                <p class="text-xs text-textLight">Chặn chính xác từng URL trong trình duyệt, cho phép
                                     hiển thị trang "Blocked" đẹp mắt.</p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white p-8 rounded-3xl border border-slate-100">
-                        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">Mobile (iOS/Android)</h3>
+                    <div class="bg-white p-8 rounded-3xl border border-surfaceHighlight">
+                        <h3 class="font-bold text-primary mb-4 flex items-center gap-2">Mobile (iOS/Android)</h3>
                         <div class="space-y-4">
-                            <div class="p-4 border-l-4 border-primary bg-slate-50">
+                            <div class="p-4 border-l-4 border-primary bg-surfaceHighlight">
                                 <h5 class="font-bold text-sm">Local VPN Service</h5>
-                                <p class="text-xs text-slate-500">Tạo một VPN "giả" ngay trên máy (không gửi dữ liệu đi
+                                <p class="text-xs text-textLight">Tạo một VPN "giả" ngay trên máy (không gửi dữ liệu đi
                                     đâu). Tất cả gói tin đi qua bộ lọc này.</p>
                             </div>
-                            <div class="p-4 border-l-4 border-secondary bg-slate-50">
+                            <div class="p-4 border-l-4 border-secondary bg-surfaceHighlight">
                                 <h5 class="font-bold text-sm">Network Extension (iOS)</h5>
-                                <p class="text-xs text-slate-500">Sử dụng Apple NEFilterDataProvider để chặn các luồng
+                                <p class="text-xs text-textLight">Sử dụng Apple NEFilterDataProvider để chặn các luồng
                                     dữ liệu ở cấp hệ thống.</p>
                             </div>
-                            <div class="p-4 border-l-4 border-accent bg-slate-50">
+                            <div class="p-4 border-l-4 border-accent bg-surfaceHighlight">
                                 <h5 class="font-bold text-sm">Accessibility API</h5>
-                                <p class="text-xs text-slate-500">Dùng để đọc URL hiện tại của trình duyệt Chrome/Safari
+                                <p class="text-xs text-textLight">Dùng để đọc URL hiện tại của trình duyệt Chrome/Safari
                                     và tự động đóng tab nếu vi phạm.</p>
                             </div>
                         </div>
@@ -479,8 +507,8 @@
                     datasets: [{
                         label: 'Lưu lượng Đồng bộ (Kbs)',
                         data: [12, 19, 15, 25],
-                        borderColor: '#4F46E5',
-                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        borderColor: '#354F52', // primary
+                        backgroundColor: 'rgba(53, 79, 82, 0.1)', // primary 10%
                         fill: true,
                         tension: 0.4
                     }]
@@ -503,7 +531,7 @@
                     datasets: [{
                         label: 'Độ trễ (ms)',
                         data: [150, 450, 400, 1200],
-                        backgroundColor: ['#10B981', '#94A3B8', '#94A3B8', '#F59E0B'],
+                        backgroundColor: ['#52796F', '#EBE7DE', '#EBE7DE', '#E29578'], // secondary, surfaceHighlight, accent
                         borderRadius: 8
                     }]
                 },

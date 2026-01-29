@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link
-        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap"
         rel="stylesheet">
 
     <script>
@@ -16,25 +16,46 @@
             theme: {
                 extend: {
                     colors: {
+                        bg: '#FDFCF8',
+                        surface: '#F4F1EA',
+                        surfaceHighlight: '#EBE7DE',
+                        primary: '#354F52',
+                        secondary: '#52796F',
+                        accent: '#E29578',
+                        textMain: '#2F3E46',
+                        textLight: '#5C6B73',
+                        // Maintain legacy references for easier migration or specific uses
                         brand: {
-                            50: '#f4f7f5',
-                            100: '#e1e9e3',
-                            500: '#52796f',
-                            600: '#354f52',
-                            900: '#2f3e46',
+                            50: '#F4F1EA',
+                            100: '#EBE7DE',
+                            500: '#52796F',
+                            600: '#354F52',
+                            900: '#2F3E46',
                         },
-                        accent: '#e29578',
                         cloud: '#4f46e5'
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
+                        serif: ['Lora', 'serif'],
                     }
                 }
             }
         }
     </script>
     <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFCF8;
+            color: #2F3E46;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Lora', serif;
+        }
+
         .use-case-step:before {
             content: '';
             position: absolute;
@@ -74,8 +95,8 @@
         }
 
         .active-tab-btn {
-            border-bottom: 3px solid #52796f;
-            color: #354f52;
+            border-bottom: 3px solid #52796F;
+            color: #354F52;
             font-weight: 700;
         }
 
@@ -160,77 +181,87 @@
     </style>
 </head>
 
-<body class="bg-brand-50 text-brand-900 font-sans leading-relaxed">
+<body class="bg-bg text-textMain font-sans leading-relaxed">
     <div class="max-w-6xl mx-auto px-4 py-10">
-        <header class="mb-12 border-b border-brand-100 pb-10 flex flex-col md:flex-row justify-between items-end gap-6">
+        <header
+            class="mb-12 border-b border-surfaceHighlight pb-10 flex flex-col md:flex-row justify-between items-end gap-6">
             <div>
                 <div class="flex items-center gap-3 mb-3">
                     <span
-                        class="bg-brand-600 text-white p-2 rounded-lg text-xs font-bold uppercase tracking-tighter">Blueprint
+                        class="bg-primary text-white p-2 rounded-lg text-xs font-bold uppercase tracking-tighter">Blueprint
                         v3</span>
-                    <h1 class="text-4xl font-extrabold text-brand-600 font-serif">MindfulBlock Technical Docs</h1>
+                    <h1 class="text-4xl font-extrabold text-primary font-serif">MindfulBlock Technical Docs</h1>
                 </div>
-                <p class="text-brand-500 text-lg">Hệ thống quản lý sự tập trung đa nền tảng & Đồng bộ thời gian thực</p>
+                <p class="text-secondary text-lg">Hệ thống quản lý sự tập trung đa nền tảng & Đồng bộ thời gian thực</p>
             </div>
-            <div class="flex gap-2 bg-white p-1.5 rounded-xl border border-brand-100 shadow-sm overflow-hidden">
+            <div class="flex gap-2 bg-white p-1.5 rounded-xl border border-surfaceHighlight shadow-sm overflow-hidden">
+                <button onclick="window.location.href='index.html'"
+                    class="px-5 py-2.5 rounded-lg text-primary hover:bg-surface transition-all text-sm font-bold">
+                    &#8592; Về Trang chủ
+                </button>
+                <div class="h-6 w-px bg-surfaceHighlight mx-2"></div>
                 <button onclick="switchTab('srs')" id="btn-srs"
                     class="tab-btn px-5 py-2.5 rounded-lg active-tab-btn transition-all text-sm">1. Đặc tả SRS</button>
                 <button onclick="switchTab('sdd')" id="btn-sdd"
                     class="tab-btn px-5 py-2.5 rounded-lg transition-all text-sm">2. Thiết kế SDD</button>
                 <button onclick="switchTab('use-cases')" id="btn-use-cases"
                     class="tab-btn px-5 py-2.5 rounded-lg transition-all text-sm">3. Chi tiết Use Cases</button>
+                <button onclick="window.location.href='tech_stack_blueprint.html'"
+                    class="px-4 py-2.5 rounded-lg text-textLight hover:text-primary transition-all text-xs border border-transparent hover:border-surfaceHighlight">
+                    Blueprint &#8594;
+                </button>
             </div>
         </header>
 
         <!-- TAB: SRS -->
         <div id="srs" class="tab-content active space-y-12">
-            <section class="bg-white p-8 rounded-3xl shadow-sm border border-brand-100">
-                <h2 class="text-2xl font-bold text-brand-600 mb-8 flex items-center gap-3">
-                    <span class="w-8 h-8 rounded bg-brand-50 flex items-center justify-center text-sm">01</span>
+            <section class="bg-white p-8 rounded-3xl shadow-sm border border-surfaceHighlight">
+                <h2 class="text-2xl font-bold text-primary mb-8 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded bg-surface flex items-center justify-center text-sm">01</span>
                     Yêu cầu Chức năng Hệ thống
                 </h2>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
                     <div class="space-y-8">
                         <div>
-                            <h3 class="font-bold text-lg mb-3 text-brand-900 border-l-4 border-accent pl-4">FR-01:
+                            <h3 class="font-bold text-lg mb-3 text-textMain border-l-4 border-accent pl-4">FR-01:
                                 Engine Lực cản (Friction)</h3>
-                            <p class="text-sm text-brand-500 mb-4 leading-relaxed">Hệ thống phải triển khai "Soft Block"
+                            <p class="text-sm text-textLight mb-4 leading-relaxed">Hệ thống phải triển khai "Soft Block"
                                 thay vì chỉ chặn cứng, buộc người dùng phải tương tác có ý thức trước khi truy cập.</p>
                             <ul class="space-y-3 text-sm">
                                 <li class="flex gap-3">
-                                    <span class="text-brand-600 font-bold">REQ-01:</span>
+                                    <span class="text-primary font-bold">REQ-01:</span>
                                     <!-- SỬA LỖI: Dùng &lt; thay cho ký tự < -->
                                     <span>Tự động nhận diện DNS query/HTTP request đến danh sách đen trong &lt;
                                         100ms.</span>
                                 </li>
                                 <li class="flex gap-3">
-                                    <span class="text-brand-600 font-bold">REQ-02:</span>
-                                    <span>Cung cấp thử thách: <strong>Giải toán (Math Challenge)</strong> để kiểm tra
-                                        nhận thức.</span>
+                                    <span class="text-primary font-bold">REQ-02:</span>
+                                    <span>Cung cấp thử thách: <strong>Giải toán, Chờ đợi, hoặc Gõ xác
+                                            nhận</strong>.</span>
                                 </li>
                                 <li class="flex gap-3">
-                                    <span class="text-brand-600 font-bold">REQ-02.1:</span>
+                                    <span class="text-primary font-bold">REQ-02.1:</span>
                                     <span>Quản lý danh sách chặn: Hỗ trợ Import/Export CSV để chia sẻ cấu hình.</span>
                                 </li>
                             </ul>
                         </div>
                         <div>
-                            <h3 class="font-bold text-lg mb-3 text-brand-900 border-l-4 border-brand-500 pl-4">FR-02:
+                            <h3 class="font-bold text-lg mb-3 text-textMain border-l-4 border-secondary pl-4">FR-02:
                                 Quản lý Tập trung</h3>
                             <ul class="space-y-3 text-sm">
                                 <li class="flex gap-3">
-                                    <span class="text-brand-600 font-bold">REQ-03:</span>
+                                    <span class="text-primary font-bold">REQ-03:</span>
                                     <span>Một tài khoản quản lý tối đa 5 thiết bị đồng thời.</span>
                                 </li>
                                 <li class="flex gap-3">
-                                    <span class="text-brand-600 font-bold">REQ-04:</span>
+                                    <span class="text-primary font-bold">REQ-04:</span>
                                     <span>Đồng bộ 2 chiều (Bidirectional) tất cả quy tắc chặn ngay lập tức.</span>
                                 </li>
                             </ul>
                         </div>
                     </div>
-                    <div class="bg-brand-50 p-8 rounded-2xl flex flex-col justify-center">
-                        <h4 class="font-bold text-sm mb-6 text-center text-brand-600 uppercase tracking-widest">Ma trận
+                    <div class="bg-surface p-8 rounded-2xl flex flex-col justify-center">
+                        <h4 class="font-bold text-sm mb-6 text-center text-primary uppercase tracking-widest">Ma trận
                             Ưu tiên Yêu cầu</h4>
                         <div class="chart-container">
                             <canvas id="priorityChart"></canvas>
@@ -239,26 +270,26 @@
                 </div>
             </section>
 
-            <section class="bg-white p-8 rounded-3xl shadow-sm border border-brand-100">
-                <h2 class="text-2xl font-bold text-brand-600 mb-8 flex items-center gap-3">
-                    <span class="w-8 h-8 rounded bg-brand-50 flex items-center justify-center text-sm">02</span>
+            <section class="bg-white p-8 rounded-3xl shadow-sm border border-surfaceHighlight">
+                <h2 class="text-2xl font-bold text-primary mb-8 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded bg-surface flex items-center justify-center text-sm">02</span>
                     Yêu cầu Phi chức năng (NFR)
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="p-6 bg-brand-50 rounded-2xl border border-brand-100">
-                        <h4 class="font-bold text-brand-900 mb-3">Hiệu năng (Performance)</h4>
+                    <div class="p-6 bg-surface rounded-2xl border border-surfaceHighlight">
+                        <h4 class="font-bold text-textMain mb-3">Hiệu năng (Performance)</h4>
                         <!-- SỬA LỖI: Tránh dùng < trực tiếp trong text -->
-                        <p class="text-xs text-brand-500">Mức chiếm dụng CPU không quá 1.5% khi chạy ngầm trên Desktop.
+                        <p class="text-xs text-textLight">Mức chiếm dụng CPU không quá 1.5% khi chạy ngầm trên Desktop.
                             Pin mobile không hao tổn quá 1% mỗi 12h.</p>
                     </div>
-                    <div class="p-6 bg-brand-50 rounded-2xl border border-brand-100">
-                        <h4 class="font-bold text-brand-900 mb-3">Tính sẵn sàng (Availability)</h4>
-                        <p class="text-xs text-brand-500">Hệ thống chặn phải hoạt động 100% thời gian ngay cả khi mất
+                    <div class="p-6 bg-surface rounded-2xl border border-surfaceHighlight">
+                        <h4 class="font-bold text-textMain mb-3">Tính sẵn sàng (Availability)</h4>
+                        <p class="text-xs text-textLight">Hệ thống chặn phải hoạt động 100% thời gian ngay cả khi mất
                             kết nối mạng (Local Cache Engine).</p>
                     </div>
-                    <div class="p-6 bg-brand-50 rounded-2xl border border-brand-100">
-                        <h4 class="font-bold text-brand-900 mb-3">Bảo mật (Security)</h4>
-                        <p class="text-xs text-brand-500">Toàn bộ logs vi phạm phải được mã hóa AES-256 trước khi lưu
+                    <div class="p-6 bg-surface rounded-2xl border border-surfaceHighlight">
+                        <h4 class="font-bold text-textMain mb-3">Bảo mật (Security)</h4>
+                        <p class="text-xs text-textLight">Toàn bộ logs vi phạm phải được mã hóa AES-256 trước khi lưu
                             trữ hoặc truyền tải.</p>
                     </div>
                 </div>
@@ -267,16 +298,16 @@
 
         <!-- TAB: SDD -->
         <div id="sdd" class="tab-content space-y-12">
-            <section class="bg-white p-8 rounded-3xl shadow-sm border border-brand-100">
-                <h2 class="text-2xl font-bold text-brand-600 mb-8 flex items-center gap-3">
-                    <span class="w-8 h-8 rounded bg-brand-50 flex items-center justify-center text-sm">03</span>
+            <section class="bg-white p-8 rounded-3xl shadow-sm border border-surfaceHighlight">
+                <h2 class="text-2xl font-bold text-primary mb-8 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded bg-surface flex items-center justify-center text-sm">03</span>
                     Kiến trúc Hệ thống & Cơ sở dữ liệu
                 </h2>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
                     <div class="space-y-6">
-                        <h3 class="font-bold text-lg text-brand-900">Thiết kế Xử lý Xung đột (Conflict Resolution)</h3>
+                        <h3 class="font-bold text-lg text-textMain">Thiết kế Xử lý Xung đột (Conflict Resolution)</h3>
                         <div
-                            class="p-5 bg-brand-900 rounded-2xl font-mono text-[11px] text-emerald-400 leading-relaxed shadow-xl">
+                            class="p-5 bg-textMain rounded-2xl font-mono text-[11px] text-emerald-400 leading-relaxed shadow-xl">
                             <span class="text-slate-500">// Chiến lược Versioning đa thiết bị</span><br>
                             const syncEngine = (localDoc, cloudDoc) => {<br>
                             &nbsp;&nbsp;if (cloudDoc.v &gt; localDoc.v) {<br>
@@ -292,11 +323,11 @@
                         </div>
                     </div>
                     <div class="space-y-6">
-                        <h3 class="font-bold text-lg text-brand-900">Mô hình thực thể (Database Schema)</h3>
+                        <h3 class="font-bold text-lg text-textMain">Mô hình thực thể (Database Schema)</h3>
                         <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-white border border-brand-100 p-4 rounded-xl shadow-sm">
-                                <h4 class="text-xs font-bold text-brand-600 mb-2 font-mono">Collection: Rules</h4>
-                                <ul class="text-[10px] space-y-1 text-slate-500 font-mono">
+                            <div class="bg-white border border-surfaceHighlight p-4 rounded-xl shadow-sm">
+                                <h4 class="text-xs font-bold text-primary mb-2 font-mono">Collection: Rules</h4>
+                                <ul class="text-[10px] space-y-1 text-textLight font-mono">
                                     <li>- rule_id: PK</li>
                                     <li>- pattern: string</li>
                                     <li>- type: ENUM</li>
@@ -304,9 +335,9 @@
                                     <li>- t: timestamp</li>
                                 </ul>
                             </div>
-                            <div class="bg-white border border-brand-100 p-4 rounded-xl shadow-sm">
-                                <h4 class="text-xs font-bold text-brand-600 mb-2 font-mono">Collection: Analytics</h4>
-                                <ul class="text-[10px] space-y-1 text-slate-500 font-mono">
+                            <div class="bg-white border border-surfaceHighlight p-4 rounded-xl shadow-sm">
+                                <h4 class="text-xs font-bold text-primary mb-2 font-mono">Collection: Analytics</h4>
+                                <ul class="text-[10px] space-y-1 text-textLight font-mono">
                                     <li>- log_id: PK</li>
                                     <li>- u_id: FK</li>
                                     <li>- event: ENUM</li>
@@ -322,32 +353,32 @@
 
         <!-- TAB: USE CASES -->
         <div id="use-cases" class="tab-content space-y-12">
-            <section class="bg-white p-10 rounded-3xl shadow-sm border border-brand-100">
+            <section class="bg-white p-10 rounded-3xl shadow-sm border border-surfaceHighlight">
                 <div class="flex items-center gap-4 mb-10">
                     <span
                         class="bg-accent text-white w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg shadow-accent/30">01</span>
                     <div>
-                        <h2 class="text-2xl font-extrabold text-brand-600">Luồng Thực thi Lực cản (Friction Flow)</h2>
-                        <p class="text-sm text-brand-500">Mô tả cách hệ thống đánh chặn và tương tác với ý chí người
+                        <h2 class="text-2xl font-extrabold text-primary">Luồng Thực thi Lực cản (Friction Flow)</h2>
+                        <p class="text-sm text-textLight">Mô tả cách hệ thống đánh chặn và tương tác với ý chí người
                             dùng.</p>
                     </div>
                 </div>
 
-                <div class="relative ml-6 border-l-2 border-brand-100 pl-10 space-y-12 py-4">
+                <div class="relative ml-6 border-l-2 border-surfaceHighlight pl-10 space-y-12 py-4">
                     <div class="use-case-step relative">
-                        <h4 class="font-bold text-brand-900 text-lg">B1: Đánh chặn DNS/HTTP</h4>
-                        <p class="text-sm text-brand-500">Hệ thống bắt gói tin yêu cầu đến domain bị chặn. Thay vì drop
+                        <h4 class="font-bold text-textMain text-lg">B1: Đánh chặn DNS/HTTP</h4>
+                        <p class="text-sm text-textLight">Hệ thống bắt gói tin yêu cầu đến domain bị chặn. Thay vì drop
                             gói tin, nó trả về IP Local `127.0.0.1` (trên Desktop) hoặc mở WebView nội bộ (trên Mobile).
                         </p>
                     </div>
                     <div class="use-case-step relative">
-                        <h4 class="font-bold text-brand-900 text-lg">B2: Kích hoạt Giao diện Thử thách</h4>
-                        <p class="text-sm text-brand-500">Trình duyệt hiển thị trang `friction.html`. Người dùng không
+                        <h4 class="font-bold text-textMain text-lg">B2: Kích hoạt Giao diện Thử thách</h4>
+                        <p class="text-sm text-textLight">Trình duyệt hiển thị trang `friction.html`. Người dùng không
                             thể tắt trang này nếu chưa hoàn thành hoặc đóng trình duyệt.</p>
                     </div>
                     <div class="use-case-step relative">
-                        <h4 class="font-bold text-brand-900 text-lg">B3: Xử lý Thử thách & Ý định</h4>
-                        <p class="text-sm text-brand-500">Người dùng giải 1 bài toán hoặc đợi 15 giây. Sau đó, họ phải
+                        <h4 class="font-bold text-textMain text-lg">B3: Xử lý Thử thách & Ý định</h4>
+                        <p class="text-sm text-textLight">Người dùng giải 1 bài toán hoặc đợi 15 giây. Sau đó, họ phải
                             nhập lý do.</p>
                     </div>
                     <div class="use-case-step relative bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100">
@@ -362,24 +393,24 @@
                         <span
                             class="bg-red-500 text-white w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg shadow-red-500/30">02</span>
                         <div>
-                            <h2 class="text-2xl font-extrabold text-brand-600">Administrative Safeguards</h2>
-                            <p class="text-sm text-brand-500">Bảo vệ cấu hình khỏi việc thay đổi bốc đồng.</p>
+                            <h2 class="text-2xl font-extrabold text-primary">Administrative Safeguards</h2>
+                            <p class="text-sm text-textLight">Bảo vệ cấu hình khỏi việc thay đổi bốc đồng.</p>
                         </div>
                     </div>
 
-                    <div class="relative ml-6 border-l-2 border-brand-100 pl-10 space-y-12 py-4">
+                    <div class="relative ml-6 border-l-2 border-surfaceHighlight pl-10 space-y-12 py-4">
                         <div class="use-case-step relative">
-                            <h4 class="font-bold text-brand-900 text-lg">B1: Yêu cầu Thay đổi Nhạy cảm</h4>
-                            <p class="text-sm text-brand-500">Người dùng cố gắng xóa Ruleset hoặc Tắt ứng dụng.</p>
+                            <h4 class="font-bold text-textMain text-lg">B1: Yêu cầu Thay đổi Nhạy cảm</h4>
+                            <p class="text-sm text-textLight">Người dùng cố gắng xóa Ruleset hoặc Tắt ứng dụng.</p>
                         </div>
                         <div class="use-case-step relative">
-                            <h4 class="font-bold text-brand-900 text-lg">B2: Modal Xác nhận "Friction"</h4>
-                            <p class="text-sm text-brand-500">Hệ thống hiện Modal yêu cầu gõ lại chính xác một câu cam
+                            <h4 class="font-bold text-textMain text-lg">B2: Modal Xác nhận "Friction"</h4>
+                            <p class="text-sm text-textLight">Hệ thống hiện Modal yêu cầu gõ lại chính xác một câu cam
                                 kết (VD: "Tôi đang làm điều này có chủ đích").</p>
                         </div>
                         <div class="use-case-step relative">
-                            <h4 class="font-bold text-brand-900 text-lg">B3: Chống Copy/Paste</h4>
-                            <p class="text-sm text-brand-500">Ô nhập liệu chặn sự kiện Paste, buộc người dùng phải gõ
+                            <h4 class="font-bold text-textMain text-lg">B3: Chống Copy/Paste</h4>
+                            <p class="text-sm text-textLight">Ô nhập liệu chặn sự kiện Paste, buộc người dùng phải gõ
                                 từng ký tự để tăng thời gian suy nghĩ.</p>
                         </div>
                     </div>
@@ -406,9 +437,9 @@
                     datasets: [{
                         label: 'Trọng số thiết kế',
                         data: [90, 82, 98, 70, 95],
-                        backgroundColor: 'rgba(82, 121, 111, 0.2)',
-                        borderColor: '#52796f',
-                        pointBackgroundColor: '#354f52',
+                        backgroundColor: 'rgba(82, 121, 111, 0.2)', // secondary transparent
+                        borderColor: '#52796F', // secondary
+                        pointBackgroundColor: '#354F52', // primary
                         borderWidth: 3
                     }]
                 },
@@ -418,7 +449,7 @@
                             beginAtZero: true,
                             max: 100,
                             ticks: { display: false },
-                            grid: { color: '#e2e8f0' }
+                            grid: { color: '#EBE7DE' } // surfaceHighlight
                         }
                     },
                     plugins: { legend: { display: false } },
