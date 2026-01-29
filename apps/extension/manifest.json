@@ -3,15 +3,8 @@
   "name": "Mindful Block Friction",
   "version": "1.0",
   "description": "Friction blocking for Mindful Block app",
-  "permissions": [
-    "webNavigation",
-    "storage",
-    "tabs"
-  ],
-  "host_permissions": [
-    "<all_urls>",
-    "http://127.0.0.1:17430/*"
-  ],
+  "permissions": ["webNavigation", "storage", "tabs"],
+  "host_permissions": ["<all_urls>", "http://127.0.0.1:17430/*"],
   "background": {
     "service_worker": "background.js"
   },
@@ -22,5 +15,12 @@
     "16": "icon.png",
     "48": "icon.png",
     "128": "icon.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["block.html", "block.js", "icon.png"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "incognito": "split"
 }

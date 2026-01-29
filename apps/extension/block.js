@@ -1,6 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
-    const targetUrl = params.get('url');
+    const rawUrl = params.get('url');
+    let targetUrl = "";
+    
+    // Try decoding base64, fallback to raw if fails (backward compatibility)
+    try {
+        targetUrl = atob(rawUrl);
+    } catch(e) {
+        targetUrl = rawUrl;
+    }
+
     const mode = params.get('mode') || 'friction_math';
     const lang = params.get('lang') || 'vi';
     

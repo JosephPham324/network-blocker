@@ -45,6 +45,7 @@ async function reportEvent(type, domain) {
 // Check blocking logic
 chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
   if (details.frameId !== 0) return; // Only main frame
+  if (details.url.startsWith("chrome-extension:")) return; // Ignore extension pages
 
   const url = new URL(details.url);
   const hostname = url.hostname.replace(/^www\./, "");
@@ -67,8 +68,10 @@ chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
 
     // Redirect to Block Screen
     // Pass Mode and Language
+    // Base64 encode URL to avoid triggering ad-blockers with "facebook.com" in query params
+    const encodedTarget = btoa(details.url); 
     const blockUrl = chrome.runtime.getURL("block.html") + 
-        "?url=" + encodeURIComponent(details.url) + 
+        "?url=" + encodedTarget + 
         "&mode=" + encodeURIComponent(matchedRule.mode) +
         "&lang=" + encodeURIComponent(currentLanguage);
         
