@@ -31,7 +31,8 @@ const App = () => {
     useBlockRules(
       user,
       setIsAdmin,
-      settings.blockingEnabled 
+      settings.blockingEnabled,
+      settings.language,
     );
 
   useEffect(() => {

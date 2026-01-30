@@ -5,7 +5,7 @@ import { translations } from "../locales"; // <--- Import // <--- Import
 
 // --- Sub-Components ---
 
-const DigitalGarden = ({ trees, t }) => {
+const DigitalGarden = ({ trees, t, language }) => {
   return (
     <div className="bg-white p-6 rounded-2xl border border-[#EBE7DE] shadow-sm mb-6">
       <h3 className="text-xl font-serif font-bold text-[#354F52] mb-4 flex items-center gap-2">
@@ -23,7 +23,9 @@ const DigitalGarden = ({ trees, t }) => {
             <span className="text-4xl drop-shadow-md">
                 {tree.type === 'sprout' ? '🌱' : tree.type === 'pine' ? '🌲' : '🌳'}
             </span>
-            <span className="text-[10px] text-[#5C6B73] mt-1">
+            <span className="text-[10px] text-[#5C6B73] mt-1" title={new Date(tree.plantedAt).toLocaleString()}>
+                {new Date(tree.plantedAt).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', {month: 'short', day: 'numeric'})}
+                <br />
                 {new Date(tree.plantedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
             </span>
           </div>
@@ -33,7 +35,37 @@ const DigitalGarden = ({ trees, t }) => {
   );
 };
 
-const StreakCalendar = ({ streak, t }) => {
+const StreakCalendar = ({ streak, t, language }) => {
+  // Get current month's calendar grid
+  const today = new Date();
+  const currentMonth = today.getMonth();
+  const currentYear = today.getFullYear();
+  
+  // First day of month
+  const firstDay = new Date(currentYear, currentMonth, 1);
+  const startingDayOfWeek = firstDay.getDay(); // 0 = Sunday
+  
+  // Days in month
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  
+  // Create calendar grid (including empty cells for alignment)
+  const calendarDays = [];
+  
+  // Add empty cells for days before month starts
+  for (let i = 0; i < startingDayOfWeek; i++) {
+    calendarDays.push(null);
+  }
+  
+  // Add actual days
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(currentYear, currentMonth, day);
+    const dateStr = date.toISOString().split('T')[0];
+    const isActive = streak.history && streak.history[dateStr];
+    const isToday = date.toDateString() === today.toDateString();
+    
+    calendarDays.push({ day, date, dateStr, isActive, isToday });
+  }
+  
   return (
     <div className="bg-white p-6 rounded-2xl border border-[#EBE7DE] shadow-sm mb-6">
        <div className="flex justify-between items-center mb-4">
@@ -45,19 +77,47 @@ const StreakCalendar = ({ streak, t }) => {
                 <span className="text-xs text-[#5C6B73] uppercase tracking-wide ml-2">{t.streak_unit}</span>
             </div>
        </div>
-       <div className="flex gap-2">
-           {[...Array(7)].map((_, i) => {
-               const day = new Date();
-               day.setDate(day.getDate() - (6 - i));
-               const dateStr = day.toISOString().split('T')[0];
-               const isActive = streak.history && streak.history[dateStr];
+       
+       {/* Month/Year Header */}
+       <div className="text-center mb-3 text-sm font-bold text-[#354F52]">
+           {firstDay.toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', { month: 'long', year: 'numeric' })}
+       </div>
+       
+       {/* Day of week headers */}
+       <div className="grid grid-cols-7 gap-1 mb-2">
+           {(language === 'vi' ? ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'] : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']).map((dayName, i) => (
+               <div key={i} className="text-center text-[10px] font-bold text-[#5C6B73] uppercase">
+                   {dayName}
+               </div>
+           ))}
+       </div>
+       
+       {/* Calendar Grid */}
+       <div className="grid grid-cols-7 gap-1">
+           {calendarDays.map((dayData, i) => {
+               if (!dayData) {
+                   // Empty cell
+                   return <div key={`empty-${i}`} className="aspect-square"></div>;
+               }
+               
+               const { day, isActive, isToday } = dayData;
                
                return (
-                   <div key={i} className={`flex-1 h-12 rounded-lg flex flex-col items-center justify-center border-2 border-transparent ${isActive ? 'bg-[#52796F] text-white' : 'bg-[#F4F1EA] text-[#5C6B73]'}`}>
-                       <span className="text-[10px] uppercase font-bold">{day.toLocaleDateString('vi-VN', {weekday: 'short'})}</span>
-                       <span className="text-sm font-bold">{isActive ? '✓' : ''}</span>
+                   <div 
+                       key={i} 
+                       className={`aspect-square rounded-lg flex items-center justify-center text-sm font-bold transition-all
+                           ${
+                               isActive 
+                                   ? 'bg-[#52796F] text-white shadow-sm' 
+                                   : isToday
+                                       ? 'bg-[#EBE7DE] text-[#354F52] ring-2 ring-[#E29578]'
+                                       : 'bg-[#F4F1EA] text-[#5C6B73]'
+                           }
+                       `}
+                   >
+                       {day}
                    </div>
-               )
+               );
            })}
        </div>
     </div>
@@ -138,6 +198,7 @@ const Gamification = ({ language = 'vi' }) => {
     const FocusTimer = ({ onComplete }) => {
         const { isFocusing, timeLeft, totalDuration, startFocus, stopFocus } = useFocus();
         const [minutes, setMinutes] = useState(25);
+        const [showInfo, setShowInfo] = useState(false);
 
         // ... (Effects unchanged)
         
@@ -153,9 +214,13 @@ const Gamification = ({ language = 'vi' }) => {
             if (!isFocusing) {
                 startFocus(minutes);
             } else {
-                // Give up
-                const confirm = window.confirm(t.give_up_warning);
-                if (confirm) stopFocus();
+                // Give up - only stop if confirmed
+                // Use a variable to ensure the confirm result is properly evaluated before any state changes
+                const userConfirmed = window.confirm(t.give_up_warning);
+                if (userConfirmed) {
+                    stopFocus();
+                }
+                // If userConfirmed is false, do nothing - timer continues
             }
         };
 
@@ -175,7 +240,48 @@ const Gamification = ({ language = 'vi' }) => {
 
                  <h3 className="text-xl font-serif font-bold text-[#354F52] mb-4 flex items-center gap-2">
                     <span className="text-2xl">⏳</span> {t.focus_session}
+                    <button 
+                        onClick={() => setShowInfo(true)}
+                        className="ml-auto text-[#5C6B73] hover:text-[#354F52] transition-colors"
+                        title={t.info_title}
+                    >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                    </button>
                 </h3>
+                
+                {/* Info Modal */}
+                {showInfo && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowInfo(false)}>
+                        <div className="bg-white rounded-2xl p-6 max-w-md mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex justify-between items-center mb-4">
+                                <h4 className="text-xl font-bold text-[#354F52]">{t.info_title}</h4>
+                                <button 
+                                    onClick={() => setShowInfo(false)}
+                                    className="text-[#5C6B73] hover:text-[#354F52] transition-colors"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <p className="text-[#5C6B73] mb-3">{t.info_desc}</p>
+                            <div className="space-y-2 text-[#2F3E46] mb-4">
+                                <p>{t.info_point1}</p>
+                                <p>{t.info_point2}</p>
+                                <p>{t.info_point3}</p>
+                                <p>{t.info_point4}</p>
+                            </div>
+                            <button 
+                                onClick={() => setShowInfo(false)}
+                                className="w-full bg-[#52796F] text-white py-2 rounded-lg font-bold hover:bg-[#354F52] transition-colors"
+                            >
+                                {t.info_close}
+                            </button>
+                        </div>
+                    </div>
+                )}
                 
                 <div className={`text-6xl font-bold font-mono mb-6 transition-colors ${isFocusing ? 'text-[#E29578]' : 'text-[#354F52]'}`}>
                     {isFocusing ? formatTime(timeLeft) : formatTime(minutes * 60)}
@@ -238,8 +344,8 @@ const Gamification = ({ language = 'vi' }) => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
                 <FocusTimer onComplete={handleTimerComplete} />
-                <DigitalGarden trees={data.trees} t={t} />
-                <StreakCalendar streak={data.streak} t={t} />
+                <DigitalGarden trees={data.trees} t={t} language={language} />
+                <StreakCalendar streak={data.streak} t={t} language={language} />
             </div>
             <div>
                 <TokenShop balance={data.balance} onPurchase={handlePurchase} t={t} />

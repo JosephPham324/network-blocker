@@ -2,49 +2,43 @@ import { useState, useEffect } from "react";
 import { collection, onSnapshot, writeBatch, doc, serverTimestamp, query, orderBy } from "firebase/firestore";
 import { db, appId, isCloudReady } from "../services/firebase";
 import { callRust } from "../services/tauri";
+import { translations } from "../locales"; 
 
 import { ruleSchema, ruleGroupSchema, validateAgainstSchema } from "@mindful-block/shared";
 
 
 
-export const useBlockRules = (user, setIsAdmin, blockingEnabled = true) => {
+export const useBlockRules = (user, setIsAdmin, blockingEnabled = true , language) => {
   const [rules, setRules] = useState([]);
   const [groups, setGroups] = useState([{ id: "general", name: "General", is_system: true }]);
-  const [status, setStatus] = useState("Đang khởi tạo...");
+  const currentLang = language;
+  const t = translations[currentLang].system;
+  const [status, setStatus] = useState(t.status_initializing);
 
   // Sync Rules with Rust whenever they change
   useEffect(() => {
-    // Determine language from localStorage or default 'vi' (since we don't have direct access to i18n context here comfortably without props prop drilling. 
-    // Ideally this hook should take `language` as argument or read a global context. 
-    // The previous code snippet in BlockList passed `language` as prop, so we can assume the user of this hook might want to pass it.
-    // However, to avoid breaking API too much for now, let's try to grab it from a simple source or default.
-    // Wait, useBlockRules doesn't take language. I need to update the hook signature.
-    // But `useBlockRules` is used in `Dashboard.jsx`.
-    // I will read `localStorage.getItem('i18nextLng')` which is standard for i18next, or default 'vi'.
-    
     if (!rules) return;
     
-    const currentLang = localStorage.getItem('blocker_language') || 'vi';
-
-      const formatted = rules.map((r) => ({
-        domain: r.domain,
-        is_active: r.is_active,
-        mode: (r.mode || "hard").toLowerCase(), 
-      }));
+    
+    const formatted = rules.map((r) => ({
+      domain: r.domain,
+      is_active: r.is_active,
+      mode: (r.mode || "hard").toLowerCase(), 
+    }));
 
     // If blocking is disabled globally, send empty list to Rust to clear hosts
     const rulesToApply = blockingEnabled ? formatted : [];
     
-    console.log(`[Sync] Applying Rules to Rust (Lang: ${currentLang}):`, rulesToApply);
+    console.log(`[Sync] Applying Rules to Rust (Lang: ${language}):`, rulesToApply);
 
-    callRust("apply_blocking_rules", { rules: rulesToApply, language: currentLang })
-    .then((res) => setStatus(`Bảo vệ đang bật (${res})`))
+    callRust("apply_blocking_rules", { rules: rulesToApply, language: language })
+    .then((res) => setStatus(t.status_protected.replace('{count}', res)))
     .catch((err) => {
         console.error("[Sync] Error:", err);
         if (String(err).includes("ADMIN")) setIsAdmin(false);
-        setStatus("Lỗi hệ thống");
+        setStatus(t.status_error);
     });
-  }, [rules, setIsAdmin, blockingEnabled]);
+  }, [rules, setIsAdmin, blockingEnabled, language, t]);
 
   useEffect(() => {
     if (!user || !isCloudReady || !db) return;
@@ -52,7 +46,7 @@ export const useBlockRules = (user, setIsAdmin, blockingEnabled = true) => {
     const rulesUnsub = onSnapshot(collection(db, `artifacts/${appId}/users/${user.uid}/block_configs`), (snap) => {
       const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setRules(data);
-      setStatus("Đang đồng bộ...");
+      setStatus(t.status_syncing);
     });
 
     const groupsUnsub = onSnapshot(query(collection(db, `artifacts/${appId}/users/${user.uid}/block_groups`), orderBy("name")), (snap) => {
@@ -75,7 +69,7 @@ export const useBlockRules = (user, setIsAdmin, blockingEnabled = true) => {
     const cleanGroup = groupName.trim();
 
     if (rules.some((r) => r.domain === cleanDomain)) {
-      return { success: false, error: "Tên miền đã tồn tại." };
+      return { success: false, error: t.error_domain_exists };
     }
 
     const newRuleData = {
@@ -121,7 +115,7 @@ export const useBlockRules = (user, setIsAdmin, blockingEnabled = true) => {
         return { success: true };
       } catch (e) {
         console.error(e);
-        return { success: false, error: "Lỗi hệ thống." };
+        return { success: false, error: t.error_system };
       }
     } else {
       setRules([
