@@ -76,6 +76,43 @@ Hệ thống phải có cơ chế kiểm tra và áp dụng lại các quy tắc
 
 ---
 
+### 2.6 [FR-06] Hệ thống Gamification
+
+Mô tả: Hệ thống khuyến khích người dùng duy trì sự tập trung thông qua gamification.
+
+Yêu cầu:
+
+- **Streak Tracking**: Theo dõi số ngày liên tiếp người dùng duy trì các quy tắc chặn.
+  - Hiển thị streak hiện tại
+  - Ghi nhận streak dài nhất
+  - Reset streak khi người dùng không hoạt động
+  
+- **Digital Garden**: Biểu diễn trực quan tiến độ và sự phát triển.
+  - Các yếu tố hình ảnh phát triển dựa trên mức độ tương tác
+  - Khuyến khích sử dụng nhất quán
+  
+- **Calendar View**: Lịch tương tác hiển thị các ngày hoạt động.
+  - Đánh dấu các ngày có phiên chặn active
+  - Giúp nhận diện các mẫu hình năng suất
+  
+- **Persistence**: Dữ liệu gamification được lưu cục bộ và đồng bộ với cloud.
+
+---
+
+### 2.7 [FR-07] Quản lý Cài đặt (Settings Management)
+
+Mô tả: Giao diện cấu hình ứng dụng tập trung.
+
+Yêu cầu:
+
+- **Global Toggle**: Bật/tắt tất cả quy tắc chặn bằng một công tắc.
+- **Clean on Exit**: Tùy chọn tự động dọn dẹp file hosts khi thoát ứng dụng.
+- **Friction Preferences**: Cấu hình loại thử thách (Math, Wait, Typing) cho chế độ friction.
+- **Settings Sync**: Đồng bộ cài đặt giữa các thiết bị qua Firebase.
+- **Persistence**: Lưu trữ cài đặt cục bộ và khôi phục khi khởi động lại.
+
+---
+
 ## 3. Yêu cầu Phi chức năng (Non-functional Requirements)
 
 - **Hiệu năng**: Độ trễ đánh chặn mạng không vượt quá `50ms`.

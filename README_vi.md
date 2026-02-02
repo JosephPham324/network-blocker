@@ -23,9 +23,17 @@ Mindful Block là một ứng dụng desktop được thiết kế để giúp n
 - **Thao tác hàng loạt**: Chọn nhiều quy tắc để bật/tắt, xóa hoặc chuyển nhóm cùng lúc.
 - **Nhập quy tắc**: Nhập các quy tắc chặn từ nguồn bên ngoài (hỗ trợ CSV).
 - **Đồng bộ đám mây**: Đồng bộ quy tắc và nhóm giữa các thiết bị bằng Firebase Authentication (đăng nhập Google).
-### Cài đặt cụ thể
+### Gamification và Theo dõi Tiến độ
+- **Hệ thống Streak**: Theo dõi số ngày liên tiếp tập trung thành công.
+- **Digital Garden**: Biểu diễn trực quan tiến độ và sự phát triển của bạn theo thời gian.
+- **Lịch xem**: Lịch tương tác hiển thị các ngày hoạt động và mẫu hình của bạn.
+- **Bảng thống kê**: Xem thông tin chi tiết về hiệu quả chặn và mẫu sử dụng.
+
+### Cài đặt và Cấu hình
 - **Công tắc toàn cục**: Bật hoặc tắt toàn bộ quy tắc chặn chỉ với một thao tác.
 - **Dọn dẹp khi thoát**: Tùy chọn tự động xóa tất cả các mục chặn khỏi file hosts khi đóng ứng dụng.
+- **Lưu trữ cài đặt**: Tất cả các tùy chọn cấu hình được lưu cục bộ và đồng bộ lên cloud.
+- **Tùy chỉnh Thử thách Friction**: Cấu hình loại thử thách (Toán học, Chờ đợi, Gõ) được sử dụng cho chế độ friction.
 ## Tài liệu
 - [Ý tưởng & Khái niệm sản phẩm](./docs/index.html)
 - [Yêu cầu chi tiết (SRS/SDD)](./docs/documents.html)
@@ -49,10 +57,18 @@ Mindful Block là một ứng dụng desktop được thiết kế để giúp n
 ## Cấu trúc dự án
 
 Dự án sử dụng mô hình monorepo với **pnpm**:
-- `apps/pc`: Ứng dụng desktop chính (Tauri + React).
-- `backend`: Backend services (Firebase functions, v.v.).
-- `shared`: Mã dùng chung và các tiện ích.
-- `docs`: Tài liệu dự án.
+
+- **`apps/pc`**: Ứng dụng desktop chính (Tauri + React).
+    - `src/components/`: Các component UI (BlockList, Gamification, Settings, v.v.)
+    - `src/services/`: Lớp dịch vụ (GamificationService, Firebase, Tauri IPC)
+    - `src/hooks/`: Custom React hooks quản lý state
+    - `src-tauri/`: Backend Rust tích hợp hệ thống
+- **`apps/extension`**: Tiện ích mở rộng trình duyệt (Chrome/Edge/Brave) cho chế độ friction.
+- **`apps/mobile`**: Ứng dụng di động (Flutter) - 🚧 Đang phát triển.
+- **`apps/web`**: Giao diện web (nếu có).
+- **`backend`**: Backend services (Firebase Functions, Firestore rules).
+- **`shared`**: Schemas, tiện ích và hằng số dùng chung.
+- **`docs`**: Tài liệu dự án (SRS, SDD, ngữ cảnh kỹ thuật).
 ## Bắt đầu
 ### Yêu cầu
 - **Node.js** & **pnpm**

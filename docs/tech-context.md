@@ -10,9 +10,21 @@
 -   **Backend Framework**: [Tauri v2](https://tauri.app/) (Rust)
 -   **Inter-Process Communication (IPC)**: Tauri Commands (`invoke`)
     -   Wrapper: `src/services/tauri.js` (Handles Mock vs. Real Tauri env)
+
+#### Frontend Components
+-   **`BlockList.jsx`**: Rule management UI with group support, batch operations, CSV import
+-   **`Gamification.jsx`**: Streak tracking, digital garden, calendar visualization
+-   **`Settings.jsx`**: App configuration (global toggle, clean on exit, friction preferences)
+-   **`Dashboard.jsx`**: Overview with statistics and quick actions
+-   **`Login.jsx`**: Firebase Google authentication interface
+-   **`FrictionModal.jsx`**: Typing-challenge modal for confirming critical actions
+-   **`Sidebar.jsx`**: Navigation between app sections
+-   **`StateScreens.jsx`**: Loading and error state displays
+
 -   **Key Features**:
     -   **Administrative Friction**: "Safe Guards" preventing accidental changes (requires typing confirmation).
     -   **Block List Management**: Import/Export CSV support.
+    -   **Gamification System**: Streak tracking and progress visualization.
 
 ### Backend Logic (`apps/pc/src-tauri`)
 -   **Language**: Rust
@@ -26,6 +38,20 @@
     -   `check_admin_privileges`: Verifies elevation.
     -   `start_server`: Initializes OAuth flow listener.
 
+### Services Layer (`apps/pc/src/services`)
+-   **`GamificationService.js`**: 
+    -   Manages streak calculation and persistence
+    -   Tracks daily activity and progress
+    -   Provides statistics for the gamification UI
+-   **`firebase.js`**: 
+    -   Firebase SDK initialization
+    -   Cloud sync operations for rules and settings
+    -   Authentication flow helpers
+-   **`tauri.js`**: 
+    -   IPC wrapper for Tauri commands
+    -   Mock mode fallback for browser development
+    -   Error handling for command invocations
+
 ### Mobile Application (`apps/mobile`)
 -   **Status**: 🚧 **In Development / Roadmap**
 -   **Planned Stack**: Flutter
@@ -34,11 +60,16 @@
 ### Browser Extension (`apps/extension`)
 -   **Manifest**: Version 3
 -   **Stack**: Vanilla JS, HTML, CSS
+-   **Key Features**:
+    -   **Real-time Sync**: Polls desktop app's local server for rule updates
+    -   **Grace Period Display**: Shows remaining time in extension popup
+    -   **Three Challenge Types**: Math problems, wait timers, typing confirmations
 -   **Mechanism**:
     -   **Polling**: Fetches active rules from the desktop app's local server (`http://127.0.0.1:17430/rules`).
-    -   **Interception**: `chrome.webNavigation.onBeforeNavigate` & `chrome.tabs.update`.
-    -   **Storage**: `chrome.storage.local` for temporary whitelist tokens (Grace Period).
-    -   **Friction**: Implements overlays for Math, Wait, and Typing challenges.
+    -   **Interception**: `chrome.webNavigation.onBeforeNavigate` & `chrome.tabs.update` for navigation blocking.
+    -   **Storage**: `chrome.storage.local` for temporary whitelist tokens (Grace Period with expiration).
+    -   **Friction UI**: Custom block page (`block.html`) with challenge overlays.
+    -   **Popup**: Displays active rules count and remaining grace period time.
 
 ### Cloud & Database
 -   **Platform**: Firebase
