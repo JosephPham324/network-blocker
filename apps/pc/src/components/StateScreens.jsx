@@ -1,6 +1,19 @@
 import React from "react";
-import { ShieldAlert } from "lucide-react";
+import { ShieldAlert, X } from "lucide-react";
 import { translations } from "../locales";
+
+export const AdminBanner = ({ language = "vi" }) => {
+  const t = translations[language].state;
+  return (
+    <div className="bg-amber-50 border-l-4 border-amber-500 p-4 flex items-center gap-3 shadow-sm">
+      <ShieldAlert className="text-amber-600 flex-shrink-0" size={24} />
+      <div className="flex-1">
+        <p className="font-semibold text-amber-900">{t.admin_banner_title}</p>
+        <p className="text-sm text-amber-700">{t.admin_banner_msg}</p>
+      </div>
+    </div>
+  );
+};
 
 export const AdminRequired = ({ language = "vi" }) => {
   const t = translations[language].state;

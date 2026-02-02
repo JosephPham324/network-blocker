@@ -149,6 +149,8 @@ export const translations = {
       admin_title: "Yêu cầu quyền Administrator",
       admin_msg: 'Vui lòng khởi động lại ứng dụng bằng quyền <b>"Run as Administrator"</b> để bật tính năng chặn.',
       admin_retry: "Thử lại",
+      admin_banner_title: "Cần quyền Administrator",
+      admin_banner_msg: "Ứng dụng đang chạy ở chế độ hạn chế. Chặn cứng (Hard Block) yêu cầu quyền Administrator. Chế độ Friction vẫn hoạt động bình thường.",
       loading: "Đang kết nối...",
     }
   },
@@ -300,6 +302,8 @@ export const translations = {
       admin_title: "Administrator Privileges Required",
       admin_msg: 'Please restart the application as <b>"Run as Administrator"</b> to enable blocking features.',
       admin_retry: "Try Again",
+      admin_banner_title: "Administrator Privileges Required",
+      admin_banner_msg: "App is running in limited mode. Hard blocking requires Administrator privileges. Friction Mode still works.",
       loading: "Connecting...",
     }
   },

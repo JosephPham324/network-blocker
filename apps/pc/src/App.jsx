@@ -12,7 +12,7 @@ import BlockList from "./components/BlockList";
 import Login from "./components/Login";
 import Settings from "./components/Settings";
 import Gamification from "./components/Gamification"; // <--- Add import
-import { AdminRequired, LoadingScreen } from "./components/StateScreens";
+import { AdminBanner, LoadingScreen } from "./components/StateScreens";
 
 import { FocusProvider } from "./context/FocusContext"; // <--- Add import
 
@@ -83,34 +83,38 @@ const App = () => {
 
   if (authLoading) return <LoadingScreen language={settings.language} />;
   if (!user) return <Login language={settings.language} />;
-  if (!isAdmin) return <AdminRequired language={settings.language} />;
 
   return (
     <FocusProvider setBlocking={setBlocking}> {/* <--- Wrap Everything */}
-        <div className="flex h-screen bg-[#FDFCF8] text-[#2F3E46] font-sans overflow-hidden">
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} status={status} onLogout={handleLogout} language={settings.language} />
+        <div className="flex flex-col h-screen bg-[#FDFCF8] text-[#2F3E46] font-sans overflow-hidden">
+        {/* Show banner when not admin */}
+        {!isAdmin && <AdminBanner language={settings.language} />}
+        
+        <div className="flex flex-1 overflow-hidden">
+          <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} status={status} onLogout={handleLogout} language={settings.language} />
 
-        <main className="flex-1 p-12 overflow-y-auto">
-            {activeTab === "dash" && <Dashboard rulesCount={rules.length} stats={analytics} language={settings.language} />}
-            {activeTab === "list" && (
-            <BlockList
-                rules={rules}
-                groups={groups}
-                onAdd={addRule}
-                onDelete={deleteRule}
-                onToggle={toggleRule}
-                onBatchDelete={deleteBatch}
-                onBatchToggle={toggleBatch}
-                onBatchMove={moveBatchToGroup}
-                onDeleteGroup={deleteGroup}
-                onImport={importRules}
-                onUpdateMode={updateRuleMode}
-                language={settings.language}
-            />
-            )}
-            {activeTab === "gamification" && <Gamification language={settings.language} />}
-            {activeTab === "settings" && <Settings settings={settings} toggleBlocking={toggleBlocking} toggleCleanOnExit={toggleCleanOnExit} setLanguage={setLanguage} toggleAutoStart={toggleAutoStart} />}
-        </main>
+          <main className="flex-1 p-12 overflow-y-auto">
+              {activeTab === "dash" && <Dashboard rulesCount={rules.length} stats={analytics} language={settings.language} />}
+              {activeTab === "list" && (
+              <BlockList
+                  rules={rules}
+                  groups={groups}
+                  onAdd={addRule}
+                  onDelete={deleteRule}
+                  onToggle={toggleRule}
+                  onBatchDelete={deleteBatch}
+                  onBatchToggle={toggleBatch}
+                  onBatchMove={moveBatchToGroup}
+                  onDeleteGroup={deleteGroup}
+                  onImport={importRules}
+                  onUpdateMode={updateRuleMode}
+                  language={settings.language}
+              />
+              )}
+              {activeTab === "gamification" && <Gamification language={settings.language} />}
+              {activeTab === "settings" && <Settings settings={settings} toggleBlocking={toggleBlocking} toggleCleanOnExit={toggleCleanOnExit} setLanguage={setLanguage} toggleAutoStart={toggleAutoStart} />}
+          </main>
+        </div>
         </div>
     </FocusProvider>
   );
