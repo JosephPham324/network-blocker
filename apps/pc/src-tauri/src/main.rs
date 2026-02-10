@@ -14,6 +14,8 @@ use std::sync::Mutex;
 
 // 1. New Imports for v2 Plugins
 use tauri::Emitter; 
+use tauri::menu::{Menu, MenuItem};
+use tauri::tray::TrayIconBuilder;
 // use tauri_plugin_autostart::MacosLauncher; // Removed
 // use tauri_plugin_oauth::start; 
 // use tauri::WebviewWindow; 
@@ -265,6 +267,49 @@ fn main() {
                 window.show().unwrap();
             }
 
+            // --- SYSTEM TRAY ---
+            let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+            let show_i = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
+            let menu = Menu::with_items(app, &[&show_i, &quit_i])?;
+
+            let icon_bytes = include_bytes!("../icons/icon.ico");
+            let icon = tauri::image::Image::from_bytes(icon_bytes).expect("Failed to load icon");
+
+            let _tray = TrayIconBuilder::new()
+                .icon(icon)
+                .menu(&menu)
+                .show_menu_on_left_click(true)
+                .on_menu_event(|app: &tauri::AppHandle, event| match event.id.as_ref() {
+                    "quit" => {
+                        app.exit(0);
+                    }
+                    "show" => {
+                        if let Some(window) = app.get_webview_window("main") {
+                            let _ = window.show();
+                            let _ = window.set_focus();
+                        }
+                    }
+                    _ => {}
+                })
+                .on_tray_icon_event(|tray: &tauri::tray::TrayIcon, event| {
+                    if let tauri::tray::TrayIconEvent::Click {
+                        button: tauri::tray::MouseButton::Left,
+                        ..
+                    } = event
+                    {
+                        let app = tray.app_handle();
+                        if let Some(window) = app.get_webview_window("main") {
+                            if window.is_visible().unwrap_or(false) {
+                                let _ = window.hide();
+                            } else {
+                                let _ = window.show();
+                                let _ = window.set_focus();
+                            }
+                        }
+                    }
+                })
+                .build(app)?;
+
             // --- SPAWN HTTP SERVER WITH APP HANDLE ACCESS ---
             let handle = app.handle().clone();
             // Use the clone we captured in 'setup' move closure
@@ -345,7 +390,10 @@ fn main() {
         .expect("error while building tauri application")
         .run(|app_handle, event| {
              match event {
-                tauri::RunEvent::ExitRequested { .. } => {
+                tauri::RunEvent::ExitRequested {  .. } => {
+                    // Check if exit was explicitly requested (e.g. from tray "Quit")
+                    // But in Tauri v2, app.exit() triggers this too.
+                    // We handle clean up here.
                     let state = app_handle.state::<AppState>();
                     let should_clean = {
                         match state.clean_on_exit.lock() {
@@ -356,10 +404,18 @@ fn main() {
 
                     if should_clean {
                         println!("[Rust] Cleaning hosts file on exit...");
-                        // Also clear cache? Not strictly necessary as process dies
-                        // Pass empty language
                         let _ = apply_blocking_rules(state.clone(), vec![], "vi".to_string()); // Clear all rules
                     }
+                }
+                tauri::RunEvent::WindowEvent { label, event, .. } => {
+                     match event {
+                        tauri::WindowEvent::CloseRequested { api, .. } => {
+                            let window = app_handle.get_webview_window(&label).unwrap();
+                            window.hide().unwrap();
+                            api.prevent_close();
+                        }
+                        _ => {}
+                     }
                 }
                 _ => {}
             }

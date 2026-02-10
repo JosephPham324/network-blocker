@@ -9,7 +9,7 @@ edition = "2021"
 tauri-build = { version = "2.0.0", features = [] }
 
 [dependencies]
-tauri = { version = "2.0.0", features = [] }
+tauri = { version = "2.0.0", features = ["tray-icon", "image-ico", "image-png"] }
 
 tauri-plugin-shell = "2.0.0"     # Required for 'ipconfig' commands
 serde = { version = "1.0", features = ["derive"] }
