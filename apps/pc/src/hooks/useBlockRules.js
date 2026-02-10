@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { collection, onSnapshot, writeBatch, doc, serverTimestamp, query, orderBy } from "firebase/firestore";
 import { db, appId, isCloudReady } from "../services/firebase";
 import { callRust } from "../services/tauri";
 import { translations } from "../locales"; 
+import { GamificationService } from "../services/GamificationService";
 
 import { ruleSchema, ruleGroupSchema, validateAgainstSchema } from "@mindful-block/shared";
 
@@ -14,22 +15,42 @@ export const useBlockRules = (user, setIsAdmin, blockingEnabled = true , languag
   const currentLang = language;
   const t = translations[currentLang].system;
   const [status, setStatus] = useState(t.status_initializing);
+  const [buffTick, setBuffTick] = useState(0); // Triggers re-sync when buffs expire
 
-  // Sync Rules with Rust whenever they change
+  // Poll for expired buffs every 60 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const activeBuffs = GamificationService.getActiveBuffs();
+      // Force re-sync by bumping the tick counter
+      setBuffTick(prev => prev + 1);
+    }, 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Sync Rules with Rust whenever they change (or buffs expire)
   useEffect(() => {
     if (!rules) return;
     
+    const activeBuffs = GamificationService.getActiveBuffs();
     
     const formatted = rules.map((r) => ({
       domain: r.domain,
       is_active: r.is_active,
-      mode: (r.mode || "hard").toLowerCase(), 
+      mode: (r.mode || "hard").toLowerCase(),
+      group: r.group || "General",
     }));
 
+    // Filter out domains/groups that have an active pass
+    const afterBuffFilter = formatted.filter((r) => {
+      if (activeBuffs.some(b => b.type === 'SITE_PASS' && b.target === r.domain)) return false;
+      if (activeBuffs.some(b => b.type === 'GROUP_PASS' && b.target === r.group)) return false;
+      return true;
+    });
+
     // If blocking is disabled globally, send empty list to Rust to clear hosts
-    const rulesToApply = blockingEnabled ? formatted : [];
+    const rulesToApply = blockingEnabled ? afterBuffFilter : [];
     
-    console.log(`[Sync] Applying Rules to Rust (Lang: ${language}):`, rulesToApply);
+    console.log(`[Sync] Applying Rules to Rust (Lang: ${language}, Buffs: ${activeBuffs.length}):`, rulesToApply);
 
     callRust("apply_blocking_rules", { rules: rulesToApply, language: language })
     .then((res) => setStatus(t.status_protected.replace('{count}', res)))
@@ -38,7 +59,7 @@ export const useBlockRules = (user, setIsAdmin, blockingEnabled = true , languag
         if (String(err).includes("ADMIN")) setIsAdmin(false);
         setStatus(t.status_error);
     });
-  }, [rules, setIsAdmin, blockingEnabled, language, t]);
+  }, [rules, setIsAdmin, blockingEnabled, language, t, buffTick]);
 
   useEffect(() => {
     if (!user || !isCloudReady || !db) return;

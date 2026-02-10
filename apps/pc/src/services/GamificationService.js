@@ -4,6 +4,15 @@ const STORAGE_KEYS = {
   CURRENCY: "gamification_currency",
   INVENTORY: "gamification_inventory",
   STREAK: "gamification_streak",
+  BUFFS: "gamification_buffs",
+};
+
+// --- Pricing ---
+export const SHOP_PRICES = {
+  SITE_PASS_10M: 50,       // 10 min pass for 1 site
+  GROUP_PASS_PER_SITE: 40,  // 10 min pass per site in group (discounted)
+  STREAK_FREEZE: 100,       // Protect streak for 1 missed day
+  FOCUS_BOOST: 30,          // 2x tokens on next focus session
 };
 
 export const GamificationService = {
@@ -24,8 +33,11 @@ export const GamificationService = {
     if (!localStorage.getItem(STORAGE_KEYS.STREAK)) {
       localStorage.setItem(
         STORAGE_KEYS.STREAK,
-        JSON.stringify({ current: 0, max: 0, lastActiveDate: null, history: {} })
+        JSON.stringify({ current: 0, max: 0, lastActiveDate: null, history: {}, freezes: 0 })
       );
+    }
+    if (!localStorage.getItem(STORAGE_KEYS.BUFFS)) {
+      localStorage.setItem(STORAGE_KEYS.BUFFS, JSON.stringify([]));
     }
   },
 
@@ -68,6 +80,107 @@ export const GamificationService = {
     return data.trees;
   },
 
+  // ========================================
+  // --- Buffs / Passes (NEW) ---
+  // ========================================
+
+  /**
+   * Activates a temporary buff (pass).
+   * @param {'SITE_PASS' | 'GROUP_PASS' | 'FOCUS_BOOST'} type
+   * @param {string} target - Domain name or Group name
+   * @param {number} durationMs - Duration in milliseconds
+   */
+  activateBuff: (type, target, durationMs) => {
+    const buffs = JSON.parse(localStorage.getItem(STORAGE_KEYS.BUFFS)) || [];
+    buffs.push({
+      id: `buff_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      type,
+      target,
+      activatedAt: Date.now(),
+      expiresAt: Date.now() + durationMs,
+    });
+    localStorage.setItem(STORAGE_KEYS.BUFFS, JSON.stringify(buffs));
+  },
+
+  /**
+   * Returns only active (non-expired) buffs. Also cleans up expired ones.
+   */
+  getActiveBuffs: () => {
+    try {
+      const buffs = JSON.parse(localStorage.getItem(STORAGE_KEYS.BUFFS)) || [];
+      const now = Date.now();
+      const active = buffs.filter(b => b.expiresAt > now);
+      // Cleanup expired
+      if (active.length !== buffs.length) {
+        localStorage.setItem(STORAGE_KEYS.BUFFS, JSON.stringify(active));
+      }
+      return active;
+    } catch { return []; }
+  },
+
+  /**
+   * Buy a Site Pass: spend tokens, activate buff.
+   * @param {string} domain
+   * @returns {boolean} success
+   */
+  buySitePass: (domain) => {
+    const cost = SHOP_PRICES.SITE_PASS_10M;
+    if (!GamificationService.spendTokens(cost, `Site Pass: ${domain}`)) return false;
+    GamificationService.activateBuff('SITE_PASS', domain, 10 * 60 * 1000); // 10 min
+    return true;
+  },
+
+  /**
+   * Buy a Group Pass: price scales with number of sites.
+   * @param {string} groupName
+   * @param {number} siteCount - Number of sites in the group
+   * @returns {boolean} success
+   */
+  buyGroupPass: (groupName, siteCount) => {
+    const cost = SHOP_PRICES.GROUP_PASS_PER_SITE * Math.max(siteCount, 1);
+    if (!GamificationService.spendTokens(cost, `Group Pass: ${groupName} (${siteCount} sites)`)) return false;
+    GamificationService.activateBuff('GROUP_PASS', groupName, 10 * 60 * 1000); // 10 min
+    return true;
+  },
+
+  /**
+   * Buy a Streak Freeze: adds 1 freeze charge.
+   * @returns {boolean} success
+   */
+  buyStreakFreeze: () => {
+    const cost = SHOP_PRICES.STREAK_FREEZE;
+    if (!GamificationService.spendTokens(cost, 'Streak Freeze')) return false;
+    const data = JSON.parse(localStorage.getItem(STORAGE_KEYS.STREAK));
+    data.freezes = (data.freezes || 0) + 1;
+    localStorage.setItem(STORAGE_KEYS.STREAK, JSON.stringify(data));
+    return true;
+  },
+
+  /**
+   * Buy a Focus Boost: 2x tokens on next focus session.
+   * @returns {boolean} success
+   */
+  buyFocusBoost: () => {
+    const cost = SHOP_PRICES.FOCUS_BOOST;
+    if (!GamificationService.spendTokens(cost, 'Focus Boost (2x)')) return false;
+    GamificationService.activateBuff('FOCUS_BOOST', 'next_session', 24 * 60 * 60 * 1000); // 24h expiry
+    return true;
+  },
+
+  /**
+   * Check if a Focus Boost is active. Consumes it if found.
+   * @returns {boolean}
+   */
+  consumeFocusBoost: () => {
+    const buffs = JSON.parse(localStorage.getItem(STORAGE_KEYS.BUFFS)) || [];
+    const now = Date.now();
+    const boostIdx = buffs.findIndex(b => b.type === 'FOCUS_BOOST' && b.expiresAt > now);
+    if (boostIdx === -1) return false;
+    buffs.splice(boostIdx, 1); // Remove it (consumed)
+    localStorage.setItem(STORAGE_KEYS.BUFFS, JSON.stringify(buffs));
+    return true;
+  },
+
   // --- Streak ---
   getStreak: () => {
     try {
@@ -89,8 +202,17 @@ export const GamificationService = {
 
     if (data.lastActiveDate === yesterdayStr) {
         data.current += 1;
+    } else if (data.lastActiveDate && data.lastActiveDate !== today) {
+        // Streak broken — check for Streak Freeze
+        if ((data.freezes || 0) > 0) {
+            data.freezes -= 1;
+            // Streak preserved! Don't reset.
+            data.current += 1; // Still count today
+        } else {
+            data.current = 1; // RESET if broken and no freeze
+        }
     } else {
-        data.current = 1; // RESET if broken
+        data.current = 1; // First ever checkin
     }
 
     if (data.current > data.max) data.max = data.current;

@@ -1,7 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { GamificationService } from '../services/GamificationService';
+import React, { useState, useEffect, useMemo } from 'react';
+import { GamificationService, SHOP_PRICES } from '../services/GamificationService';
 import { useFocus } from '../context/FocusContext';
-import { translations } from "../locales"; // <--- Import // <--- Import
+import { translations } from "../locales";
+
+// --- Utility ---
+const formatCountdown = (expiresAt) => {
+    const diff = Math.max(0, expiresAt - Date.now());
+    const mins = Math.floor(diff / 60000);
+    const secs = Math.floor((diff % 60000) / 1000);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+};
 
 // --- Sub-Components ---
 
@@ -36,33 +44,22 @@ const DigitalGarden = ({ trees, t, language }) => {
 };
 
 const StreakCalendar = ({ streak, t, language }) => {
-  // Get current month's calendar grid
   const today = new Date();
   const currentMonth = today.getMonth();
   const currentYear = today.getFullYear();
-  
-  // First day of month
   const firstDay = new Date(currentYear, currentMonth, 1);
-  const startingDayOfWeek = firstDay.getDay(); // 0 = Sunday
-  
-  // Days in month
+  const startingDayOfWeek = firstDay.getDay();
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   
-  // Create calendar grid (including empty cells for alignment)
   const calendarDays = [];
-  
-  // Add empty cells for days before month starts
   for (let i = 0; i < startingDayOfWeek; i++) {
     calendarDays.push(null);
   }
-  
-  // Add actual days
   for (let day = 1; day <= daysInMonth; day++) {
     const date = new Date(currentYear, currentMonth, day);
     const dateStr = date.toISOString().split('T')[0];
     const isActive = streak.history && streak.history[dateStr];
     const isToday = date.toDateString() === today.toDateString();
-    
     calendarDays.push({ day, date, dateStr, isActive, isToday });
   }
   
@@ -75,15 +72,18 @@ const StreakCalendar = ({ streak, t, language }) => {
             <div className="text-right">
                 <span className="text-3xl font-bold text-[#E29578]">{streak.current}</span>
                 <span className="text-xs text-[#5C6B73] uppercase tracking-wide ml-2">{t.streak_unit}</span>
+                {(streak.freezes || 0) > 0 && (
+                    <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-bold">
+                        🧊 {streak.freezes}
+                    </span>
+                )}
             </div>
        </div>
        
-       {/* Month/Year Header */}
        <div className="text-center mb-3 text-sm font-bold text-[#354F52]">
            {firstDay.toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', { month: 'long', year: 'numeric' })}
        </div>
        
-       {/* Day of week headers */}
        <div className="grid grid-cols-7 gap-1 mb-2">
            {(language === 'vi' ? ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'] : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']).map((dayName, i) => (
                <div key={i} className="text-center text-[10px] font-bold text-[#5C6B73] uppercase">
@@ -92,16 +92,12 @@ const StreakCalendar = ({ streak, t, language }) => {
            ))}
        </div>
        
-       {/* Calendar Grid */}
        <div className="grid grid-cols-7 gap-1">
            {calendarDays.map((dayData, i) => {
                if (!dayData) {
-                   // Empty cell
                    return <div key={`empty-${i}`} className="aspect-square"></div>;
                }
-               
                const { day, isActive, isToday } = dayData;
-               
                return (
                    <div 
                        key={i} 
@@ -124,13 +120,182 @@ const StreakCalendar = ({ streak, t, language }) => {
   );
 };
 
-const TokenShop = ({ balance, onPurchase, t }) => {
-    // Items are hardcoded for now, ideally they should be in locale or fetched
-    const items = [
-        { id: 'break_10', name: '10 Phút giải lao', icon: '☕', cost: 50 }, // Requires deeper I18n
-        { id: 'theme_dark', name: 'Giao diện Tối', icon: '🌙', cost: 200 },
-        { id: 'donate', name: 'Quyên góp từ thiện', icon: '🎗️', cost: 500 },
-    ];
+// --- Active Buffs Display ---
+const ActiveBuffs = ({ buffs, t }) => {
+    const [, setTick] = useState(0);
+    
+    useEffect(() => {
+        if (buffs.length === 0) return;
+        const interval = setInterval(() => setTick(v => v + 1), 1000);
+        return () => clearInterval(interval);
+    }, [buffs.length]);
+
+    const getBuffLabel = (buff) => {
+        switch (buff.type) {
+            case 'SITE_PASS': return t.buff_site_pass.replace('{target}', buff.target);
+            case 'GROUP_PASS': return t.buff_group_pass.replace('{target}', buff.target);
+            case 'FOCUS_BOOST': return t.buff_focus_boost;
+            default: return buff.type;
+        }
+    };
+
+    const getBuffIcon = (type) => {
+        switch (type) {
+            case 'SITE_PASS': return '🎫';
+            case 'GROUP_PASS': return '📦';
+            case 'FOCUS_BOOST': return '⚡';
+            default: return '✨';
+        }
+    };
+
+    return (
+        <div className="bg-white p-6 rounded-2xl border border-[#EBE7DE] shadow-sm mb-6">
+            <h3 className="text-lg font-serif font-bold text-[#354F52] mb-4 flex items-center gap-2">
+                <span className="text-xl">⚡</span> {t.buff_active_title}
+            </h3>
+            {buffs.length === 0 ? (
+                <p className="text-sm text-[#5C6B73] text-center py-4 opacity-60">{t.buff_none}</p>
+            ) : (
+                <div className="space-y-3">
+                    {buffs.map(buff => (
+                        <div key={buff.id} className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200">
+                            <div className="flex items-center gap-3">
+                                <span className="text-xl">{getBuffIcon(buff.type)}</span>
+                                <div>
+                                    <div className="font-bold text-sm text-[#2F3E46]">{getBuffLabel(buff)}</div>
+                                    <div className="text-xs text-emerald-600 font-mono">
+                                        {t.buff_expires.replace('{time}', formatCountdown(buff.expiresAt))}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
+// --- Pass Selection Modal ---
+const PassSelectionModal = ({ isOpen, type, rules, groups, balance, onConfirm, onClose, t }) => {
+    const [selected, setSelected] = useState(null);
+
+    // Reset selection when modal opens
+    useEffect(() => {
+        if (isOpen) setSelected(null);
+    }, [isOpen]);
+
+    if (!isOpen) return null;
+
+    const isSiteMode = type === 'SITE_PASS';
+
+    // Build selectable options
+    const options = isSiteMode
+        ? rules
+            .filter(r => r.is_active)
+            .map(r => ({
+                id: r.domain,
+                label: r.domain,
+                cost: SHOP_PRICES.SITE_PASS_10M,
+                meta: { domain: r.domain },
+            }))
+        : groups
+            .map(g => {
+                const siteCount = rules.filter(r => (r.group || 'General') === g.name && r.is_active).length;
+                if (siteCount === 0) return null;
+                return {
+                    id: g.name,
+                    label: `${g.name} (${siteCount} sites)`,
+                    cost: SHOP_PRICES.GROUP_PASS_PER_SITE * siteCount,
+                    meta: { groupName: g.name, siteCount },
+                };
+            }).filter(Boolean);
+
+    const selectedOption = options.find(o => o.id === selected);
+    const canAfford = selectedOption ? balance >= selectedOption.cost : false;
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
+            <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+                {/* Header */}
+                <div className="flex justify-between items-center mb-4">
+                    <h4 className="text-xl font-bold text-[#354F52] flex items-center gap-2">
+                        <span>{isSiteMode ? '🎫' : '📦'}</span>
+                        {isSiteMode ? t.shop_site_pass_title : t.shop_group_pass_title}
+                    </h4>
+                    <button onClick={onClose} className="text-[#5C6B73] hover:text-[#354F52] transition-colors">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <p className="text-sm text-[#5C6B73] mb-4">
+                    {isSiteMode ? t.shop_site_pass_desc : t.shop_group_pass_modal_desc}
+                </p>
+
+                {/* Selection List */}
+                <div className="flex-1 overflow-y-auto space-y-2 mb-4 pr-1">
+                    {options.length === 0 ? (
+                        <p className="text-center text-[#5C6B73] py-8 opacity-60">{t.shop_no_items}</p>
+                    ) : (
+                        options.map(opt => (
+                            <button
+                                key={opt.id}
+                                onClick={() => setSelected(opt.id)}
+                                className={`w-full flex justify-between items-center p-3 rounded-xl border transition-all text-left
+                                    ${selected === opt.id
+                                        ? 'border-[#52796F] bg-emerald-50 ring-2 ring-[#52796F]'
+                                        : 'border-[#EBE7DE] hover:bg-[#F4F1EA]'
+                                    }
+                                    ${balance < opt.cost ? 'opacity-50' : ''}
+                                `}
+                            >
+                                <span className="font-medium text-[#2F3E46] text-sm">{opt.label}</span>
+                                <span className={`font-bold text-sm whitespace-nowrap ml-2 ${balance >= opt.cost ? 'text-[#52796F]' : 'text-red-400'}`}>
+                                    {opt.cost} 🪙
+                                </span>
+                            </button>
+                        ))
+                    )}
+                </div>
+
+                {/* Footer */}
+                <div className="flex gap-3 pt-2 border-t border-[#EBE7DE]">
+                    <button
+                        onClick={onClose}
+                        className="flex-1 py-2 rounded-lg border border-[#EBE7DE] text-[#5C6B73] font-bold hover:bg-[#F4F1EA] transition-colors"
+                    >
+                        {t.shop_cancel}
+                    </button>
+                    <button
+                        onClick={() => selectedOption && onConfirm(type, selectedOption)}
+                        disabled={!selected || !canAfford}
+                        className={`flex-1 py-2 rounded-lg font-bold transition-all
+                            ${selected && canAfford
+                                ? 'bg-[#52796F] text-white hover:bg-[#354F52] shadow-md'
+                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                            }
+                        `}
+                    >
+                        {selectedOption
+                            ? `${t.shop_confirm} (${selectedOption.cost} 🪙)`
+                            : t.shop_confirm
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- Token Shop (Compact) ---
+const TokenShop = ({ balance, rules, groups, streak, onOpenPassModal, onPurchasePowerUp, t }) => {
+    const activeSiteCount = rules.filter(r => r.is_active).length;
+    const activeGroupCount = groups.filter(g => {
+        return rules.some(r => (r.group || 'General') === g.name && r.is_active);
+    }).length;
 
     return (
         <div className="bg-white p-6 rounded-2xl border border-[#EBE7DE] shadow-sm">
@@ -144,26 +309,87 @@ const TokenShop = ({ balance, onPurchase, t }) => {
                 </div>
             </div>
             
-            <div className="space-y-4">
-                {items.map(item => (
-                    <button 
-                        key={item.id}
-                        onClick={() => onPurchase(item)}
-                        disabled={balance < item.cost}
-                        className={`w-full flex justify-between items-center p-4 rounded-xl border border-[#EBE7DE] transition-all
-                            ${balance >= item.cost ? 'hover:bg-[#F4F1EA] hover:border-[#52796F] cursor-pointer' : 'opacity-50 cursor-not-allowed bg-gray-50'}
-                        `}
-                    >
-                        <div className="flex items-center gap-3">
-                            <span className="text-2xl bg-[#EBE7DE] w-10 h-10 flex items-center justify-center rounded-lg">{item.icon}</span>
-                            <div className="text-left">
-                                <div className="font-bold text-[#2F3E46]">{item.name}</div>
-                                <div className="text-xs text-[#5C6B73]">{t.shop_buy_desc}</div>
+            {/* Access Passes */}
+            <h4 className="text-xs font-bold text-[#5C6B73] uppercase tracking-wider mb-3">{t.shop_section_passes}</h4>
+            <div className="space-y-3 mb-6">
+                {/* Site Pass Button */}
+                <button
+                    onClick={() => onOpenPassModal('SITE_PASS')}
+                    disabled={activeSiteCount === 0}
+                    className={`w-full flex justify-between items-center p-4 rounded-xl border border-[#EBE7DE] transition-all
+                        ${activeSiteCount > 0 ? 'hover:bg-[#F4F1EA] hover:border-[#52796F] cursor-pointer hover:shadow-md' : 'opacity-50 cursor-not-allowed bg-gray-50'}
+                    `}
+                >
+                    <div className="flex items-center gap-3">
+                        <span className="text-2xl bg-[#EBE7DE] w-10 h-10 flex items-center justify-center rounded-lg">🎫</span>
+                        <div className="text-left">
+                            <div className="font-bold text-[#2F3E46] text-sm">{t.shop_site_pass_btn}</div>
+                            <div className="text-xs text-[#5C6B73]">{t.shop_site_pass_desc}</div>
+                        </div>
+                    </div>
+                    <span className="font-bold text-[#52796F] whitespace-nowrap ml-2">{SHOP_PRICES.SITE_PASS_10M} 🪙</span>
+                </button>
+
+                {/* Group Pass Button */}
+                <button
+                    onClick={() => onOpenPassModal('GROUP_PASS')}
+                    disabled={activeGroupCount === 0}
+                    className={`w-full flex justify-between items-center p-4 rounded-xl border border-[#EBE7DE] transition-all
+                        ${activeGroupCount > 0 ? 'hover:bg-[#F4F1EA] hover:border-[#52796F] cursor-pointer hover:shadow-md' : 'opacity-50 cursor-not-allowed bg-gray-50'}
+                    `}
+                >
+                    <div className="flex items-center gap-3">
+                        <span className="text-2xl bg-[#EBE7DE] w-10 h-10 flex items-center justify-center rounded-lg">📦</span>
+                        <div className="text-left">
+                            <div className="font-bold text-[#2F3E46] text-sm">{t.shop_group_pass_btn}</div>
+                            <div className="text-xs text-[#5C6B73]">{t.shop_group_pass_desc}</div>
+                        </div>
+                    </div>
+                    <span className="font-bold text-[#52796F] whitespace-nowrap ml-2 text-xs">{SHOP_PRICES.GROUP_PASS_PER_SITE}🪙 × sites</span>
+                </button>
+            </div>
+
+            {/* Power-ups */}
+            <h4 className="text-xs font-bold text-[#5C6B73] uppercase tracking-wider mb-3">{t.shop_section_powerups}</h4>
+            <div className="space-y-3">
+                {/* Streak Freeze */}
+                <button
+                    onClick={() => onPurchasePowerUp('STREAK_FREEZE')}
+                    disabled={balance < SHOP_PRICES.STREAK_FREEZE}
+                    className={`w-full flex justify-between items-center p-4 rounded-xl border border-[#EBE7DE] transition-all
+                        ${balance >= SHOP_PRICES.STREAK_FREEZE ? 'hover:bg-[#F4F1EA] hover:border-[#52796F] cursor-pointer hover:shadow-md' : 'opacity-50 cursor-not-allowed bg-gray-50'}
+                    `}
+                >
+                    <div className="flex items-center gap-3">
+                        <span className="text-2xl bg-[#EBE7DE] w-10 h-10 flex items-center justify-center rounded-lg">🧊</span>
+                        <div className="text-left">
+                            <div className="font-bold text-[#2F3E46] text-sm">{t.shop_streak_freeze}</div>
+                            <div className="text-xs text-[#5C6B73]">
+                                {t.shop_streak_freeze_desc}
+                                {(streak.freezes || 0) > 0 && <span className="ml-1 text-blue-500 font-bold">({t.shop_freezes_owned.replace('{count}', streak.freezes)})</span>}
                             </div>
                         </div>
-                        <span className="font-bold text-[#52796F]">{item.cost} 🪙</span>
-                    </button>
-                ))}
+                    </div>
+                    <span className="font-bold text-[#52796F] whitespace-nowrap ml-2">{SHOP_PRICES.STREAK_FREEZE} 🪙</span>
+                </button>
+
+                {/* Focus Boost */}
+                <button
+                    onClick={() => onPurchasePowerUp('FOCUS_BOOST')}
+                    disabled={balance < SHOP_PRICES.FOCUS_BOOST}
+                    className={`w-full flex justify-between items-center p-4 rounded-xl border border-[#EBE7DE] transition-all
+                        ${balance >= SHOP_PRICES.FOCUS_BOOST ? 'hover:bg-[#F4F1EA] hover:border-[#52796F] cursor-pointer hover:shadow-md' : 'opacity-50 cursor-not-allowed bg-gray-50'}
+                    `}
+                >
+                    <div className="flex items-center gap-3">
+                        <span className="text-2xl bg-[#EBE7DE] w-10 h-10 flex items-center justify-center rounded-lg">⚡</span>
+                        <div className="text-left">
+                            <div className="font-bold text-[#2F3E46] text-sm">{t.shop_focus_boost}</div>
+                            <div className="text-xs text-[#5C6B73]">{t.shop_focus_boost_desc}</div>
+                        </div>
+                    </div>
+                    <span className="font-bold text-[#52796F] whitespace-nowrap ml-2">{SHOP_PRICES.FOCUS_BOOST} 🪙</span>
+                </button>
             </div>
         </div>
     );
@@ -172,15 +398,16 @@ const TokenShop = ({ balance, onPurchase, t }) => {
 
 // --- Main Page Component ---
 
-const Gamification = ({ language = 'vi' }) => {
-  const t = translations[language].focus; // <--- Get Translations
+const Gamification = ({ language = 'vi', rules = [], groups = [] }) => {
+  const t = translations[language].focus;
   const [data, setData] = useState({
       balance: 0,
       trees: [],
-      streak: { current: 0 }
+      streak: { current: 0, freezes: 0 },
+      activeBuffs: [],
   });
+  const [passModal, setPassModal] = useState({ isOpen: false, type: null }); // 'SITE_PASS' | 'GROUP_PASS'
 
-  // Init Data
   useEffect(() => {
     GamificationService.init();
     refreshData();
@@ -190,8 +417,53 @@ const Gamification = ({ language = 'vi' }) => {
     setData({
         balance: GamificationService.getBalance().balance,
         trees: GamificationService.getTrees(),
-        streak: GamificationService.getStreak()
+        streak: GamificationService.getStreak(),
+        activeBuffs: GamificationService.getActiveBuffs(),
     });
+  };
+
+  // Refresh active buffs periodically
+  useEffect(() => {
+    const interval = setInterval(() => {
+        const activeBuffs = GamificationService.getActiveBuffs();
+        setData(prev => ({ ...prev, activeBuffs }));
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // --- Pass Modal Handlers ---
+  const handleOpenPassModal = (type) => {
+      setPassModal({ isOpen: true, type });
+  };
+
+  const handleConfirmPass = (type, option) => {
+      let success = false;
+      if (type === 'SITE_PASS') {
+          success = GamificationService.buySitePass(option.meta.domain);
+      } else if (type === 'GROUP_PASS') {
+          success = GamificationService.buyGroupPass(option.meta.groupName, option.meta.siteCount);
+      }
+      if (success) {
+          alert(t.purchase_success.replace('{name}', option.label));
+          refreshData();
+      }
+      setPassModal({ isOpen: false, type: null });
+  };
+
+  const handlePurchasePowerUp = (type) => {
+      let success = false;
+      let name = '';
+      if (type === 'STREAK_FREEZE') {
+          success = GamificationService.buyStreakFreeze();
+          name = t.shop_streak_freeze;
+      } else if (type === 'FOCUS_BOOST') {
+          success = GamificationService.buyFocusBoost();
+          name = t.shop_focus_boost;
+      }
+      if (success) {
+          alert(t.purchase_success.replace('{name}', name));
+          refreshData();
+      }
   };
 
 // --- Timer Component (Connected to Context) ---
@@ -199,13 +471,10 @@ const Gamification = ({ language = 'vi' }) => {
         const { isFocusing, timeLeft, totalDuration, startFocus, stopFocus } = useFocus();
         const [minutes, setMinutes] = useState(25);
         const [showInfo, setShowInfo] = useState(false);
-
-        // ... (Effects unchanged)
         
         useEffect(() => {
             if (isFocusing && timeLeft === 0) {
-                 // Timer finished!
-                 onComplete(totalDuration / 60); // Pass minutes
+                 onComplete(totalDuration / 60);
                  stopFocus();
             }
         }, [isFocusing, timeLeft, totalDuration, stopFocus, onComplete]);
@@ -214,13 +483,10 @@ const Gamification = ({ language = 'vi' }) => {
             if (!isFocusing) {
                 startFocus(minutes);
             } else {
-                // Give up - only stop if confirmed
-                // Use a variable to ensure the confirm result is properly evaluated before any state changes
                 const userConfirmed = window.confirm(t.give_up_warning);
                 if (userConfirmed) {
                     stopFocus();
                 }
-                // If userConfirmed is false, do nothing - timer continues
             }
         };
 
@@ -319,19 +585,21 @@ const Gamification = ({ language = 'vi' }) => {
         if (duration >= 25) { treeType = 'pine'; amount = 25; }
         if (duration >= 60) { treeType = 'oak'; amount = 60; }
 
-        GamificationService.addTokens(amount, `Focus Session (${duration}m)`);
+        // Check for Focus Boost
+        const boosted = GamificationService.consumeFocusBoost();
+        if (boosted) {
+            amount *= 2;
+        }
+
+        GamificationService.addTokens(amount, `Focus Session (${duration}m)${boosted ? ' [BOOSTED x2]' : ''}`);
         GamificationService.plantTree(treeType);
-        GamificationService.checkin(); // Daily streak
+        GamificationService.checkin();
         refreshData();
         
-        alert(t.session_complete.replace('{amount}', amount).replace('{treeType}', treeType));
-    };
-
-    const handlePurchase = (item) => {
-        if (GamificationService.spendTokens(item.cost, item.name)) {
-            alert(t.purchase_success.replace('{name}', item.name)); 
-            refreshData();
-        }
+        const msg = boosted 
+            ? `⚡ BOOSTED! ${t.session_complete.replace('{amount}', amount).replace('{treeType}', treeType)}`
+            : t.session_complete.replace('{amount}', amount).replace('{treeType}', treeType);
+        alert(msg);
     };
 
   return (
@@ -344,13 +612,34 @@ const Gamification = ({ language = 'vi' }) => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
                 <FocusTimer onComplete={handleTimerComplete} />
+                <ActiveBuffs buffs={data.activeBuffs} t={t} />
                 <DigitalGarden trees={data.trees} t={t} language={language} />
                 <StreakCalendar streak={data.streak} t={t} language={language} />
             </div>
             <div>
-                <TokenShop balance={data.balance} onPurchase={handlePurchase} t={t} />
+                <TokenShop 
+                    balance={data.balance} 
+                    rules={rules} 
+                    groups={groups}
+                    streak={data.streak}
+                    onOpenPassModal={handleOpenPassModal}
+                    onPurchasePowerUp={handlePurchasePowerUp}
+                    t={t} 
+                />
             </div>
         </div>
+
+        {/* Pass Selection Modal */}
+        <PassSelectionModal
+            isOpen={passModal.isOpen}
+            type={passModal.type}
+            rules={rules}
+            groups={groups}
+            balance={data.balance}
+            onConfirm={handleConfirmPass}
+            onClose={() => setPassModal({ isOpen: false, type: null })}
+            t={t}
+        />
     </div>
   );
 };
