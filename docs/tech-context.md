@@ -13,7 +13,7 @@
 
 #### Frontend Components
 -   **`BlockList.jsx`**: Rule management UI with group support, batch operations, CSV import
--   **`Gamification.jsx`**: Streak tracking, digital garden, calendar visualization
+-   **`Gamification.jsx`**: Comprehensive focus assistant UI featuring streak tracking, digital garden, calendar visualization, and a token-based shop with selection modals.
 -   **`Settings.jsx`**: App configuration (global toggle, clean on exit, friction preferences)
 -   **`Dashboard.jsx`**: Overview with statistics and quick actions
 -   **`Login.jsx`**: Firebase Google authentication interface
@@ -24,7 +24,8 @@
 -   **Key Features**:
     -   **Administrative Friction**: "Safe Guards" preventing accidental changes (requires typing confirmation).
     -   **Block List Management**: Import/Export CSV support.
-    -   **Gamification System**: Streak tracking and progress visualization.
+    -   **Advanced Gamification**: Token economy, temporary unblock passes (Site/Group), and streak protection mechanics.
+    -   **System Tray Integration**: Custom tray icon with context menu and minimize-to-tray behavior.
 
 ### Backend Logic (`apps/pc/src-tauri`)
 -   **Language**: Rust
@@ -40,9 +41,10 @@
 
 ### Services Layer (`apps/pc/src/services`)
 -   **`GamificationService.js`**: 
-    -   Manages streak calculation and persistence
-    -   Tracks daily activity and progress
-    -   Provides statistics for the gamification UI
+    -   Manages streak calculation, persistence, and protection (Freeze Charges).
+    -   Tracks daily activity and focus session results.
+    -   Handles token transactions and "Buff" (temporary unblock) lifecycle management.
+    -   Provides statistics and inventory data for the gamification UI.
 -   **`firebase.js`**: 
     -   Firebase SDK initialization
     -   Cloud sync operations for rules and settings

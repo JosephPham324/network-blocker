@@ -16,6 +16,7 @@ Mindful Block is a desktop application designed to help users maintain focus by 
     - **Typing**: Type a specific confirmation phrase (e.g., "I choose to be distracted").
 - **Hosts File Management**: Automatically handles reading, writing, and backing up the hosts file. Requires Administrator privileges.
 - **DNS Flushing**: Automatically flushes the DNS cache on Windows to ensure blocking rules take effect immediately.
+- **System Tray Support**: Minimize the application to the system tray to keep focus sessions active in the background. Features a context menu for quick access or full exit.
 - **Browser Extension**: Essential for "Friction Mode". Intercepts navigation to blocked sites and displays the challenge interface.
 
 ### Rule Management
@@ -28,7 +29,11 @@ Mindful Block is a desktop application designed to help users maintain focus by 
 
 ### Gamification & Progress Tracking
 
-- **Streak System**: Track consecutive days of successful focus sessions.
+- **Streak System**: Track consecutive days of successful focus sessions. Purchase **Streak Freezes** to protect your progress.
+- **Token Shop**: Earn tokens through focus sessions and spend them on:
+  - **Site Passes**: Temporary 10-minute unblock for a specific domain.
+  - **Group Passes**: Temporary 10-minute unblock for an entire group.
+  - **Focus Boosts**: Double your token earnings for the next session.
 - **Digital Garden**: Visual representation of your progress and growth over time.
 - **Calendar View**: Interactive calendar showing your active days and patterns.
 - **Statistics Dashboard**: View insights about your blocking effectiveness and usage patterns.

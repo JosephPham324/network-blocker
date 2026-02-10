@@ -58,10 +58,12 @@ App.jsx
 ├── BlockList.jsx        # Main rule management
 │   ├── FrictionModal.jsx  # Confirmation dialogs
 │   └── (Rule items)
-├── Gamification.jsx     # Progress tracking
-│   ├── Streak display
+├── Gamification.jsx     # Progress tracking & Shop
+│   ├── Streak calendar
 │   ├── Digital garden
-│   └── Calendar view
+│   ├── Token Shop
+│   ├── Pass Selection Modal
+│   └── Active Buffs display
 ├── Settings.jsx         # App configuration
 └── Login.jsx           # Authentication
 ```
@@ -84,6 +86,7 @@ App.jsx
 - `apply_blocking_rules`: Hosts file + cache update
 - `check_admin_privileges`: Permission verification
 - `start_server`: OAuth and rules server initialization
+- **Tray Handling**: System tray icon with "Show", "Quit" menu and minimize-to-tray logic.
 
 ---
 
@@ -93,23 +96,19 @@ App.jsx
 
 ```javascript
 // Pseudo-code
-function calculateStreak(activityDates) {
+function calculateStreak(activityDates, streakData) {
   let currentStreak = 0;
   let today = getCurrentDate();
   
-  // Check if user has activity today or yesterday
+  // Check if streak is broken, accounting for Streak Freezes
   if (!hasActivityOn(today) && !hasActivityOn(yesterday)) {
-    return 0; // Streak broken
+    if (streakData.freezes > 0) {
+       // Streak preserved by freeze
+    } else {
+       return 0; // Streak broken
+    }
   }
-  
-  // Count backwards from today
-  let checkDate = today;
-  while (hasActivityOn(checkDate)) {
-    currentStreak++;
-    checkDate = previousDay(checkDate);
-  }
-  
-  return currentStreak;
+  // ... loop logic
 }
 ```
 
@@ -133,6 +132,13 @@ interface GamificationData {
   activeDays: string[];  // ISO date strings
   lastActivityDate: string;
   totalFocusSessions: number;
+  balance: number;       // Token currency
+  freezes: number;       // Available streak freezes
+  activeBuffs: Array<{   // Site/Group passes
+    type: 'SITE_PASS' | 'GROUP_PASS' | 'FOCUS_BOOST';
+    target: string;
+    expiresAt: number;
+  }>;
 }
 ```
 

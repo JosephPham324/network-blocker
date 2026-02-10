@@ -244,6 +244,11 @@
                                     <span class="text-primary font-bold">REQ-02.1:</span>
                                     <span>Quản lý danh sách chặn: Hỗ trợ Import/Export CSV để chia sẻ cấu hình.</span>
                                 </li>
+                                <li class="flex gap-3 border-t border-surfaceHighlight pt-2">
+                                    <span class="text-accent font-bold">REQ-02.2:</span>
+                                    <span>**Hệ thống Token Shop**: Người dùng tích lũy token qua thời gian tập trung để
+                                        mua Site Pass hoặc Streak Freeze.</span>
+                                </li>
                             </ul>
                         </div>
                         <div>
@@ -257,6 +262,11 @@
                                 <li class="flex gap-3">
                                     <span class="text-primary font-bold">REQ-04:</span>
                                     <span>Đồng bộ 2 chiều (Bidirectional) tất cả quy tắc chặn ngay lập tức.</span>
+                                </li>
+                                <li class="flex gap-3 border-t border-surfaceHighlight pt-2">
+                                    <span class="text-accent font-bold">REQ-05:</span>
+                                    <span>**Minimize to Tray**: Mặc định thu nhỏ xuống khay hệ thống để đảm bảo tính
+                                        liên tục của việc chặn.</span>
                                 </li>
                             </ul>
                         </div>
@@ -337,13 +347,12 @@
                                 </ul>
                             </div>
                             <div class="bg-white border border-surfaceHighlight p-4 rounded-xl shadow-sm">
-                                <h4 class="text-xs font-bold text-primary mb-2 font-mono">Collection: Analytics</h4>
+                                <h4 class="text-xs font-bold text-primary mb-2 font-mono">Collection: Gamification</h4>
                                 <ul class="text-[10px] space-y-1 text-textLight font-mono">
-                                    <li>- log_id: PK</li>
-                                    <li>- u_id: FK</li>
-                                    <li>- event: ENUM</li>
-                                    <li>- duration: int</li>
-                                    <li>- reason: text</li>
+                                    <li>- balance: int (Tokens)</li>
+                                    <li>- streak_freezes: int</li>
+                                    <li>- active_passes: Array&lt;Pass&gt;</li>
+                                    <li>- last_checkin: timestamp</li>
                                 </ul>
                             </div>
                         </div>

@@ -45,7 +45,7 @@ Khi truy cập trang bị hạn chế ở chế độ _Friction_, hệ thống k
 - **Math Challenge**: Giải toán ngẫu nhiên để kích hoạt tư duy logic.
 - **Typing Challenge**: Gõ lại văn bản cam kết để xác nhận ý định.
 
-Sau khi hoàn thành thử thách thành công, hệ thống cấp **quyền truy cập tạm thời (Grace Period)**.
+Sau khi hoàn thành thử thách thành công hoặc sử dụng **Vé truy cập (Pass)** từ cửa hàng, hệ thống cấp **quyền truy cập tạm thời (Grace Period)**.
 
 ---
 
@@ -85,14 +85,19 @@ Yêu cầu:
 - **Streak Tracking**: Theo dõi số ngày liên tiếp người dùng duy trì các quy tắc chặn.
   - Hiển thị streak hiện tại
   - Ghi nhận streak dài nhất
-  - Reset streak khi người dùng không hoạt động
+  - **Streak Freeze**: Cho phép sử dụng vật phẩm bảo vệ để không bị ngắt streak khi lỡ một ngày.
+  
+- **Token Shop**: Hệ thống kinh tế trong ứng dụng.
+  - **Earning**: Nhận token sau mỗi phiên tập trung thành công.
+  - **Rewards**: Đổi token lấy các vật phẩm (Site Pass, Group Pass, Streak Freeze, Focus Boost).
+  - **Focus Boost**: Vật phẩm tăng gấp đôi lượng token nhận được cho phiên tiếp theo.
   
 - **Digital Garden**: Biểu diễn trực quan tiến độ và sự phát triển.
   - Các yếu tố hình ảnh phát triển dựa trên mức độ tương tác
   - Khuyến khích sử dụng nhất quán
   
 - **Calendar View**: Lịch tương tác hiển thị các ngày hoạt động.
-  - Đánh dấu các ngày có phiên chặn active
+  - Đánh dấu các ngày có phiên chặn active và các ngày sử dụng Streak Freeze.
   - Giúp nhận diện các mẫu hình năng suất
   
 - **Persistence**: Dữ liệu gamification được lưu cục bộ và đồng bộ với cloud.
@@ -107,6 +112,7 @@ Yêu cầu:
 
 - **Global Toggle**: Bật/tắt tất cả quy tắc chặn bằng một công tắc.
 - **Clean on Exit**: Tùy chọn tự động dọn dẹp file hosts khi thoát ứng dụng.
+- **Minimize to Tray**: Mặc định thu nhỏ ứng dụng xuống khay hệ thống thay vì đóng hoàn toàn để đảm bảo tính liên tục của việc chặn và tracking.
 - **Friction Preferences**: Cấu hình loại thử thách (Math, Wait, Typing) cho chế độ friction.
 - **Settings Sync**: Đồng bộ cài đặt giữa các thiết bị qua Firebase.
 - **Persistence**: Lưu trữ cài đặt cục bộ và khôi phục khi khởi động lại.

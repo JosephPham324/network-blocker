@@ -315,9 +315,10 @@
                         </ul>
                         <div
                             class="p-4 bg-surface rounded-xl text-[11px] font-mono text-textMain border border-surfaceHighlight">
-                            // Logic chặn hệ thống qua Rust <br>
                             tauri::command { <br>
                             &nbsp;&nbsp;update_hosts_file(sites: Vec&lt;String&gt;); <br>
+                            &nbsp;&nbsp;setup_system_tray(); <span class="text-slate-400">// minimize-to-tray
+                                logic</span> <br>
                             }
                         </div>
                     </div>
@@ -398,10 +399,11 @@
                             <div class="p-4 bg-primary rounded-xl text-[11px] font-mono text-emerald-200">
                                 { <br>
                                 &nbsp;&nbsp;"userId": "user_123", <br>
-                                &nbsp;&nbsp;"restrictedSites": [ <br>
-                                &nbsp;&nbsp;&nbsp;&nbsp;{"url": "facebook.com", "limit": "30m"}, <br>
-                                &nbsp;&nbsp;&nbsp;&nbsp;{"url": "tiktok.com", "status": "blocked"} <br>
-                                &nbsp;&nbsp;], <br>
+                                &nbsp;&nbsp;"restrictedSites": [...], <br>
+                                &nbsp;&nbsp;"gamification": { <br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;"balance": 1500, <br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;"activeBuffs": [...] <br>
+                                &nbsp;&nbsp;}, <br>
                                 &nbsp;&nbsp;"lastSync": "2023-10-27T10:00Z" <br>
                                 }
                             </div>

@@ -16,6 +16,7 @@ Mindful Block là một ứng dụng desktop được thiết kế để giúp n
     - **Gõ xác nhận**: Gõ một câu xác nhận cụ thể (ví dụ: “I choose to be distracted”).
 - **Quản lý file Hosts**: Tự động đọc, ghi và sao lưu file hosts. Yêu cầu quyền Administrator.
 - **Xóa cache DNS**: Tự động flush DNS trên Windows để đảm bảo các quy tắc chặn có hiệu lực ngay lập tức.
+- **Hệ thống Khay hệ thống (System Tray)**: Thu nhỏ ứng dụng xuống khay hệ thống để duy trì các phiên tập trung chạy ngầm. Bao gồm menu chuột phải để mở lại hoặc thoát hoàn toàn.
 - **Tiện ích mở rộng trình duyệt**: Thành phần bắt buộc cho “Friction Mode”. Chặn điều hướng đến các site bị chặn và hiển thị giao diện thử thách.
 
 ### Quản lý quy tắc
@@ -28,7 +29,11 @@ Mindful Block là một ứng dụng desktop được thiết kế để giúp n
 
 ### Gamification và Theo dõi Tiến độ
 
-- **Hệ thống Streak**: Theo dõi số ngày liên tiếp tập trung thành công.
+- **Hệ thống Streak**: Theo dõi số ngày liên tiếp tập trung thành công. Có thể mua **Streak Freeze** để bảo vệ tiến trình.
+- **Cửa hàng Token**: Kiếm token qua các phiên tập trung và sử dụng để mua:
+  - **Vé truy cập (Site Pass)**: Mở khóa tạm thời 10 phút cho một domain cụ thể.
+  - **Vé nhóm (Group Pass)**: Mở khóa tạm thời 10 phút cho toàn bộ nhóm.
+  - **Tăng tốc (Focus Boost)**: Gấp đôi token nhận được cho phiên tập trung tiếp theo.
 - **Digital Garden**: Biểu diễn trực quan tiến độ và sự phát triển của bạn theo thời gian.
 - **Lịch xem**: Lịch tương tác hiển thị các ngày hoạt động và mẫu hình của bạn.
 - **Bảng thống kê**: Xem thông tin chi tiết về hiệu quả chặn và mẫu sử dụng.

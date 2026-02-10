@@ -235,12 +235,23 @@
                     </div>
                 </div>
 
-                <div class="mt-8 bg-surface p-6 rounded-xl border border-surfaceHighlight flex items-center gap-4">
-                    <div class="text-3xl">&#128193;</div>
-                    <div>
-                        <h4 class="font-bold text-primary mb-1">Quản lý Quy tắc Nâng cao</h4>
-                        <p class="text-sm text-textLight">Hỗ trợ Import/Export danh sách chặn (CSV) và bảo vệ cài đặt
-                            bằng "Friction" (Buộc gõ cam kết).</p>
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-surface p-6 rounded-xl border border-surfaceHighlight flex items-center gap-4">
+                        <div class="text-3xl">&#128193;</div>
+                        <div>
+                            <h4 class="font-bold text-primary mb-1">Quản lý Quy tắc Nâng cao</h4>
+                            <p class="text-sm text-textLight">Hỗ trợ Import/Export danh sách chặn (CSV) và bảo vệ cài
+                                đặt
+                                bằng "Friction" (Buộc gõ cam kết).</p>
+                        </div>
+                    </div>
+                    <div class="bg-surface p-6 rounded-xl border border-surfaceHighlight flex items-center gap-4">
+                        <div class="text-3xl">&#128229;</div>
+                        <div>
+                            <h4 class="font-bold text-primary mb-1">Khay hệ thống (System Tray)</h4>
+                            <p class="text-sm text-textLight">Duy trì trạng thái tập trung chạy ngầm ngay cả khi đóng
+                                cửa sổ chính, đảm bảo chặn triệt để.</p>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -284,6 +295,12 @@
                                     id="btn-mode-typing">
                                     <span>&#9000; Tuyên bố Ý định</span>
                                     <span class="text-xs text-textLight">Gõ cụm từ xác nhận</span>
+                                </button>
+                                <button onclick="setFrictionMode('pass')"
+                                    class="friction-selector w-full px-5 py-4 border border-surfaceHighlight rounded-xl hover:bg-surface text-left flex justify-between items-center transition-all"
+                                    id="btn-mode-pass">
+                                    <span>&#127915; Sử dụng Vé (Pass)</span>
+                                    <span class="text-xs text-textLight">Mua từ Token Shop</span>
                                 </button>
                                 <p
                                     class="text-xs text-secondary mt-2 font-bold px-2 py-1 bg-secondary/10 rounded inline-block">
@@ -468,15 +485,15 @@
                         <ul class="text-sm space-y-3">
                             <li class="flex items-center gap-3 text-textMain">
                                 <span class="text-green-500 font-bold text-lg">&#10003;</span>
-                                10 phút lướt mạng "không tội lỗi"
+                                **Vé trang web (Site Pass)**: 10 phút lướt mạng "không tội lỗi"
                             </li>
                             <li class="flex items-center gap-3 text-textMain">
                                 <span class="text-green-500 font-bold text-lg">&#10003;</span>
-                                Quyên góp tiền thật cho từ thiện (từ quảng cáo)
+                                **Đóng băng Streak (Streak Freeze)**: Bảo vệ chuỗi khi lỡ một ngày
                             </li>
                             <li class="flex items-center gap-3 text-textMain">
                                 <span class="text-green-500 font-bold text-lg">&#10003;</span>
-                                Giao diện cá nhân hóa cho ứng dụng
+                                **Tăng tốc tập trung (Focus Boost)**: Gấp đôi phần thưởng Token
                             </li>
                         </ul>
                     </div>
@@ -585,7 +602,19 @@
             if (state.frictionMode === 'delay') runDelayTask();
             else if (state.frictionMode === 'cognitive') runMathTask();
             else if (state.frictionMode === 'typing') runTypingTask();
+            else if (state.frictionMode === 'pass') runPassTask();
         };
+
+        function runPassTask() {
+            frictionContainer.innerHTML = `
+                <div class="text-5xl mb-4">&#127915;</div>
+                <h4 class="font-bold text-primary text-xl mb-2">Sử dụng Vé truy cập</h4>
+                <p class="text-sm text-textLight mb-6">Bạn có 1 Site Pass khả dụng trong kho đồ.</p>
+                <button onclick="showSuccess('Vé đã được kích hoạt. Bạn có 10 phút.')" class="bg-accent text-white px-8 py-3 rounded-full shadow-md hover:bg-opacity-90 transition-all font-medium">
+                    Sử dụng ngay
+                </button>
+            `;
+        }
 
         function runDelayTask() {
             let timeLeft = 5;
