@@ -307,7 +307,7 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
   const filteredGroups = allKnownGroups.filter((g) => g.name.toLowerCase().includes(newGroup.toLowerCase()));
 
   return (
-    <div className="max-w-full space-y-8 animate-in fade-in duration-500 pb-32 relative">
+    <div id="blocklist-container" className="max-w-full space-y-8 animate-in fade-in duration-500 pb-32 relative">
       <header className="flex justify-between items-end">
         <div>
            <h2 className="text-5xl font-serif font-bold text-[#354F52] tracking-tight">{t.title}</h2>
@@ -367,7 +367,7 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
 
       {/* --- INPUT FORM --- */}
       <div className="space-y-3">
-        <form onSubmit={handleSubmit} className="flex gap-3 z-20 relative">
+        <form id="blocklist-input-form" onSubmit={handleSubmit} className="flex gap-3 z-20 relative">
           <div className="flex-[2] relative group">
             <Globe
               className={`absolute left-6 top-1/2 -translate-y-1/2 transition-colors ${
@@ -658,6 +658,7 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
 
       {/* Floating Bulk Action Bar */}
       <div
+        id="blocklist-bulk-actions"
         className={`
         fixed bottom-8 left-1/2 -translate-x-1/2 bg-[#354F52] text-white p-2 pl-6 rounded-[24px] shadow-2xl flex items-center gap-4 transition-all duration-300 z-50
         ${selectedIds.length > 0 ? "translate-y-0 opacity-100" : "translate-y-20 opacity-0 pointer-events-none"}

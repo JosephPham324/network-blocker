@@ -24,7 +24,7 @@ const Settings = ({ settings, toggleBlocking, toggleCleanOnExit, setLanguage, to
   };
 
   return (
-    <div className="max-w-3xl space-y-8 animate-in fade-in duration-500">
+    <div id="settings-container" className="max-w-3xl space-y-8 animate-in fade-in duration-500">
       <header>
         <h2 className="text-5xl font-serif font-bold text-[#354F52] tracking-tight">{t.title}</h2>
         <p className="text-slate-400 mt-2 text-lg">{t.subtitle}</p>
@@ -32,7 +32,7 @@ const Settings = ({ settings, toggleBlocking, toggleCleanOnExit, setLanguage, to
 
       <div className="grid gap-6">
         {/* Language Toggle */}
-        <div className="bg-white p-6 rounded-[32px] border-2 border-slate-100 flex items-center justify-between shadow-sm">
+        <div id="settings-language" className="bg-white p-6 rounded-[32px] border-2 border-slate-100 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-4">
                 <div className="p-4 rounded-2xl bg-blue-100 text-blue-600">
                     <Globe size={24} />
@@ -59,7 +59,7 @@ const Settings = ({ settings, toggleBlocking, toggleCleanOnExit, setLanguage, to
         </div>
 
         {/* Global Blocking Toggle */}
-        <div className="bg-white p-6 rounded-[32px] border-2 border-slate-100 flex items-center justify-between shadow-sm">
+        <div id="settings-blocking-toggle" className="bg-white p-6 rounded-[32px] border-2 border-slate-100 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-4">
                 <div className={`p-4 rounded-2xl ${settings.blockingEnabled ? "bg-emerald-100 text-emerald-600" : "bg-red-100 text-red-500"}`}>
                     {settings.blockingEnabled ? <Shield size={24} /> : <ShieldAlert size={24} />}
@@ -78,7 +78,7 @@ const Settings = ({ settings, toggleBlocking, toggleCleanOnExit, setLanguage, to
         </div>
 
         {/* Clean on Exit Toggle */}
-        <div className="bg-white p-6 rounded-[32px] border-2 border-slate-100 flex items-center justify-between shadow-sm">
+        <div id="settings-clean-exit" className="bg-white p-6 rounded-[32px] border-2 border-slate-100 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-4">
                 <div className="p-4 rounded-2xl bg-amber-100 text-amber-600">
                     <Power size={24} />
@@ -97,7 +97,7 @@ const Settings = ({ settings, toggleBlocking, toggleCleanOnExit, setLanguage, to
         </div>
 
         {/* Auto Start Toggle */}
-        <div className="bg-white p-6 rounded-[32px] border-2 border-slate-100 flex items-center justify-between shadow-sm">
+        <div id="settings-autostart" className="bg-white p-6 rounded-[32px] border-2 border-slate-100 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-4">
                 <div className="p-4 rounded-2xl bg-purple-100 text-purple-600">
                     <Power size={24} className="rotate-180" />

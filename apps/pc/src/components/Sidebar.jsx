@@ -8,7 +8,7 @@ const Sidebar = ({ activeTab, setActiveTab, status, onLogout, language = "vi" })
   const t = translations[language].sidebar;
 
   return (
-    <aside className="w-72 border-r border-[#F4F1EA] p-8 bg-white flex flex-col shadow-sm">
+    <aside id="sidebar-container" className="w-72 border-r border-[#F4F1EA] p-8 bg-white flex flex-col shadow-sm">
       <div className="flex items-center gap-3 mb-12">
         <div className="bg-[#354F52] p-2.5 rounded-2xl text-white shadow-lg shadow-[#354F52]/20">
           <Shield size={22} />
@@ -16,7 +16,7 @@ const Sidebar = ({ activeTab, setActiveTab, status, onLogout, language = "vi" })
         <h1 className="font-bold text-xl text-[#354F52] font-serif">MindfulBlock</h1>
       </div>
 
-      <nav className="space-y-2 flex-1">
+      <nav id="sidebar-nav" className="space-y-2 flex-1">
         {/* ... (Keep existing buttons) ... */}
         <button
           onClick={() => setActiveTab("dash")}
@@ -53,7 +53,7 @@ const Sidebar = ({ activeTab, setActiveTab, status, onLogout, language = "vi" })
       </nav>
 
       {/* Footer Section */}
-      <div className="mt-auto space-y-4">
+      <div id="sidebar-footer" className="mt-auto space-y-4">
         {/* Logout Button */}
         <button
           onClick={onLogout}

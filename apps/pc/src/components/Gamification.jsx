@@ -16,7 +16,7 @@ const formatCountdown = (expiresAt) => {
 
 const DigitalGarden = ({ trees, t, language }) => {
   return (
-    <div className="bg-white p-6 rounded-2xl border border-[#EBE7DE] shadow-sm mb-6">
+    <div id="gamification-digital-garden" className="bg-white p-6 rounded-2xl border border-[#EBE7DE] shadow-sm mb-6">
       <h3 className="text-xl font-serif font-bold text-[#354F52] mb-4 flex items-center gap-2">
         <span className="text-2xl">🌱</span> {t.garden_title}
       </h3>
@@ -65,7 +65,7 @@ const StreakCalendar = ({ streak, t, language }) => {
   }
   
   return (
-    <div className="bg-white p-6 rounded-2xl border border-[#EBE7DE] shadow-sm mb-6">
+    <div id="gamification-streak-calendar" className="bg-white p-6 rounded-2xl border border-[#EBE7DE] shadow-sm mb-6">
        <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-serif font-bold text-[#354F52] flex items-center gap-2">
                 <span className="text-2xl">🔥</span> {t.streak_title}
@@ -150,7 +150,7 @@ const ActiveBuffs = ({ buffs, t }) => {
     };
 
     return (
-        <div className="bg-white p-6 rounded-2xl border border-[#EBE7DE] shadow-sm mb-6">
+        <div id="gamification-active-buffs" className="bg-white p-6 rounded-2xl border border-[#EBE7DE] shadow-sm mb-6">
             <h3 className="text-lg font-serif font-bold text-[#354F52] mb-4 flex items-center gap-2">
                 <span className="text-xl">⚡</span> {t.buff_active_title}
             </h3>
@@ -217,8 +217,8 @@ const PassSelectionModal = ({ isOpen, type, rules, groups, balance, onConfirm, o
     const canAfford = selectedOption ? balance >= selectedOption.cost : false;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
-            <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+        <div id="gamification-pass-modal-overlay" className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
+            <div id="gamification-pass-modal-content" className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
                 {/* Header */}
                 <div className="flex justify-between items-center mb-4">
                     <h4 className="text-xl font-bold text-[#354F52] flex items-center gap-2">
@@ -299,7 +299,7 @@ const TokenShop = ({ balance, rules, groups, streak, onOpenPassModal, onPurchase
     }).length;
 
     return (
-        <div className="bg-white p-6 rounded-2xl border border-[#EBE7DE] shadow-sm">
+        <div id="gamification-token-shop" className="bg-white p-6 rounded-2xl border border-[#EBE7DE] shadow-sm">
             <div className="flex justify-between items-center mb-6">
                  <h3 className="text-xl font-serif font-bold text-[#354F52] flex items-center gap-2">
                     <span className="text-2xl">🪙</span> {t.shop_title}
@@ -525,7 +525,7 @@ const Gamification = ({ language = 'vi', rules = [], groups = [], user = null })
         const progress = totalDuration > 0 ? ((totalDuration - timeLeft) / totalDuration) * 100 : 0;
 
         return (
-            <div className="bg-white p-6 rounded-2xl border border-[#EBE7DE] shadow-sm mb-6 flex flex-col items-center relative overflow-hidden">
+            <div id="gamification-focus-timer" className="bg-white p-6 rounded-2xl border border-[#EBE7DE] shadow-sm mb-6 flex flex-col items-center relative overflow-hidden">
                 {isFocusing && (
                     <div className="absolute top-0 left-0 h-1 bg-[#52796F] transition-all duration-1000" style={{width: `${progress}%`}}></div>
                 )}
@@ -628,7 +628,7 @@ const Gamification = ({ language = 'vi', rules = [], groups = [], user = null })
     };
 
   return (
-    <div className="animate-fade-in max-w-5xl mx-auto">
+    <div id="gamification-container" className="animate-fade-in max-w-5xl mx-auto">
         <header className="mb-8">
             <h2 className="text-3xl font-serif font-bold text-[#354F52] mb-2">{t.page_title}</h2>
             <p className="text-[#5C6B73]">{t.page_subtitle}</p>

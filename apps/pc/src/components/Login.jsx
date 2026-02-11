@@ -121,7 +121,7 @@ const Login = ({ language = "vi" }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFCF8] p-6 animate-in fade-in duration-700">
+    <div id="login-container" className="min-h-screen flex flex-col items-center justify-center bg-[#FDFCF8] p-6 animate-in fade-in duration-700">
       <div className="flex items-center gap-3 mb-8">
         <div className="bg-[#354F52] p-3 rounded-2xl text-white shadow-xl shadow-[#354F52]/20">
           <Shield size={28} />
@@ -129,11 +129,12 @@ const Login = ({ language = "vi" }) => {
         <h1 className="font-serif font-bold text-3xl text-[#354F52]">MindfulBlock</h1>
       </div>
 
-      <div className="w-full max-w-md bg-white rounded-[40px] shadow-sm border border-slate-100 p-10">
+      <div id="login-form-container" className="w-full max-w-md bg-white rounded-[40px] shadow-sm border border-slate-100 p-10">
         <h2 className="text-2xl font-bold text-[#354F52] mb-2 font-serif">{isSignUp ? t.title_signup : t.title_signin}</h2>
         <p className="text-slate-400 mb-8 text-sm">{isSignUp ? t.subtitle_signup : t.subtitle_signin}</p>
 
         <button
+          id="login-google-btn"
           onClick={handleGoogleLogin}
           disabled={loading}
           className="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 hover:bg-slate-50 text-[#2F3E46] font-bold py-3.5 rounded-2xl transition-all mb-6 active:scale-95 disabled:opacity-50"
@@ -148,7 +149,7 @@ const Login = ({ language = "vi" }) => {
           <div className="flex-grow border-t border-slate-100"></div>
         </div>
 
-        <form onSubmit={handleEmailAuth} className="space-y-4">
+        <form id="login-email-form" onSubmit={handleEmailAuth} className="space-y-4">
           <div className="space-y-4">
             <div className="relative group">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors" size={18} />
