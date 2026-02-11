@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { GamificationService, SHOP_PRICES } from '../services/GamificationService';
+import { GamificationService } from '../services/GamificationService';
+import { SHOP_PRICES, SESSION_REWARDS } from '../../../../shared/schemas/gamification';
 import { useFocus } from '../context/FocusContext';
 import { translations } from "../locales";
 
@@ -398,7 +399,7 @@ const TokenShop = ({ balance, rules, groups, streak, onOpenPassModal, onPurchase
 
 // --- Main Page Component ---
 
-const Gamification = ({ language = 'vi', rules = [], groups = [] }) => {
+const Gamification = ({ language = 'vi', rules = [], groups = [], user = null }) => {
   const t = translations[language].focus;
   const [data, setData] = useState({
       balance: 0,
@@ -413,6 +414,23 @@ const Gamification = ({ language = 'vi', rules = [], groups = [] }) => {
     refreshData();
   }, []);
 
+  // Sync with cloud on login
+  useEffect(() => {
+      if (user?.uid) {
+          // 1. Initial Load from Cloud
+          GamificationService.loadFromCloud(user.uid).then(() => {
+              refreshData();
+          });
+
+          // 2. Subscribe to remote changes (e.g. from mobile app)
+          const unsubscribe = GamificationService.subscribeToCloud(user.uid, () => {
+              refreshData();
+          });
+          
+          return () => unsubscribe();
+      }
+  }, [user]);
+
   const refreshData = () => {
     setData({
         balance: GamificationService.getBalance().balance,
@@ -420,6 +438,14 @@ const Gamification = ({ language = 'vi', rules = [], groups = [] }) => {
         streak: GamificationService.getStreak(),
         activeBuffs: GamificationService.getActiveBuffs(),
     });
+  };
+
+  const saveData = () => {
+      // Helper to save to cloud after local changes
+      if (user?.uid) {
+          GamificationService.saveToCloud(user.uid);
+      }
+      refreshData(); // Updates local state
   };
 
   // Refresh active buffs periodically
@@ -445,7 +471,7 @@ const Gamification = ({ language = 'vi', rules = [], groups = [] }) => {
       }
       if (success) {
           alert(t.purchase_success.replace('{name}', option.label));
-          refreshData();
+          saveData();
       }
       setPassModal({ isOpen: false, type: null });
   };
@@ -462,7 +488,7 @@ const Gamification = ({ language = 'vi', rules = [], groups = [] }) => {
       }
       if (success) {
           alert(t.purchase_success.replace('{name}', name));
-          refreshData();
+          saveData();
       }
   };
 
@@ -580,10 +606,9 @@ const Gamification = ({ language = 'vi', rules = [], groups = [] }) => {
 
     const handleTimerComplete = (duration) => {
         let treeType = 'sprout';
-        let amount = 10;
-        
-        if (duration >= 25) { treeType = 'pine'; amount = 25; }
-        if (duration >= 60) { treeType = 'oak'; amount = 60; }
+        let amount = SESSION_REWARDS.BASE_REWARD;
+        let multiplier = DURATION / 15;
+        amount = Math.ceil(amount * multiplier);
 
         // Check for Focus Boost
         const boosted = GamificationService.consumeFocusBoost();
@@ -594,7 +619,7 @@ const Gamification = ({ language = 'vi', rules = [], groups = [] }) => {
         GamificationService.addTokens(amount, `Focus Session (${duration}m)${boosted ? ' [BOOSTED x2]' : ''}`);
         GamificationService.plantTree(treeType);
         GamificationService.checkin();
-        refreshData();
+        saveData();
         
         const msg = boosted 
             ? `⚡ BOOSTED! ${t.session_complete.replace('{amount}', amount).replace('{treeType}', treeType)}`

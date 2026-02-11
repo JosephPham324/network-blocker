@@ -111,7 +111,7 @@ const App = () => {
                   language={settings.language}
               />
               )}
-              {activeTab === "gamification" && <Gamification language={settings.language} rules={rules} groups={groups} />}
+              {activeTab === "gamification" && <Gamification language={settings.language} rules={rules} groups={groups} user={user} />}
               {activeTab === "settings" && <Settings settings={settings} toggleBlocking={toggleBlocking} toggleCleanOnExit={toggleCleanOnExit} setLanguage={setLanguage} toggleAutoStart={toggleAutoStart} />}
           </main>
         </div>

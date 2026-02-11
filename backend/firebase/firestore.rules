@@ -1,13 +1,23 @@
 rules_version = '2';
 service cloud.firestore {
     match /databases/{database}/documents {
-        // Quy tắc bảo mật theo đúng cấu trúc artifact
+        // Generic Artifacts Rule
         match /artifacts/{appId}/users/{userId}/{collectionName}/{docId} {
-        // Chỉ chủ sở hữu UID mới có quyền đọc và ghi
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+            allow read, create: if request.auth != null && request.auth.uid == userId;
+            // Update: Enforce version check ONLY if 'v' exists in resource
+            allow update: if request.auth != null && request.auth.uid == userId && 
+                          (!('v' in resource.data) || request.resource.data.v >= resource.data.v);
+            allow delete: if request.auth != null && request.auth.uid == userId;
+        }
 
-        // Ràng buộc dữ liệu: Version tag (v) phải luôn tăng khi update
-        allow update: if request.resource.data.v >= resource.data.v;
+        // Explicitly allow Stats (no version check needed, just auth)
+        // Note: The above rule might catch it, but this ensures it's allowed.
+        // Actually, since the above rule uses {collectionName}, it covers 'stats'. 
+        // We modified the update condition above to be safe if 'v' is missing.
+
+        // Gamification Data Rule
+        match /users/{userId}/gamification/{docId} {
+            allow read, write: if request.auth != null && request.auth.uid == userId;
         }
     }
 }

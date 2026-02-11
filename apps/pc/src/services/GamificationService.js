@@ -1,19 +1,6 @@
-
-const STORAGE_KEYS = {
-  FOCUS_SESSIONS: "gamification_sessions",
-  CURRENCY: "gamification_currency",
-  INVENTORY: "gamification_inventory",
-  STREAK: "gamification_streak",
-  BUFFS: "gamification_buffs",
-};
-
-// --- Pricing ---
-export const SHOP_PRICES = {
-  SITE_PASS_10M: 50,       // 10 min pass for 1 site
-  GROUP_PASS_PER_SITE: 40,  // 10 min pass per site in group (discounted)
-  STREAK_FREEZE: 100,       // Protect streak for 1 missed day
-  FOCUS_BOOST: 30,          // 2x tokens on next focus session
-};
+import { db } from "./firebase";
+import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
+import { STORAGE_KEYS, SHOP_PRICES } from "../../../../shared/schemas/gamification";
 
 export const GamificationService = {
   // --- Initialize ---
@@ -39,6 +26,62 @@ export const GamificationService = {
     if (!localStorage.getItem(STORAGE_KEYS.BUFFS)) {
       localStorage.setItem(STORAGE_KEYS.BUFFS, JSON.stringify([]));
     }
+  },
+
+  // --- Cloud Sync ---
+  saveToCloud: async (userId) => {
+    if (!userId || !db) return;
+    const data = {
+      currency: JSON.parse(localStorage.getItem(STORAGE_KEYS.CURRENCY)),
+      inventory: JSON.parse(localStorage.getItem(STORAGE_KEYS.INVENTORY)),
+      streak: JSON.parse(localStorage.getItem(STORAGE_KEYS.STREAK)),
+      buffs: JSON.parse(localStorage.getItem(STORAGE_KEYS.BUFFS)),
+      lastUpdated: new Date().toISOString(),
+    };
+    try {
+      await setDoc(doc(db, "users", userId, "gamification", "data"), data);
+      console.log("Gamification data saved to cloud");
+    } catch (e) {
+      console.error("Failed to save gamification data", e);
+    }
+  },
+
+  loadFromCloud: async (userId) => {
+    if (!userId || !db) return;
+    try {
+      const docRef = doc(db, "users", userId, "gamification", "data");
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (data.currency) localStorage.setItem(STORAGE_KEYS.CURRENCY, JSON.stringify(data.currency));
+        if (data.inventory) localStorage.setItem(STORAGE_KEYS.INVENTORY, JSON.stringify(data.inventory));
+        if (data.streak) localStorage.setItem(STORAGE_KEYS.STREAK, JSON.stringify(data.streak));
+        if (data.buffs) localStorage.setItem(STORAGE_KEYS.BUFFS, JSON.stringify(data.buffs));
+        console.log("Gamification data loaded from cloud");
+        return true; // Data loaded
+      }
+    } catch (e) {
+      console.error("Failed to load gamification data", e);
+    }
+    return false;
+  },
+
+  subscribeToCloud: (userId, onUpdate) => {
+    if (!userId || !db) return () => {};
+    const docRef = doc(db, "users", userId, "gamification", "data");
+    const unsubscribe = onSnapshot(docRef, (doc) => {
+      if (doc.exists()) {
+        const data = doc.data();
+        // Only update local if remote is newer? 
+        // For now, simpler: just update local and notify component to re-render
+        if (data.currency) localStorage.setItem(STORAGE_KEYS.CURRENCY, JSON.stringify(data.currency));
+        if (data.inventory) localStorage.setItem(STORAGE_KEYS.INVENTORY, JSON.stringify(data.inventory));
+        if (data.streak) localStorage.setItem(STORAGE_KEYS.STREAK, JSON.stringify(data.streak));
+        if (data.buffs) localStorage.setItem(STORAGE_KEYS.BUFFS, JSON.stringify(data.buffs));
+        if (onUpdate) onUpdate();
+      }
+    });
+    return unsubscribe;
   },
 
   // --- Currency ---

@@ -246,7 +246,7 @@ export const translations = {
       info_point1: "• Choose your focus duration (15-60 minutes)",
       info_point2: "• Complete sessions to earn tokens and plant trees",
       info_point3: "• Focus daily to build your streak",
-      info_point4: "• Token rewards: 15m = 10🪙, 25m = 25🪙, 60m = 60🪙",
+      info_point4: "• Token rewards: 1 🪙 every 10 minutes",
       info_close: "Close",
     },
     dashboard: {
