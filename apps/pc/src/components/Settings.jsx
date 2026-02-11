@@ -4,14 +4,23 @@ import FrictionModal from "./FrictionModal";
 import { useState } from "react";
 import { translations } from "../locales";
 
+import { useFocus } from "../context/FocusContext";
+
 const Settings = ({ settings, toggleBlocking, toggleCleanOnExit, setLanguage, toggleAutoStart }) => {
   const t = translations[settings.language].settings;
   const [showFriction, setShowFriction] = useState(false);
+  const [showFocusWarning, setShowFocusWarning] = useState(false);
+  const { isFocusing } = useFocus();
 
   const handleToggleClick = () => {
     if (settings.blockingEnabled) {
-      // Trying to disable -> Show Friction
-      setShowFriction(true);
+      if (isFocusing) {
+          // Blocking is ON and Focus is ACTIVE -> Prevent disabling
+          setShowFocusWarning(true);
+      } else {
+          // Trying to disable -> Show Friction
+          setShowFriction(true);
+      }
     } else {
       // Trying to enable -> Go ahead
       toggleBlocking();
@@ -116,6 +125,7 @@ const Settings = ({ settings, toggleBlocking, toggleCleanOnExit, setLanguage, to
         </div>
       </div>
       
+      {/* Friction Modal */}
       <FrictionModal
         isOpen={showFriction}
         onClose={() => setShowFriction(false)}
@@ -126,6 +136,27 @@ const Settings = ({ settings, toggleBlocking, toggleCleanOnExit, setLanguage, to
         actionType="disable"
         language={settings.language}
       />
+
+      {/* Focus Warning Modal */}
+      {showFocusWarning && (
+        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-[32px] p-8 max-w-md w-full shadow-2xl scale-100 animate-in zoom-in-95 duration-200 text-center">
+                <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center text-red-500 mb-4 mx-auto">
+                    <ShieldAlert size={32} />
+                </div>
+                <h3 className="text-2xl font-bold text-[#354F52] font-serif mb-2">{t.focus_warning_title}</h3>
+                <p className="text-slate-500 font-medium mb-6">
+                    {t.focus_warning_msg}
+                </p>
+                <button
+                    onClick={() => setShowFocusWarning(false)}
+                    className="w-full py-3 rounded-2xl font-bold text-white bg-[#354F52] hover:bg-[#2F3E46] transition-all"
+                >
+                    OK
+                </button>
+            </div>
+        </div>
+      )}
     </div>
   );
 };

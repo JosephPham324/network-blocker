@@ -120,6 +120,8 @@ export const translations = {
       friction_modal_title: "Tắt chặn toàn bộ?",
       friction_modal_msg: "Hành động này sẽ vô hiệu hóa tất cả các quy tắc chặn. Bạn sẽ có thể truy cập các trang web gây xao nhãng.",
       friction_confirm: "I confirm disable all blocking",
+      focus_warning_title: "Đang trong Chế độ Tập trung",
+      focus_warning_msg: "Bạn không thể tắt chặn khi đồng hồ tập trung đang chạy. Hãy hoàn thành phiên hoặc bỏ cuộc trước.",
     },
     system: {
       status_initializing: "Đang khởi tạo...",
@@ -299,6 +301,8 @@ export const translations = {
       friction_modal_title: "Disable all blocking?",
       friction_modal_msg: "This will disable all blocking rules. You will be able to access distracting websites.",
       friction_confirm: "I confirm disable all blocking",
+      focus_warning_title: "Focus Mode Active",
+      focus_warning_msg: "You cannot disable blocking while a focus session is running. Please complete the session or give up first.",
     },
     system: {
       status_initializing: "Initializing...",
