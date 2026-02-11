@@ -98,12 +98,34 @@ document.addEventListener('DOMContentLoaded', () => {
     function startMath() {
         mathBox.style.display = 'block';
         
-        // Generate Math Challenge
-        const num1 = Math.floor(Math.random() * 20) + 10; 
-        const num2 = Math.floor(Math.random() * 10) + 2;
-        const correctAnswer = num1 * num2;
+        document.getElementById('page-icon').textContent = "🧠";
         
-        document.getElementById('equation').textContent = `${num1} × ${num2} = ?`;
+        // Generate Harder Math Challenge (2 digits * 2 digits)
+        const num1 = Math.floor(Math.random() * 89) + 11; // 11 to 99
+
+        const modeDifficulty = Math.random();
+        
+        let question = "";
+        let correctAnswer = 0;
+
+        if (modeDifficulty > 0.5) {
+             // 2-digit x 1-digit (High range) + addition
+             // e.g. 87 * 7 + 15
+             const a = Math.floor(Math.random() * 80) + 15;
+             const b = Math.floor(Math.random() * 7) + 3;
+             const c = Math.floor(Math.random() * 50) + 10;
+             question = `${a} × ${b} + ${c} = ?`;
+             correctAnswer = a * b + c;
+        } else {
+            // Pure Multiplication
+            // e.g. 14 * 13
+            const a = Math.floor(Math.random() * 15) + 11; 
+            const b = Math.floor(Math.random() * 10) + 11;
+            question = `${a} × ${b} = ?`;
+            correctAnswer = a * b;
+        }
+        
+        document.getElementById('equation').textContent = question;
         const answerInput = document.getElementById('answer');
         const errorMsg = document.getElementById('math-error');
 
@@ -113,6 +135,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 errorMsg.style.display = 'block';
                 answerInput.value = '';
                 answerInput.focus();
+                // Shake effect is handled by CSS animation reset?
+                errorMsg.style.animation = 'none';
+                errorMsg.offsetHeight; /* trigger reflow */
+                errorMsg.style.animation = 'shake 0.3s ease-in-out';
             }
         };
         
@@ -124,6 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startWait() {
         waitBox.style.display = 'block';
+        document.getElementById('page-icon').textContent = "⏳";
         submitBtn.disabled = true;
         submitBtn.style.opacity = "0.5";
         submitBtn.style.cursor = "not-allowed";
@@ -156,6 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startTyping() {
         typingBox.style.display = 'block';
+        document.getElementById('page-icon').textContent = "⌨️";
         
         const phrases = {
             vi: "Tôi chọn sự xao nhãng thay vì mục tiêu của mình",
@@ -172,6 +200,9 @@ document.addEventListener('DOMContentLoaded', () => {
                  unlock();
              } else {
                  errorMsg.style.display = 'block';
+                 errorMsg.style.animation = 'none';
+                 errorMsg.offsetHeight; /* trigger reflow */
+                 errorMsg.style.animation = 'shake 0.3s ease-in-out';
                  input.value = '';
                  input.focus();
              }

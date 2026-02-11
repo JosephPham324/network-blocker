@@ -3,115 +3,273 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mindful Block - Access Restricted</title>
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Lora:ital,wght@0,400;0,600;1,400&display=swap"
+        rel="stylesheet">
+
     <style>
+        :root {
+            --bg-color: #FDFCF8;
+            --surface-color: #F4F1EA;
+            --primary-color: #354F52;
+            --secondary-color: #52796F;
+            --accent-color: #E29578;
+            --text-main: #2F3E46;
+            --text-light: #5C6B73;
+            --surface-highlight: #EBE7DE;
+            --danger-color: #ef4444;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #fdfcf8;
-            color: #2f3e46;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100vh;
             margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .container {
             background: white;
-            padding: 40px;
-            border-radius: 24px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            padding: 48px;
+            border-radius: 32px;
+            box-shadow: 0 10px 40px rgba(53, 79, 82, 0.08);
             text-align: center;
-            max-width: 400px;
+            max-width: 480px;
             width: 100%;
+            border: 1px solid var(--surface-highlight);
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .icon-large {
+            font-size: 48px;
+            margin-bottom: 24px;
+            display: inline-block;
         }
 
         h1 {
-            color: #354f52;
-            margin-bottom: 10px;
+            font-family: 'Lora', serif;
+            color: var(--primary-color);
+            margin: 0 0 12px 0;
+            font-size: 28px;
+            font-weight: 700;
         }
 
         p {
-            color: #84a59d;
-            margin-bottom: 30px;
+            color: var(--text-light);
+            margin: 0 0 32px 0;
+            line-height: 1.6;
+            font-size: 16px;
         }
 
         .challenge-box {
-            background: #f1f5f9;
-            padding: 20px;
-            border-radius: 16px;
-            margin-bottom: 20px;
+            background: var(--surface-color);
+            padding: 32px;
+            border-radius: 24px;
+            margin-bottom: 24px;
+            border: 2px dashed rgba(53, 79, 82, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .challenge-box:focus-within {
+            border-color: var(--secondary-color);
+            background: white;
+            box-shadow: 0 4px 12px rgba(82, 121, 111, 0.1);
+        }
+
+        .challenge-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 16px;
+        }
+
+        .equation {
+            font-family: 'Lora', serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 24px;
         }
 
         input {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            margin-top: 10px;
-            font-size: 16px;
+            padding: 16px;
+            border: 2px solid var(--surface-highlight);
+            border-radius: 16px;
+            font-size: 18px;
             text-align: center;
             outline: none;
             box-sizing: border-box;
-            /* Fix padding issue */
+            background: white;
+            transition: all 0.2s;
+            color: var(--primary-color);
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
         }
 
         input:focus {
-            border-color: #52796f;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 4px rgba(82, 121, 111, 0.1);
+        }
+
+        input::placeholder {
+            color: #bdc3c7;
+            font-weight: 400;
         }
 
         button {
-            background: #52796f;
+            background: var(--secondary-color);
             color: white;
             border: none;
-            padding: 14px 24px;
-            border-radius: 12px;
+            padding: 18px 32px;
+            border-radius: 50px;
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
             width: 100%;
-            transition: background 0.2s;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(82, 121, 111, 0.2);
+            font-family: 'Inter', sans-serif;
         }
 
         button:hover {
-            background: #354f52;
+            background: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(53, 79, 82, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         .error {
-            color: #ef4444;
+            color: var(--danger-color);
             font-size: 14px;
-            margin-top: 8px;
+            margin-top: 12px;
             display: none;
+            font-weight: 500;
+            animation: shake 0.3s ease-in-out;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-4px);
+            }
+
+            75% {
+                transform: translateX(4px);
+            }
+        }
+
+        /* Wait Challenge Specifics */
+        .progress-container {
+            width: 100%;
+            background: var(--surface-highlight);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 24px;
+        }
+
+        .progress-bar {
+            background: var(--accent-color);
+            height: 100%;
+            width: 100%;
+            transition: width 1s linear;
+        }
+
+        #timer {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--accent-color);
+            font-family: 'Lora', serif;
+        }
+
+        /* Typing Challenge Specifics */
+        .typing-prompt-box {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid var(--surface-highlight);
+        }
+
+        code {
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 15px;
+            color: var(--primary-color);
+            line-height: 1.5;
         }
     </style>
 </head>
 
 <body>
     <div class="container">
+        <div class="icon-large" id="page-icon">🛡️</div>
         <h1 id="page-title">Mindful Pause</h1>
         <p id="page-subtitle">This site is on your block list.</p>
 
+        <!-- Math Challenge -->
         <div id="math-challenge" class="challenge-box" style="display: none;">
-            <div id="math-title" style="font-size: 14px; margin-bottom: 5px; font-weight: 600;">Math Challenge</div>
-            <div id="equation" style="font-size: 24px; font-weight: bold; color: #354f52;"></div>
+            <div class="challenge-title" id="math-title">Math Challenge</div>
+            <div class="text-5xl mb-4" style="font-size: 40px;">🧠</div>
+            <div id="equation" class="equation"></div>
             <input type="number" id="answer" placeholder="Result?" />
             <div id="math-error" class="error">Incorrect, try again.</div>
         </div>
 
+        <!-- Wait Challenge -->
         <div id="wait-challenge" class="challenge-box" style="display: none;">
-            <div id="wait-title" style="font-size: 14px; margin-bottom: 5px; font-weight: 600;">Mindful Pause</div>
-            <div id="timer" style="font-size: 48px; font-weight: bold; color: #354f52; margin: 20px 0;">15</div>
-            <div style="width: 100%; background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden;">
-                <div id="progress" style="width: 100%; background: #52796f; height: 100%; transition: width 1s linear;">
-                </div>
+            <div class="challenge-title" id="wait-title">Mindful Pause</div>
+            <div class="text-5xl mb-4 animate-pulse" style="font-size: 40px;">⏳</div>
+            <div id="timer">15</div>
+            <div class="progress-container">
+                <div id="progress" class="progress-bar"></div>
             </div>
-            <p id="wait-desc" style="font-size: 12px; margin-top: 10px; margin-bottom: 0;">Take a deep breath...</p>
+            <p id="wait-desc" style="font-size: 14px; margin-top: 16px;">Take a deep breath...</p>
         </div>
 
+        <!-- Typing Challenge -->
         <div id="typing-challenge" class="challenge-box" style="display: none;">
-            <div id="typing-title" style="font-size: 14px; margin-bottom: 5px; font-weight: 600;">Intention Check</div>
-            <div style="background: #e2e8f0; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
-                <code id="typing-prompt" style="font-size: 14px; color: #354f52; word-break: break-all;"></code>
+            <div class="challenge-title" id="typing-title">Intention Check</div>
+            <div class="text-5xl mb-4" style="font-size: 40px;">⌨️</div>
+            <div class="typing-prompt-box">
+                <code id="typing-prompt"></code>
             </div>
             <input type="text" id="typing-input" placeholder="Type the phrase above" autocomplete="off"
                 onpaste="return false;" />
