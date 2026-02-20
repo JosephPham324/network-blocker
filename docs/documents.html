@@ -368,67 +368,40 @@
                     <span
                         class="bg-accent text-white w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg shadow-accent/30">01</span>
                     <div>
-                        <h2 class="text-2xl font-extrabold text-primary">Luồng Thực thi Lực cản (Friction Flow)</h2>
-                        <p class="text-sm text-textLight">Mô tả cách hệ thống đánh chặn và tương tác với ý chí người
-                            dùng.</p>
+                        <h2 class="text-2xl font-extrabold text-primary">Biểu đồ Use Case Tổng quát</h2>
+                        <p class="text-sm text-textLight">Tổng quan tính năng hiện tại và lộ trình phát triển.</p>
                     </div>
+                </div>
+
+                <!-- PlantUML Container -->
+                <div class="flex justify-center mb-10">
+                    <img id="plantuml-image" src="" alt="Loading Use Case Diagram..."
+                        class="max-w-full h-auto rounded-xl shadow-md border border-surfaceHighlight">
                 </div>
 
                 <div class="relative ml-6 border-l-2 border-surfaceHighlight pl-10 space-y-12 py-4">
                     <div class="use-case-step relative">
-                        <h4 class="font-bold text-textMain text-lg">B1: Đánh chặn DNS/HTTP</h4>
-                        <p class="text-sm text-textLight">Hệ thống bắt gói tin yêu cầu đến domain bị chặn. Thay vì drop
-                            gói tin, nó trả về IP Local `127.0.0.1` (trên Desktop) hoặc mở WebView nội bộ (trên Mobile).
-                        </p>
+                        <h4 class="font-bold text-textMain text-lg">Hệ thống Lực cản (Friction)</h4>
+                        <p class="text-sm text-textLight">Cốt lõi của ứng dụng. Thay vì chặn cứng, hệ thống đưa ra các
+                            thử thách (Toán, Gõ phím) để người dùng cân nhắc lại quyết định truy cập.</p>
                     </div>
                     <div class="use-case-step relative">
-                        <h4 class="font-bold text-textMain text-lg">B2: Kích hoạt Giao diện Thử thách</h4>
-                        <p class="text-sm text-textLight">Trình duyệt hiển thị trang `friction.html`. Người dùng không
-                            thể tắt trang này nếu chưa hoàn thành hoặc đóng trình duyệt.</p>
+                        <h4 class="font-bold text-textMain text-lg">Gamification & Phần thưởng</h4>
+                        <p class="text-sm text-textLight">Cơ chế thưởng Token khi tập trung, dùng để mua vật phẩm trong
+                            Shop hoặc chăm sóc "Khu vườn số" (Digital Garden).</p>
                     </div>
                     <div class="use-case-step relative">
-                        <h4 class="font-bold text-textMain text-lg">B3: Xử lý Thử thách & Ý định</h4>
-                        <p class="text-sm text-textLight">Người dùng giải 1 bài toán hoặc đợi 15 giây. Sau đó, họ phải
-                            nhập lý do.</p>
-                    </div>
-                    <div class="use-case-step relative bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100">
-                        <h4 class="font-bold text-emerald-800 text-lg">B4: Cấp quyền Tạm thời (Grace Period)</h4>
-                        <p class="text-sm text-emerald-700">App cập nhật bảng định tuyến tạm thời trong bộ nhớ RAM, cho
-                            phép domain đó hoạt động trong 10-15 phút.</p>
-                    </div>
-                </div>
-
-                <div class="mt-12">
-                    <div class="flex items-center gap-4 mb-10">
-                        <span
-                            class="bg-red-500 text-white w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg shadow-red-500/30">02</span>
-                        <div>
-                            <h2 class="text-2xl font-extrabold text-primary">Administrative Safeguards</h2>
-                            <p class="text-sm text-textLight">Bảo vệ cấu hình khỏi việc thay đổi bốc đồng.</p>
-                        </div>
-                    </div>
-
-                    <div class="relative ml-6 border-l-2 border-surfaceHighlight pl-10 space-y-12 py-4">
-                        <div class="use-case-step relative">
-                            <h4 class="font-bold text-textMain text-lg">B1: Yêu cầu Thay đổi Nhạy cảm</h4>
-                            <p class="text-sm text-textLight">Người dùng cố gắng xóa Ruleset hoặc Tắt ứng dụng.</p>
-                        </div>
-                        <div class="use-case-step relative">
-                            <h4 class="font-bold text-textMain text-lg">B2: Modal Xác nhận "Friction"</h4>
-                            <p class="text-sm text-textLight">Hệ thống hiện Modal yêu cầu gõ lại chính xác một câu cam
-                                kết (VD: "Tôi đang làm điều này có chủ đích").</p>
-                        </div>
-                        <div class="use-case-step relative">
-                            <h4 class="font-bold text-textMain text-lg">B3: Chống Copy/Paste</h4>
-                            <p class="text-sm text-textLight">Ô nhập liệu chặn sự kiện Paste, buộc người dùng phải gõ
-                                từng ký tự để tăng thời gian suy nghĩ.</p>
-                        </div>
+                        <h4 class="font-bold text-textMain text-lg">Đồng bộ & Quản lý</h4>
+                        <p class="text-sm text-textLight">Cấu hình được đồng bộ qua Cloud (Firebase), đảm bảo nhất quán
+                            giữa PC và Extension.</p>
                     </div>
                 </div>
             </section>
         </div>
     </div>
 
+    <!-- PlantUML Encoder -->
+    <script src="https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/dist/plantuml-encoder.min.js"></script>
     <script>
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -438,7 +411,121 @@
             document.getElementById(`btn-${tabId}`).classList.add('active-tab-btn');
         }
 
+        // Feature: PlantUML Rendering
+        const plantUmlSource = `
+@startuml
+!option handwritten true
+
+skinparam backgroundColor transparent
+skinparam packageStyle rectangle
+
+skinparam usecase {
+    BackgroundColor #F4F1EA
+    BorderColor #354F52
+    ArrowColor #52796F
+    FontName "Inter"
+}
+
+skinparam actor {
+    BackgroundColor #E29578
+    BorderColor #354F52
+}
+
+skinparam note {
+    BackgroundColor #FEF3C7
+    BorderColor #D97706
+}
+
+left to right direction
+
+actor "Người dùng (User)" as User
+' actor "Quản trị viên (Admin)" as Admin
+
+package "MindfulBlock ecosystem"{
+
+package "MindfulBlock Core" {
+    usecase "Chặn Website (Block)" as UC_Block
+    usecase "Vượt qua Lực cản (Friction)" as UC_Friction
+    usecase "Nhập Lý do (Intent)" as UC_Intent
+    usecase "Quyền truy cập tạm thời (Grace Period)" as UC_Grace
+}
+
+package "Gamification System" {
+    usecase "Tích lũy Token (Focus Time)" as UC_Earn
+    usecase "Mua vật phẩm (Shop)" as UC_Shop
+    usecase "Chăm sóc Digital Garden" as UC_Garden
+    usecase "Dùng Freeze/Pass" as UC_Items
+}
+
+package "Configuration & Sync" {
+    usecase "Quản lý Blacklist (Import/Export)" as UC_Config
+    usecase "Đồng bộ Đám mây (Cloud Sync)" as UC_Sync
+    usecase "Cấu hình Mức độ khó" as UC_Diff
+}
+
+package "Future Roadmap" {
+    usecase "AI Phát hiện Xao nhãng" as UC_AI
+    usecase "Thách thức Nhóm (Social)" as UC_Social
+    usecase "Mobile VPN System" as UC_Mobile
+}
+
+User --> UC_Block
+UC_Block .> UC_Friction : include
+UC_Friction .> UC_Intent : include
+UC_Intent --> UC_Grace : thành công
+
+User --> UC_Earn
+User --> UC_Shop
+User --> UC_Garden
+User --> UC_Items
+
+User --> UC_Config
+User --> UC_Sync
+User --> UC_Diff
+
+User ..> UC_AI
+User ..> UC_Social
+User ..> UC_Mobile
+
+note right of UC_Friction
+  Gồm: Toán, Gõ phím,
+  Chờ đợi (Delay)
+end note
+
+note bottom of UC_Garden
+  Hiển thị trực quan
+  sự tiến bộ
+end note
+}
+
+@enduml
+`;
+
+        function renderPlantUml() {
+            try {
+                // Check if the library is loaded
+                if (window.plantumlEncoder) {
+                    const encoded = window.plantumlEncoder.encode(plantUmlSource);
+                    const url = `https://www.plantuml.com/plantuml/svg/${encoded}`;
+                    const img = document.getElementById('plantuml-image');
+                    if (img) img.src = url;
+                } else {
+                    console.warn('PlantUML Encoder library not loaded yet.');
+                    // Retry once after a short delay if needed, or rely on script order (it is blocking usually)
+                    setTimeout(() => {
+                        if (window.plantumlEncoder) {
+                            const encoded = window.plantumlEncoder.encode(plantUmlSource);
+                            document.getElementById('plantuml-image').src = `https://www.plantuml.com/plantuml/svg/${encoded}`;
+                        }
+                    }, 500);
+                }
+            } catch (e) {
+                console.error('Failed to render PlantUML:', e);
+            }
+        }
+
         window.onload = function () {
+            // Existing Chart
             const ctx = document.getElementById('priorityChart').getContext('2d');
             new Chart(ctx, {
                 type: 'radar',
@@ -466,6 +553,9 @@
                     maintainAspectRatio: false
                 }
             });
+
+            // Render PlantUML
+            renderPlantUml();
         };
     </script>
 </body>
