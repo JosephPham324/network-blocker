@@ -55,9 +55,26 @@
     -   Error handling for command invocations
 
 ### Mobile Application (`apps/mobile`)
--   **Status**: 🚧 **In Development / Roadmap**
--   **Planned Stack**: Flutter
--   **Directory**: Structure initialized (`lib`, `android`).
+-   **Status**: ✅ **Active Development**
+-   **Framework**: React Native via [Expo](https://expo.dev/) (SDK 54)
+-   **Navigation**: Expo Router v6 (file-based, similar to Next.js)
+-   **Language**: TypeScript
+-   **Key Libraries**:
+    -   `firebase` — Firestore + Auth with `AsyncStorage` persistence
+    -   `expo-auth-session` — Google OAuth (with auth.expo.io proxy for Expo Go)
+    -   `lucide-react-native` — Icons
+    -   `@react-navigation/bottom-tabs` — Tab navigation
+-   **Screens** (under `app/`):
+    -   `login.tsx` — Email/Password + Google Sign-In
+    -   `(tabs)/index.tsx` — Dashboard with live stats from Firestore
+    -   `(tabs)/blocklist.tsx` — Real-time rule list with toggle switches
+    -   `(tabs)/gamification.tsx` — Focus timer (Pomodoro), digital garden, token shop
+    -   `(tabs)/settings.tsx` — Preferences, master block toggle, logout
+-   **Auth**: `context/AuthContext.tsx` wraps the app with Firebase `onAuthStateChanged`
+-   **Data Hooks**: `hooks/useBlockRules.ts`, `hooks/useAnalytics.ts` — adapted from PC app's hooks, Tauri/Rust calls removed
+-   **Metro Config**: Custom `metro.config.js` to handle pnpm monorepo symlinks and Firebase CJS bundles
+-   **Run Dev**: `cd apps/mobile && npx expo start -c` (Expo Go)
+-   **Native Build**: `npx expo run:android` (required for Google Sign-In on real device)
 
 ### Browser Extension (`apps/extension`)
 -   **Manifest**: Version 3

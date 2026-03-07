@@ -2,48 +2,48 @@
 
 **English** | [Tiếng Việt](README_vi.md)
 
-Mindful Block is a desktop application designed to help users maintain focus by blocking distracting websites. It works by modifying the system's `hosts` file to redirect specified domains to localhost, effectively preventing access.
+Mindful Block is a **cross-platform digital focus ecosystem** — a combination of a Windows desktop app, an Android mobile app, and a browser extension — that helps users eliminate distractions by blocking websites, tracking focus sessions, and building positive habits through gamification.
+
+---
 
 ## Features
 
 ### Core Functionality
 
 - **Blocking Modes**:
-  - **Hard Block**: Traditional hosts-based blocking. No access allowed.
-  - **Friction Block**: Requires completing a challenge to access content. Types:
-    - **Math Challenge**: Solve a multiplication problem.
-    - **Wait**: Pause for 15 seconds.
-    - **Typing**: Type a specific confirmation phrase (e.g., "I choose to be distracted").
-- **Hosts File Management**: Automatically handles reading, writing, and backing up the hosts file. Requires Administrator privileges.
-- **DNS Flushing**: Automatically flushes the DNS cache on Windows to ensure blocking rules take effect immediately.
-- **System Tray Support**: Minimize the application to the system tray to keep focus sessions active in the background. Features a context menu for quick access or full exit.
-- **Browser Extension**: Essential for "Friction Mode". Intercepts navigation to blocked sites and displays the challenge interface.
+  - **Hard Block**: Hosts-file-based blocking. No access allowed.
+  - **Friction Block**: Requires completing a challenge before access. Types: Math, Wait, Typing.
+- **Hosts File Management**: Automatically reads, writes, and backs up the Windows hosts file. Requires Administrator privileges.
+- **DNS Flushing**: Automatically flushes the DNS cache to apply rules immediately.
+- **System Tray**: Minimize to tray to keep sessions active in the background.
+- **Browser Extension**: Intercepts navigation to blocked sites and displays friction challenges.
 
 ### Rule Management
 
-- **Add/Remove Rules**: easily add domains to your block list.
-- **Groups**: Organize blocking rules into custom groups.
-- **Batch Operations**: Select multiple rules to toggle, delete, or move them to groups in bulk.
-- **Import Rules**: Import blocking rules from external sources (CSV support).
-- **Cloud Sync**: Syncs your blocking rules and groups across devices using Firebase Authentication (Google Login).
+- **Add/Remove Rules**: Easily add domains to your block list.
+- **Groups**: Organize rules into custom groups.
+- **Batch Operations**: Toggle, delete, or move multiple rules at once.
+- **Import CSV**: Bulk import rules from a CSV file.
+- **Cloud Sync**: Rules and settings sync across devices via Firebase Firestore.
 
 ### Gamification & Progress Tracking
 
-- **Streak System**: Track consecutive days of successful focus sessions. Purchase **Streak Freezes** to protect your progress.
-- **Token Shop**: Earn tokens through focus sessions and spend them on:
-  - **Site Passes**: Temporary 10-minute unblock for a specific domain.
-  - **Group Passes**: Temporary 10-minute unblock for an entire group.
-  - **Focus Boosts**: Double your token earnings for the next session.
-- **Digital Garden**: Visual representation of your progress and growth over time.
-- **Calendar View**: Interactive calendar showing your active days and patterns.
-- **Statistics Dashboard**: View insights about your blocking effectiveness and usage patterns.
+- **Streak System**: Track consecutive focus days. Buy Streak Freezes to protect your streak.
+- **Token Shop**:
+  - **Site Pass**: Temporary 10-minute unblock for a domain.
+  - **Group Pass**: Temporary 10-minute unblock for a group.
+  - **Focus Boost**: Double token earnings for the next session.
+- **Digital Garden**: Visual representation of your growth over time.
+- **Calendar View**: Interactive calendar showing your active days.
+- **Statistics Dashboard**: Insights about blocking effectiveness.
 
 ### Settings & Configuration
 
-- **Global Toggle**: Quickly enable or disable all blocking rules with a single switch.
-- **Clean on Exit**: Option to automatically remove all blocking entries from the hosts file when the application is closed.
-- **Settings Persistence**: All configuration preferences are saved locally and synced to the cloud.
-- **Customizable Friction Challenges**: Configure which types of challenges (Math, Wait, Typing) are used for friction mode.
+- **Global Toggle**: Enable/disable all blocking with one switch.
+- **Clean on Exit**: Remove all blocking entries when the app closes.
+- **Settings Persistence**: Preferences saved locally and synced to the cloud.
+
+---
 
 ## Documentation
 
@@ -52,63 +52,110 @@ Mindful Block is a desktop application designed to help users maintain focus by 
 - [Tech Stack Blueprint](https://josephpham324.github.io/network-blocker/tech_stack_blueprint.html)
 - [Tech Context](docs/tech-context.md)
 
+---
+
 ## Technology Stack
 
-### Frontend (Desktop App)
+### 🖥️ Desktop App (`apps/pc`)
 
-- **Framework**: [React](https://react.dev/)
-- **Build Tool**: [Vite](https://vitejs.dev/)
-- **Styling**: [TailwindCSS](https://tailwindcss.com/)
-- **Icons**: [Lucide React](https://lucide.dev/)
+| Layer | Technology |
+|---|---|
+| Framework | React 18 + Vite |
+| Styling | TailwindCSS |
+| Icons | Lucide React |
+| System | Tauri v2 (Rust) |
+| Auth | Firebase (Google OAuth) |
+| Sync | Firebase Firestore |
 
-### Backend (System Integration)
+### 📱 Android App (`apps/mobile`)
 
-- **Framework**: [Tauri v2](https://tauri.app/) (Rust)
-- **Plugins**:
-  - `tauri-plugin-shell`: For running system commands (e.g., `ipconfig`).
-  - `tauri-plugin-autostart`: For launching the app on system startup.
-  - `tauri-plugin-oauth`: For handling OAuth flows.
-  - `is_elevated`: To check for necessary admin rights.
+| Layer | Technology |
+|---|---|
+| Framework | React Native (Expo SDK 54) |
+| Navigation | Expo Router (file-based) |
+| Auth | Firebase Auth + Google Sign-In (`expo-auth-session`) |
+| Sync | Firebase Firestore |
+| Icons | Lucide React Native |
 
-### Cloud & Auth
+### 🔌 Browser Extension (`apps/extension`)
 
-- **Firebase**: Authentication and Firestore for data persistence and syncing.
+| Layer | Technology |
+|---|---|
+| Manifest | v3 |
+| Stack | Vanilla JS, HTML, CSS |
+| Sync | Polls local Tauri server at `http://127.0.0.1:17430/rules` |
+
+### ☁️ Cloud & Backend
+
+| Service | Technology |
+|---|---|
+| Auth | Firebase Authentication |
+| Database | Cloud Firestore |
+| Functions | Firebase Functions (TypeScript) |
+
+---
 
 ## Project Structure
 
-This project is a monorepo managed with **pnpm**:
+```
+network-blocker/             ← Monorepo root (pnpm workspaces)
+├── apps/
+│   ├── pc/                  ← Desktop app (Tauri + React)
+│   │   ├── src/             ← React frontend
+│   │   └── src-tauri/       ← Rust backend
+│   ├── mobile/              ← Android app (Expo React Native) ✅
+│   │   ├── app/             ← Expo Router screens
+│   │   ├── context/         ← AuthContext (Firebase auth state)
+│   │   ├── hooks/           ← useBlockRules, useAnalytics
+│   │   └── services/        ← firebase.ts
+│   └── extension/           ← Chrome/Edge browser extension
+├── backend/
+│   └── firebase/            ← Firebase Functions & Firestore rules
+├── shared/                  ← Shared Zod schemas & utilities
+└── docs/                    ← Project documentation
+```
 
-- **`apps/pc`**: The main desktop application (Tauri + React).
-  - `src/components/`: UI components (BlockList, Gamification, Settings, etc.)
-  - `src/services/`: Service layer (GamificationService, Firebase, Tauri IPC)
-  - `src/hooks/`: Custom React hooks for state management
-  - `src-tauri/`: Rust backend for system integration
-- **`apps/extension`**: Browser extension (Chrome/Edge/Brave) for friction mode.
-- **`apps/mobile`**: Mobile application (Flutter) - 🚧 In Development.
-- **`apps/web`**: Web-based interface (if applicable).
-- **`backend`**: Backend services (Firebase Functions, Firestore rules).
-- **`shared`**: Shared schemas, utilities, and constants used across packages.
-- **`docs`**: Project documentation (SRS, SDD, tech context).
+---
 
 ## Getting Started
 
 ### Prerequisites
 
-- **Node.js** & **pnpm**
-- **Rust** (for Tauri backend)
-- **Microsoft Visual Studio C++ Build Tools** (on Windows)
+- **Node.js** ≥ 18 & **pnpm** ≥ 9
+- **Rust** (for Tauri desktop app)
+- **Android Studio** (for React Native mobile dev)
+- **Windows** (for desktop/hosts file features)
 
 ### Installation
 
-1.  Clone the repository.
-2.  Install dependencies:
-    ```bash
-    pnpm install
-    ```
-3.  Run the desktop app in development mode:
-    ```bash
-    cd apps/pc
-    pnpm tauri dev
-    ```
+```bash
+# Clone & install all dependencies
+git clone https://github.com/JosephPham324/network-blocker.git
+cd network-blocker
+pnpm install
+```
 
-> **Note**: The application requires Administrator privileges to modify the `hosts` file. Ensure you run your terminal or the application as Administrator.
+### Run Desktop App
+
+```bash
+pnpm pc:dev
+# or: cd apps/pc && pnpm tauri dev
+```
+> Requires Administrator privileges for hosts file modification.
+
+### Run Android App
+
+```bash
+cd apps/mobile
+npx expo start -c       # Development (Expo Go) — clear cache
+# or for native build:
+npx expo run:android    # Full native build (required for Google Sign-In)
+```
+
+### Run Browser Extension
+
+Load `apps/extension/` as an unpacked extension in Chrome/Edge.
+
+---
+
+> **Note**: The desktop app requires running as Administrator on Windows to modify the `hosts` file.
