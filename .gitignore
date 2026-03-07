@@ -1,10 +1,101 @@
-/.vscode
+# ─────────────────────────────────────────────────────────
+# Dependencies
+# ─────────────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ─────────────────────────────────────────────────────────
+# Build Outputs
+# ─────────────────────────────────────────────────────────
+dist/
+build/
+out/
+.next/
+.expo/
+.expo-shared/
+
+# Tauri
+apps/pc/src-tauri/target/
+
+# ─────────────────────────────────────────────────────────
+# Environment & Secrets
+# ─────────────────────────────────────────────────────────
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+google-services.json
+GoogleService-Info.plist
+**/google-services.json
+**/GoogleService-Info.plist
+
+# ─────────────────────────────────────────────────────────
+# OS Files
+# ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─────────────────────────────────────────────────────────
+# Editors & IDEs
+# ─────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ─────────────────────────────────────────────────────────
+# Logs & Debug
+# ─────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+firebase-debug.log
+.firebase/
+
+# ─────────────────────────────────────────────────────────
+# Testing
+# ─────────────────────────────────────────────────────────
+coverage/
+.nyc_output
+
+# ─────────────────────────────────────────────────────────
+# Turbo
+# ─────────────────────────────────────────────────────────
+.turbo/
+
+# ─────────────────────────────────────────────────────────
+# React Native / Expo (apps/mobile)
+# ─────────────────────────────────────────────────────────
+apps/mobile/.expo/
+apps/mobile/android/
+apps/mobile/ios/
+apps/mobile/*.jks
+apps/mobile/*.keystore
+apps/mobile/*.p8
+apps/mobile/*.p12
+apps/mobile/*.cer
+apps/mobile/.gradle/
+
+# ─────────────────────────────────────────────────────────
+# Browser Extension
+# ─────────────────────────────────────────────────────────
+apps/extension/dist/
+
+# ─────────────────────────────────────────────────────────
+# Project-specific / Dev notes
+# ─────────────────────────────────────────────────────────
 lol
-repo_structure.txt
-/node_modules
-structure.txt
-.turbo
 commit.txt
 issues.txt
+structure.txt
+repo_structure.txt
 context.md
-/ignored
+/ignored/

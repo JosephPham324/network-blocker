@@ -607,7 +607,7 @@ const Gamification = ({ language = 'vi', rules = [], groups = [], user = null })
     const handleTimerComplete = (duration) => {
         let treeType = 'sprout';
         let amount = SESSION_REWARDS.BASE_REWARD;
-        let multiplier = DURATION / 15;
+        let multiplier = duration / 15;
         amount = Math.ceil(amount * multiplier);
 
         // Check for Focus Boost

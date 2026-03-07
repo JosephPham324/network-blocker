@@ -12,10 +12,16 @@
     "pc:dev": "pnpm --filter @mindful-block/pc tauri dev",
     "pc:build": "pnpm --filter @mindful-block/pc tauri build",
     "functions:build": "pnpm --filter @mindful-block/functions build",
-    "mobile:dev": "cd apps/mobile && flutter run",
+    "mobile:dev": "pnpm --filter mobile dev",
     "backend:deploy": "cd backend/firebase && firebase deploy"
   },
   "devDependencies": {
     "turbo": "latest"
+  },
+  "pnpm": {
+    "overrides": {
+      "@firebase/app": "0.10.14",
+      "@firebase/component": "0.6.9"
+    }
   }
 }

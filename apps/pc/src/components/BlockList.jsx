@@ -25,10 +25,23 @@ import { translations } from "../locales";
 import { BLOCK_PRESETS, SAMPLE_CSV_CONTENT } from "../constants/presets";
 import { Download, BookOpen } from "lucide-react";
 import { useFocus } from "../context/FocusContext";
-import { save } from '@tauri-apps/plugin-dialog';
-import { writeTextFile } from '@tauri-apps/plugin-fs';
+import { save } from "@tauri-apps/plugin-dialog";
+import { writeTextFile } from "@tauri-apps/plugin-fs";
 
-const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelete, onBatchToggle, onBatchMove, onDeleteGroup, onImport, onUpdateMode, language = "vi" }) => {
+const BlockList = ({
+  rules,
+  groups = [],
+  onAdd,
+  onDelete,
+  onToggle,
+  onBatchDelete,
+  onBatchToggle,
+  onBatchMove,
+  onDeleteGroup,
+  onImport,
+  onUpdateMode,
+  language = "vi",
+}) => {
   const t = translations[language].blocklist;
   const tf = translations[language].friction;
   const tFocus = translations[language].focus; // <--- Add this
@@ -55,8 +68,8 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
 
   // State for Friction Modal
   const [frictionState, setFrictionState] = useState({
-      isOpen: false,
-      data: null, // { type: 'rule_toggle', id: '..', domain: '..', currentStatus: true } etc
+    isOpen: false,
+    data: null, // { type: 'rule_toggle', id: '..', domain: '..', currentStatus: true } etc
   });
   const [previewPreset, setPreviewPreset] = useState(null);
 
@@ -67,16 +80,26 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
   // Close mode dropdown on click outside
   useEffect(() => {
     const handleClickOutside = (e) => {
-        if (!e.target.closest('.mode-dropdown-container')) {
-            setOpenModeId(null);
-        }
+      if (!e.target.closest(".mode-dropdown-container")) {
+        setOpenModeId(null);
+      }
     };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
   // --- DERIVED STATE ---
 
+  /**
+   * Memoized array of all unique group objects, combining those from `groups` and any additional group names found in `rules`.
+   * Ensures each group appears only once, and includes a default "General" group for rules without a group.
+   * The resulting array is sorted alphabetically by group name.
+   *
+   * @type {Array<{ id: string, name: string }>}
+   * @param {Array<{ id: string, name: string }>} groups - List of known group objects.
+   * @param {Array<{ group?: string }>} rules - List of rule objects, each optionally referencing a group by name.
+   * @returns {Array<{ id: string, name: string }>} Sorted array of unique group objects.
+   */
   const allKnownGroups = useMemo(() => {
     const uniqueGroups = new Map();
     groups.forEach((g) => uniqueGroups.set(g.name, g));
@@ -95,9 +118,7 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
       result[g.name] = [];
     });
 
-    const filteredRules = rules.filter((r) => 
-        r.domain.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredRules = rules.filter((r) => r.domain.toLowerCase().includes(searchTerm.toLowerCase()));
 
     filteredRules.forEach((rule) => {
       const gName = rule.group || "General";
@@ -141,10 +162,10 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
 
   // Trigger Modal
   const handleDeleteGroupClick = (groupName) => {
-      if (isFocusing) {
-        alert("🔒 Focus Mode Active: You cannot delete groups while focusing!");
-        return;
-     }
+    if (isFocusing) {
+      alert("🔒 Focus Mode Active: You cannot delete groups while focusing!");
+      return;
+    }
     setGroupToDelete(groupName);
   };
 
@@ -160,14 +181,14 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
     const { data } = frictionState;
     if (!data) return;
 
-    if (data.type === 'rule_toggle') {
-        onToggle(data.id, data.currentStatus);
-    } else if (data.type === 'rule_delete') {
-        onDelete(data.id);
-    } else if (data.type === 'group_toggle') {
-        onBatchToggle(data.ids, false); // Turning OFF
-    } else if (data.type === 'group_delete') {
-        onDeleteGroup(data.groupName);
+    if (data.type === "rule_toggle") {
+      onToggle(data.id, data.currentStatus);
+    } else if (data.type === "rule_delete") {
+      onDelete(data.id);
+    } else if (data.type === "group_toggle") {
+      onBatchToggle(data.ids, false); // Turning OFF
+    } else if (data.type === "group_delete") {
+      onDeleteGroup(data.groupName);
     }
     closeFriction();
   };
@@ -175,30 +196,30 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
   // 1. Toggle Rule (Intercept specific)
   const handleToggleRuleClick = (id, currentStatus, domain) => {
     if (isFocusing && currentStatus) {
-        alert(tFocus.locked_alert_rule);
-        return;
+      alert(tFocus.locked_alert_rule);
+      return;
     }
     if (currentStatus) {
-        // Turning OFF -> Friction
-        setFrictionState({
-            isOpen: true,
-            data: { type: 'rule_toggle', id, currentStatus, domain },
-        });
+      // Turning OFF -> Friction
+      setFrictionState({
+        isOpen: true,
+        data: { type: "rule_toggle", id, currentStatus, domain },
+      });
     } else {
-        // Turning ON -> No Friction
-        onToggle(id, currentStatus);
+      // Turning ON -> No Friction
+      onToggle(id, currentStatus);
     }
   };
 
   // 2. Delete Rule (Intercept always)
   const handleDeleteRuleClick = (id, domain) => {
     if (isFocusing) {
-        alert(tFocus.locked_alert_delete_rule);
-        return;
+      alert(tFocus.locked_alert_delete_rule);
+      return;
     }
     setFrictionState({
-        isOpen: true,
-        data: { type: 'rule_delete', id, domain },
+      isOpen: true,
+      data: { type: "rule_delete", id, domain },
     });
   };
 
@@ -206,30 +227,30 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
   const handleToggleGroupClick = (groupName, targetStatus) => {
     // If targetStatus is FALSE (we are turning it OFF because it was active)
     if (!targetStatus) {
-         if (isFocusing) {
-            alert(tFocus.locked_alert_group);
-            return;
-         }
-         const idsInGroup = groupedRules[groupName]?.map((r) => r.id) || [];
-         setFrictionState({
-            isOpen: true,
-            data: { type: 'group_toggle', groupName, ids: idsInGroup },
-         });
+      if (isFocusing) {
+        alert(tFocus.locked_alert_group);
+        return;
+      }
+      const idsInGroup = groupedRules[groupName]?.map((r) => r.id) || [];
+      setFrictionState({
+        isOpen: true,
+        data: { type: "group_toggle", groupName, ids: idsInGroup },
+      });
     } else {
-        handleToggleGroup(groupName, targetStatus);
+      handleToggleGroup(groupName, targetStatus);
     }
   };
-  
+
   // 4. Delete Group (Replace existing modal logic with Friction)
   const handleDeleteGroupClickNew = (groupName) => {
-     if (isFocusing) {
-        alert(tFocus.locked_alert_delete_group);
-        return;
-     }
-     setFrictionState({
-        isOpen: true,
-        data: { type: 'group_delete', groupName },
-     });
+    if (isFocusing) {
+      alert(tFocus.locked_alert_delete_group);
+      return;
+    }
+    setFrictionState({
+      isOpen: true,
+      data: { type: "group_delete", groupName },
+    });
   };
 
   const handleMoveSubmit = async (e) => {
@@ -267,35 +288,35 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
       const text = event.target.result;
       const lines = text.split(/\r?\n/);
       // Basic CSV parsing
-      const headers = lines[0].split(",").map(h => h.trim());
+      const headers = lines[0].split(",").map((h) => h.trim());
       // Expecting Domain, Group, (Mode)
-      
+
       const data = [];
       for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line) continue;
         // Handle basic CSV: split by comma, remove quotes if present
-        const values = line.split(",").map(v => v.trim().replace(/^"|"$/g, ''));
-        
+        const values = line.split(",").map((v) => v.trim().replace(/^"|"$/g, ""));
+
         // Map values to headers
         const entry = {};
         headers.forEach((h, index) => {
-            if (values[index]) entry[h] = values[index];
+          if (values[index]) entry[h] = values[index];
         });
-        
+
         if (entry.Domain) {
-            data.push(entry);
+          data.push(entry);
         }
       }
 
       if (data.length > 0) {
         const result = await onImport(data);
         if (result.success) {
-            // Optional: Show success toast or reset
-            if (result.count > 0) alert(`Imported ${result.count} rules successfully!`);
-            else alert("Import completed but no new rules were added (duplicates skipped).");
+          // Optional: Show success toast or reset
+          if (result.count > 0) alert(`Imported ${result.count} rules successfully!`);
+          else alert("Import completed but no new rules were added (duplicates skipped).");
         } else {
-            setError(result.error);
+          setError(result.error);
         }
       }
     };
@@ -310,58 +331,52 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
     <div id="blocklist-container" className="max-w-full space-y-8 animate-in fade-in duration-500 pb-32 relative">
       <header className="flex justify-between items-end">
         <div>
-           <h2 className="text-5xl font-serif font-bold text-[#354F52] tracking-tight">{t.title}</h2>
-           <p className="text-slate-400 mt-2 text-lg">{t.subtitle}</p>
+          <h2 className="text-5xl font-serif font-bold text-[#354F52] tracking-tight">{t.title}</h2>
+          <p className="text-slate-400 mt-2 text-lg">{t.subtitle}</p>
         </div>
         <div className="flex items-center gap-3">
-            <div className="relative group">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
-                <input 
-                    type="text" 
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder={t.search_placeholder} 
-                    className="pl-10 pr-4 py-2 rounded-full bg-white border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm transition-all w-48 focus:w-64"
-                />
-            </div>
-            <div className="h-8 w-px bg-slate-200 mx-1"></div>
-
-             {/* Presets Dropdown */}
-             <div className="relative group/presets">
-                <button className="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors font-medium">
-                    <BookOpen size={20} />
-                    <span>{t.presets_btn}</span>
-                </button>
-                <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 p-2 invisible opacity-0 group-hover/presets:visible group-hover/presets:opacity-100 transition-all z-50 transform origin-top-right">
-                    <div className="text-xs font-bold text-slate-300 uppercase px-3 py-2">{t.presets_quick_import}</div>
-                    {BLOCK_PRESETS.map(preset => (
-                        <button
-                            key={preset.id}
-                            onClick={() => setPreviewPreset(preset)}
-                            className="w-full text-left px-3 py-2 hover:bg-slate-50 rounded-lg transition-colors"
-                        >
-                            <div className="font-bold text-[#354F52]">{preset.name}</div>
-                            <div className="text-xs text-slate-400">{preset.description}</div>
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            <div className="h-8 w-px bg-slate-200 mx-1"></div>
-            <input 
-                type="file" 
-                ref={fileInputRef} 
-                className="hidden" 
-                accept=".csv" 
-                onChange={handleFileUpload}
+          <div className="relative group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder={t.search_placeholder}
+              className="pl-10 pr-4 py-2 rounded-full bg-white border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm transition-all w-48 focus:w-64"
             />
-            <button 
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors font-medium"
-            >
-                <Upload size={20} />
-                <span>{t.import_csv}</span>
+          </div>
+          <div className="h-8 w-px bg-slate-200 mx-1"></div>
+
+          {/* Presets Dropdown */}
+          <div className="relative group/presets">
+            <button className="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors font-medium">
+              <BookOpen size={20} />
+              <span>{t.presets_btn}</span>
             </button>
+            <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 p-2 invisible opacity-0 group-hover/presets:visible group-hover/presets:opacity-100 transition-all z-50 transform origin-top-right">
+              <div className="text-xs font-bold text-slate-300 uppercase px-3 py-2">{t.presets_quick_import}</div>
+              {BLOCK_PRESETS.map((preset) => (
+                <button
+                  key={preset.id}
+                  onClick={() => setPreviewPreset(preset)}
+                  className="w-full text-left px-3 py-2 hover:bg-slate-50 rounded-lg transition-colors"
+                >
+                  <div className="font-bold text-[#354F52]">{preset.name}</div>
+                  <div className="text-xs text-slate-400">{preset.description}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="h-8 w-px bg-slate-200 mx-1"></div>
+          <input type="file" ref={fileInputRef} className="hidden" accept=".csv" onChange={handleFileUpload} />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors font-medium"
+          >
+            <Upload size={20} />
+            <span>{t.import_csv}</span>
+          </button>
         </div>
       </header>
 
@@ -521,8 +536,8 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
                             isSelected
                               ? "bg-[#EBE7DE] border-primary/20 shadow-md transform scale-[1.01]"
                               : r.is_active
-                              ? "bg-white border-slate-100 hover:border-emerald-200"
-                              : "bg-slate-50 border-transparent opacity-60 grayscale"
+                                ? "bg-white border-slate-100 hover:border-emerald-200"
+                                : "bg-slate-50 border-transparent opacity-60 grayscale"
                           }
                         `}
                         >
@@ -540,88 +555,97 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
                               </span>
                               {/* Mode Badge - Clickable Dropdown */}
                               <div className="relative mode-dropdown-container">
-                                <button 
+                                <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setOpenModeId(openModeId === r.id ? null : r.id);
                                   }}
                                   className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95 ${
-                                    (r.mode?.includes('friction')) 
-                                      ? 'bg-blue-500 text-white shadow-blue-200 hover:bg-blue-600' 
-                                      : 'bg-red-500 text-white shadow-red-200 hover:bg-red-600'
+                                    r.mode?.includes("friction")
+                                      ? "bg-blue-500 text-white shadow-blue-200 hover:bg-blue-600"
+                                      : "bg-red-500 text-white shadow-red-200 hover:bg-red-600"
                                   }`}
                                   title="Change blocking mode"
                                 >
-                                    {r.mode?.includes('friction') ? (
-                                        r.mode === 'friction_wait' ? <Hourglass size={12} /> :
-                                        r.mode === 'friction_typing' ? <Keyboard size={12} /> :
-                                        <Calculator size={12} />
-                                    ) : <ShieldAlert size={12} />}
-                                    
-                                    {r.mode === 'friction_wait' ? tf.mode_wait : 
-                                     r.mode === 'friction_typing' ? tf.mode_typing :
-                                     r.mode?.includes('friction') ? tf.mode_math : // Default friction is math
-                                     tf.mode_hard}
-                                    <ChevronDown size={10} className={`duration-200 ${openModeId === r.id ? 'rotate-180' : ''}`} />
+                                  {r.mode?.includes("friction") ? (
+                                    r.mode === "friction_wait" ? (
+                                      <Hourglass size={12} />
+                                    ) : r.mode === "friction_typing" ? (
+                                      <Keyboard size={12} />
+                                    ) : (
+                                      <Calculator size={12} />
+                                    )
+                                  ) : (
+                                    <ShieldAlert size={12} />
+                                  )}
+
+                                  {r.mode === "friction_wait"
+                                    ? tf.mode_wait
+                                    : r.mode === "friction_typing"
+                                      ? tf.mode_typing
+                                      : r.mode?.includes("friction")
+                                        ? tf.mode_math // Default friction is math
+                                        : tf.mode_hard}
+                                  <ChevronDown size={10} className={`duration-200 ${openModeId === r.id ? "rotate-180" : ""}`} />
                                 </button>
 
                                 {/* Dropdown Menu */}
                                 {openModeId === r.id && (
-                                    <div className="absolute top-[calc(100%+8px)] left-0 z-50 w-48 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-left">
-                                        <div className="px-3 py-2 text-[10px] font-bold text-slate-300 uppercase tracking-wider">Select Mode</div>
-                                        
-                                        {/* Hard Mode */}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onUpdateMode(r.id, 'hard');
-                                                setOpenModeId(null);
-                                            }}
-                                            className={`w-full text-left px-4 py-3 flex items-center gap-2 text-sm font-bold transition-colors ${r.mode === 'hard' || !r.mode ? 'bg-red-50 text-red-600' : 'text-slate-500 hover:bg-slate-50'}`}
-                                        >
-                                            <ShieldAlert size={16} />
-                                            {tf.mode_hard}
-                                        </button>
+                                  <div className="absolute top-[calc(100%+8px)] left-0 z-50 w-48 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-left">
+                                    <div className="px-3 py-2 text-[10px] font-bold text-slate-300 uppercase tracking-wider">Select Mode</div>
 
-                                        {/* Math Mode */}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onUpdateMode(r.id, 'friction_math');
-                                                setOpenModeId(null);
-                                            }}
-                                            className={`w-full text-left px-4 py-3 flex items-center gap-2 text-sm font-bold transition-colors ${r.mode === 'friction' || r.mode === 'friction_math' ? 'bg-blue-50 text-blue-600' : 'text-slate-500 hover:bg-slate-50'}`}
-                                        >
-                                            <Calculator size={16} />
-                                            {tf.mode_math}
-                                        </button>
+                                    {/* Hard Mode */}
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onUpdateMode(r.id, "hard");
+                                        setOpenModeId(null);
+                                      }}
+                                      className={`w-full text-left px-4 py-3 flex items-center gap-2 text-sm font-bold transition-colors ${r.mode === "hard" || !r.mode ? "bg-red-50 text-red-600" : "text-slate-500 hover:bg-slate-50"}`}
+                                    >
+                                      <ShieldAlert size={16} />
+                                      {tf.mode_hard}
+                                    </button>
 
-                                        {/* Wait Mode */}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onUpdateMode(r.id, 'friction_wait');
-                                                setOpenModeId(null);
-                                            }}
-                                            className={`w-full text-left px-4 py-3 flex items-center gap-2 text-sm font-bold transition-colors ${r.mode === 'friction_wait' ? 'bg-amber-50 text-amber-600' : 'text-slate-500 hover:bg-slate-50'}`}
-                                        >
-                                            <Hourglass size={16} />
-                                            {tf.mode_wait}
-                                        </button>
+                                    {/* Math Mode */}
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onUpdateMode(r.id, "friction_math");
+                                        setOpenModeId(null);
+                                      }}
+                                      className={`w-full text-left px-4 py-3 flex items-center gap-2 text-sm font-bold transition-colors ${r.mode === "friction" || r.mode === "friction_math" ? "bg-blue-50 text-blue-600" : "text-slate-500 hover:bg-slate-50"}`}
+                                    >
+                                      <Calculator size={16} />
+                                      {tf.mode_math}
+                                    </button>
 
-                                        {/* Typing Mode */}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onUpdateMode(r.id, 'friction_typing');
-                                                setOpenModeId(null);
-                                            }}
-                                            className={`w-full text-left px-4 py-3 flex items-center gap-2 text-sm font-bold transition-colors ${r.mode === 'friction_typing' ? 'bg-purple-50 text-purple-600' : 'text-slate-500 hover:bg-slate-50'}`}
-                                        >
-                                            <Keyboard size={16} />
-                                            {tf.mode_typing}
-                                        </button>
-                                    </div>
+                                    {/* Wait Mode */}
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onUpdateMode(r.id, "friction_wait");
+                                        setOpenModeId(null);
+                                      }}
+                                      className={`w-full text-left px-4 py-3 flex items-center gap-2 text-sm font-bold transition-colors ${r.mode === "friction_wait" ? "bg-amber-50 text-amber-600" : "text-slate-500 hover:bg-slate-50"}`}
+                                    >
+                                      <Hourglass size={16} />
+                                      {tf.mode_wait}
+                                    </button>
+
+                                    {/* Typing Mode */}
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onUpdateMode(r.id, "friction_typing");
+                                        setOpenModeId(null);
+                                      }}
+                                      className={`w-full text-left px-4 py-3 flex items-center gap-2 text-sm font-bold transition-colors ${r.mode === "friction_typing" ? "bg-purple-50 text-purple-600" : "text-slate-500 hover:bg-slate-50"}`}
+                                    >
+                                      <Keyboard size={16} />
+                                      {tf.mode_typing}
+                                    </button>
+                                  </div>
                                 )}
                               </div>
                             </div>
@@ -720,107 +744,116 @@ const BlockList = ({ rules, groups = [], onAdd, onDelete, onToggle, onBatchDelet
         onClose={closeFriction}
         onConfirm={handleApplyFriction}
         title={
-            frictionState.data?.type === 'rule_delete' ? tf.title_delete_rule.replace("{domain}", frictionState.data?.domain) :
-            frictionState.data?.type === 'group_delete' ? tf.title_delete_group.replace("{group}", frictionState.data?.groupName) :
-            frictionState.data?.type === 'group_toggle' ? tf.title_disable_group.replace("{group}", frictionState.data?.groupName) :
-            tf.title_disable_rule
+          frictionState.data?.type === "rule_delete"
+            ? tf.title_delete_rule.replace("{domain}", frictionState.data?.domain)
+            : frictionState.data?.type === "group_delete"
+              ? tf.title_delete_group.replace("{group}", frictionState.data?.groupName)
+              : frictionState.data?.type === "group_toggle"
+                ? tf.title_disable_group.replace("{group}", frictionState.data?.groupName)
+                : tf.title_disable_rule
         }
         message={
-            frictionState.data?.type === 'rule_delete' ? tf.msg_delete_rule :
-            frictionState.data?.type === 'group_delete' ? tf.msg_delete_group :
-            frictionState.data?.type === 'group_toggle' ? tf.msg_disable_group :
-            tf.msg_disable_rule
+          frictionState.data?.type === "rule_delete"
+            ? tf.msg_delete_rule
+            : frictionState.data?.type === "group_delete"
+              ? tf.msg_delete_group
+              : frictionState.data?.type === "group_toggle"
+                ? tf.msg_disable_group
+                : tf.msg_disable_rule
         }
         confirmationText={
-            frictionState.data?.type === 'rule_delete' ? tf.confirm_delete_rule.replace("{domain}", frictionState.data?.domain) :
-            frictionState.data?.type === 'group_delete' ? tf.confirm_delete_group.replace("{group}", frictionState.data?.groupName) :
-            frictionState.data?.type === 'group_toggle' ? tf.confirm_disable_group.replace("{group}", frictionState.data?.groupName) :
-            tf.confirm_disable_rule.replace("{domain}", frictionState.data?.domain)
+          frictionState.data?.type === "rule_delete"
+            ? tf.confirm_delete_rule.replace("{domain}", frictionState.data?.domain)
+            : frictionState.data?.type === "group_delete"
+              ? tf.confirm_delete_group.replace("{group}", frictionState.data?.groupName)
+              : frictionState.data?.type === "group_toggle"
+                ? tf.confirm_disable_group.replace("{group}", frictionState.data?.groupName)
+                : tf.confirm_disable_rule.replace("{domain}", frictionState.data?.domain)
         }
-        actionType={frictionState.data?.type?.includes('delete') ? "delete" : "disable"}
+        actionType={frictionState.data?.type?.includes("delete") ? "delete" : "disable"}
         language={language}
       />
 
       {/* --- PRESET PREVIEW MODAL --- */}
       {previewPreset && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
-              <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-                  <div className="p-6 pb-0">
-                      <h3 className="text-2xl font-serif font-bold text-[#354F52]">
-                          {t.preview_title.replace("{name}", previewPreset.name)}
-                      </h3>
-                      <p className="text-slate-400 mt-1">{previewPreset.description}</p>
-                      
-                      <div className="mt-4 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-300">
-                          <span>{t.preview_count.replace("{count}", previewPreset.rules.length)}</span>
-                      </div>
-                  </div>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 pb-0">
+              <h3 className="text-2xl font-serif font-bold text-[#354F52]">{t.preview_title.replace("{name}", previewPreset.name)}</h3>
+              <p className="text-slate-400 mt-1">{previewPreset.description}</p>
 
-                  <div className="max-h-[300px] overflow-y-auto p-4 pt-2 space-y-2">
-                      {previewPreset.rules.map((rule, idx) => (
-                          <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
-                               <span className="font-bold text-[#354F52]">{rule.domain}</span>
-                               <span className="text-xs text-slate-400 bg-white px-2 py-1 rounded-md border border-slate-100">{rule.group}</span>
-                          </div>
-                      ))}
-                  </div>
-                  
-                  <div className="p-6 pt-2 flex gap-3">
-                      <button 
-                          onClick={async () => {
-                            const csvHeader = "Domain,Group,Mode\n";
-                            const csvRows = previewPreset.rules.map(r => `${r.domain},${r.group},${r.mode || 'HARD'}`).join("\n");
-                            const content = csvHeader + csvRows;
-
-                            try {
-                                // Try Native Save
-                                const path = await save({
-                                    filters: [{
-                                        name: 'CSV',
-                                        extensions: ['csv']
-                                    }],
-                                    defaultPath: `${previewPreset.id}_preset.csv`
-                                });
-
-                                if (path) {
-                                    await writeTextFile(path, content);
-                                    // Optional: Notify success?
-                                }
-                            } catch (e) {
-                                console.warn("Native save failed, falling back to browser download:", e);
-                                // Fallback for Browser / Permission Error
-                                const blob = new Blob([content], { type: 'text/csv' });
-                                const url = window.URL.createObjectURL(blob);
-                                const a = document.createElement('a');
-                                a.href = url;
-                                a.download = `${previewPreset.id}_preset.csv`;
-                                a.click();
-                                window.URL.revokeObjectURL(url);
-                            }
-                          }}
-                          className="p-3 rounded-full font-bold text-slate-400 hover:bg-slate-50 transition-colors"
-                          title={t.download_sample}
-                      >
-                          <Download size={20} />
-                      </button>
-                      <button 
-                          onClick={() => setPreviewPreset(null)}
-                          className="flex-1 py-3 rounded-full font-bold text-slate-400 hover:bg-slate-50 transition-colors"
-                      >
-                          {t.cancel}
-                      </button>
-                      <button 
-                          onClick={() => {
-                              onImport(previewPreset.rules);
-                              setPreviewPreset(null);
-                          }}
-                          className="flex-1 py-3 rounded-full font-bold bg-primary text-white shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
-                      >
-                          {t.import_action}
-                      </button>
-                  </div>
+              <div className="mt-4 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-300">
+                <span>{t.preview_count.replace("{count}", previewPreset.rules.length)}</span>
               </div>
+            </div>
+
+            <div className="max-h-[300px] overflow-y-auto p-4 pt-2 space-y-2">
+              {previewPreset.rules.map((rule, idx) => (
+                <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <span className="font-bold text-[#354F52]">{rule.domain}</span>
+                  <span className="text-xs text-slate-400 bg-white px-2 py-1 rounded-md border border-slate-100">{rule.group}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-6 pt-2 flex gap-3">
+              <button
+                onClick={async () => {
+                  const csvHeader = "Domain,Group,Mode\n";
+                  const csvRows = previewPreset.rules.map((r) => `${r.domain},${r.group},${r.mode || "HARD"}`).join("\n");
+                  const content = csvHeader + csvRows;
+
+                  try {
+                    // Try Native Save
+                    const path = await save({
+                      filters: [
+                        {
+                          name: "CSV",
+                          extensions: ["csv"],
+                        },
+                      ],
+                      defaultPath: `${previewPreset.id}_preset.csv`,
+                    });
+
+                    if (path) {
+                      await writeTextFile(path, content);
+                      // Optional: Notify success?
+                    }
+                  } catch (e) {
+                    console.warn("Native save failed, falling back to browser download:", e);
+                    // Fallback for Browser / Permission Error
+                    const blob = new Blob([content], { type: "text/csv" });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `${previewPreset.id}_preset.csv`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                  }
+                }}
+                className="p-3 rounded-full font-bold text-slate-400 hover:bg-slate-50 transition-colors"
+                title={t.download_sample}
+              >
+                <Download size={20} />
+              </button>
+              <button
+                onClick={() => setPreviewPreset(null)}
+                className="flex-1 py-3 rounded-full font-bold text-slate-400 hover:bg-slate-50 transition-colors"
+              >
+                {t.cancel}
+              </button>
+              <button
+                onClick={() => {
+                  onImport(previewPreset.rules);
+                  setPreviewPreset(null);
+                }}
+                className="flex-1 py-3 rounded-full font-bold bg-primary text-white shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+              >
+                {t.import_action}
+              </button>
+            </div>
           </div>
+        </div>
       )}
     </div>
   );
